@@ -1,7 +1,7 @@
 package agent.test;
 
-import agent.MyAbstractAgent;
-import agent.MyAbstractAgent;
+import agent.MASLABAbstractAgent;
+import agent.MASLABAbstractAgent;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -21,7 +21,7 @@ import rescuecore2.log.Logger;
 /**
    An agent for testing custom registry objects.
  */
-public class CustomRegistryTestAgent extends MyAbstractAgent<Human> {
+public class CustomRegistryTestAgent extends MASLABAbstractAgent<Human> {
     @Override
     public String toString() {
         return "Custom registry test agent";

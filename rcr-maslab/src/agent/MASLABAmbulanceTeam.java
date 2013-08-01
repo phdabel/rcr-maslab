@@ -23,7 +23,7 @@ import util.DistanceSorter;
 /**
    A sample ambulance team agent.
  */
-public class MyAmbulanceTeam extends MyAbstractAgent<AmbulanceTeam> {
+public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
     private Collection<EntityID> unexploredBuildings;
 
     @Override

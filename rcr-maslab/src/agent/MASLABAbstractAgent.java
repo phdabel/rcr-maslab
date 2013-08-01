@@ -25,7 +25,7 @@ import util.BFSearch;
    Abstract base class for sample agents.
    @param <E> The subclass of StandardEntity this agent wants to control.
  */
-public abstract class MyAbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
+public abstract class MASLABAbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
     private static final int RANDOM_WALK_LENGTH = 50;
 
     private static final String SAY_COMMUNICATION_MODEL = StandardCommunicationModel.class.getName();
@@ -61,7 +61,7 @@ public abstract class MyAbstractAgent<E extends StandardEntity> extends Standard
     /**
        Construct an AbstractSampleAgent.
     */
-    protected MyAbstractAgent() {
+    protected MASLABAbstractAgent() {
     }
 
     @Override

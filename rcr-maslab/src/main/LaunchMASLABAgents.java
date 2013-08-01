@@ -1,9 +1,10 @@
 package main;
 
-import agent.MyFireBrigade;
-import agent.MyPoliceForce;
-import agent.MyAmbulanceTeam;
-import agent.MyCentre;
+import agent.MASLABFireBrigade;
+import agent.MASLABPoliceForce;
+import agent.MASLABAmbulanceTeam;
+import agent.MASLABCentre;
+import agent.MASLABDummyAgent;
 import java.io.IOException;
 
 import rescuecore2.components.ComponentLauncher;
@@ -20,18 +21,17 @@ import rescuecore2.log.Logger;
 import rescuecore2.standard.entities.StandardEntityFactory;
 import rescuecore2.standard.entities.StandardPropertyFactory;
 import rescuecore2.standard.messages.StandardMessageFactory;
-import agent.DummyAgent;
 
 /**
    Launcher for sample agents. This will launch as many instances of each of the sample agents as possible, all using one connction.
  */
-public final class LaunchMyAgents {
+public final class LaunchMASLABAgents {
     private static final String FIRE_BRIGADE_FLAG = "-fb";
     private static final String POLICE_FORCE_FLAG = "-pf";
     private static final String AMBULANCE_TEAM_FLAG = "-at";
     private static final String CIVILIAN_FLAG = "-cv";
 
-    private LaunchMyAgents() {}
+    private LaunchMASLABAgents() {}
 
     /**
        Launch 'em!
@@ -88,7 +88,7 @@ public final class LaunchMyAgents {
         try {
             while (fb-- != 0) {
                 Logger.info("Connecting fire brigade " + (i++) + "...");
-                launcher.connect(new MyFireBrigade());
+                launcher.connect(new MASLABFireBrigade());
                 Logger.info("success");
             }
         }
@@ -98,7 +98,7 @@ public final class LaunchMyAgents {
         try {
             while (pf-- != 0) {
                 Logger.info("Connecting police force " + (i++) + "...");
-                launcher.connect(new MyPoliceForce());
+                launcher.connect(new MASLABPoliceForce());
                 Logger.info("success");
             }
         }
@@ -108,7 +108,7 @@ public final class LaunchMyAgents {
         try {
             while (at-- != 0) {
                 Logger.info("Connecting ambulance team " + (i++) + "...");
-                launcher.connect(new MyAmbulanceTeam());
+                launcher.connect(new MASLABAmbulanceTeam());
                 Logger.info("success");
             }
         }
@@ -118,7 +118,7 @@ public final class LaunchMyAgents {
         try {
             while (true) {
                 Logger.info("Connecting centre " + (i++) + "...");
-                launcher.connect(new MyCentre());
+                launcher.connect(new MASLABCentre());
                 Logger.info("success");
             }
         }
@@ -128,7 +128,7 @@ public final class LaunchMyAgents {
         try {
             while (true) {
                 Logger.info("Connecting dummy agent " + (i++) + "...");
-                launcher.connect(new DummyAgent());
+                launcher.connect(new MASLABDummyAgent());
                 Logger.info("success");
             }
         }

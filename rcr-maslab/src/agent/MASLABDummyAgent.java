@@ -13,7 +13,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 /**
    A no-op agent.
  */
-public class DummyAgent extends StandardAgent<StandardEntity> {
+public class MASLABDummyAgent extends StandardAgent<StandardEntity> {
     @Override
     protected void think(int time, ChangeSet changed, Collection<Command> heard) {
         sendRest(time);
