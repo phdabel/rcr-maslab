@@ -24,7 +24,7 @@ import rescuecore2.standard.entities.Area;
 /**
    A sample police force agent.
  */
-public class MyPoliceForce extends MyAbstractAgent<PoliceForce> {
+public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
     private static final String DISTANCE_KEY = "clear.repair.distance";
 
     private int distance;

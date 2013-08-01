@@ -23,7 +23,7 @@ import util.DistanceSorter;
 /**
    A sample fire brigade agent.
  */
-public class MyFireBrigade extends MyAbstractAgent<FireBrigade> {
+public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
     private static final String MAX_WATER_KEY = "fire.tank.maximum";
     private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
     private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";

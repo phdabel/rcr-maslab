@@ -1,7 +1,7 @@
 package agent.test;
 
-import agent.MyAbstractAgent;
-import agent.MyAbstractAgent;
+import agent.MASLABAbstractAgent;
+import agent.MASLABAbstractAgent;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -18,7 +18,7 @@ import rescuecore2.log.Logger;
 /**
    An agent for testing communication channels.
  */
-public class ChannelTestAgent extends MyAbstractAgent<Human> {
+public class ChannelTestAgent extends MASLABAbstractAgent<Human> {
     private static final int CHANNEL = 4;
     private static final int N = 100;
 

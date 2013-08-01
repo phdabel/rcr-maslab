@@ -14,7 +14,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 /**
    A sample centre agent.
  */
-public class MyCentre extends StandardAgent<Building> {
+public class MASLABCentre extends StandardAgent<Building> {
     @Override
     public String toString() {
         return "Sample centre";
