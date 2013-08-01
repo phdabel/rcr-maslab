@@ -1,5 +1,6 @@
 package agent;
 
+import agent.interfaces.IAmbulanceTeam;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,20 +22,47 @@ import rescuecore2.standard.entities.Refuge;
 import util.DistanceSorter;
 
 /**
-   A sample ambulance team agent.
+ * A sample ambulance team agent.
  */
-public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
+public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> implements IAmbulanceTeam {
+
+    /**
+     *
+     * Variaveis Sample Agent
+     *
+     */
     private Collection<EntityID> unexploredBuildings;
 
+    /**
+     *
+     * Variaveis definidas por nós
+     *
+     */
+    
+    /*
+     *
+     * Métodos Standard Agent
+     * 
+     */
     @Override
     public String toString() {
         return "Sample ambulance team";
     }
 
+    /**
+     *
+     * Variaveis definidas por nós
+     *
+     */
+    /*
+     *
+     * Métodos Standard Agent
+     * 
+     */
     @Override
     protected void postConnect() {
         super.postConnect();
-        model.indexClass(StandardEntityURN.CIVILIAN, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.REFUGE,StandardEntityURN.HYDRANT,StandardEntityURN.GAS_STATION, StandardEntityURN.BUILDING);
+        model.indexClass(StandardEntityURN.CIVILIAN, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.REFUGE, StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION, StandardEntityURN.BUILDING);
         unexploredBuildings = new HashSet<EntityID>(buildingIDs);
     }
 
@@ -56,8 +84,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
                 Logger.info("Unloading");
                 sendUnload(time);
                 return;
-            }
-            else {
+            } else {
                 // Move to a refuge
                 List<EntityID> path = search.breadthFirstSearch(me().getPosition(), refugeIDs);
                 if (path != null) {
@@ -85,8 +112,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
                     sendRescue(time, next.getID());
                     return;
                 }
-            }
-            else {
+            } else {
                 // Try to move to the target
                 List<EntityID> path = search.breadthFirstSearch(me().getPosition(), next.getPosition());
                 if (path != null) {
@@ -112,9 +138,14 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
         return EnumSet.of(StandardEntityURN.AMBULANCE_TEAM);
     }
 
+    /**
+     *
+     * Métodos Sample Agent
+     * 
+     */
     private boolean someoneOnBoard() {
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
-            if (((Human)next).getPosition().equals(getID())) {
+            if (((Human) next).getPosition().equals(getID())) {
                 Logger.debug(next + " is on board");
                 return true;
             }
@@ -125,16 +156,16 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
     private List<Human> getTargets() {
         List<Human> targets = new ArrayList<Human>();
         for (StandardEntity next : model.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE, StandardEntityURN.AMBULANCE_TEAM)) {
-            Human h = (Human)next;
+            Human h = (Human) next;
             if (h == me()) {
                 continue;
             }
             if (h.isHPDefined()
-                && h.isBuriednessDefined()
-                && h.isDamageDefined()
-                && h.isPositionDefined()
-                && h.getHP() > 0
-                && (h.getBuriedness() > 0 || h.getDamage() > 0)) {
+                    && h.isBuriednessDefined()
+                    && h.isDamageDefined()
+                    && h.isPositionDefined()
+                    && h.getHP() > 0
+                    && (h.getBuriedness() > 0 || h.getDamage() > 0)) {
                 targets.add(h);
             }
         }
@@ -147,4 +178,16 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam> {
             unexploredBuildings.remove(next);
         }
     }
+    
+    /*
+     *
+     * Métodos Definidos por nós
+     * 
+     */
+    /*
+     * 
+     * Métodos Acessores se necessário
+     * 
+     * 
+     */
 }

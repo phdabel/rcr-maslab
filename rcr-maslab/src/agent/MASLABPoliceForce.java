@@ -1,5 +1,6 @@
 package agent;
 
+import agent.interfaces.IPoliceForce;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,12 +23,28 @@ import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
 
 /**
-   A sample police force agent.
+ * A sample police force agent.
  */
-public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
-    private static final String DISTANCE_KEY = "clear.repair.distance";
+public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implements IPoliceForce {
 
+    /**
+     *
+     * Variaveis Sample Agent
+     *
+     */
+    private static final String DISTANCE_KEY = "clear.repair.distance";
     private int distance;
+    /**
+     *
+     * Variaveis definidas por nós
+     *
+     */
+    private int resultado;
+    /*
+     *
+     * Métodos Standard Agent
+     * 
+     */
 
     @Override
     public String toString() {
@@ -70,14 +87,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
             }
             Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
             v = v.normalised().scale(1000000);
-            sendClear(time, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
+            sendClear(time, (int) (me().getX() + v.getX()), (int) (me().getY() + v.getY()));
             return;
         }
         // Plan a path to a blocked area
         List<EntityID> path = search.breadthFirstSearch(me().getPosition(), getBlockedRoads());
         if (path != null) {
             Logger.info("Moving to target");
-            Road r = (Road)model.getEntity(path.get(path.size() - 1));
+            Road r = (Road) model.getEntity(path.get(path.size() - 1));
             Blockade b = getTargetBlockade(r, -1);
             sendMove(time, path, b.getX(), b.getY());
             Logger.debug("Path: " + path);
@@ -94,11 +111,16 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
         return EnumSet.of(StandardEntityURN.POLICE_FORCE);
     }
 
+    /**
+     *
+     * Métodos Sample Agent
+     *
+     */
     private List<EntityID> getBlockedRoads() {
         Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
         List<EntityID> result = new ArrayList<EntityID>();
         for (StandardEntity next : e) {
-            Road r = (Road)next;
+            Road r = (Road) next;
             if (r.isBlockadesDefined() && !r.getBlockades().isEmpty()) {
                 result.add(r.getID());
             }
@@ -108,7 +130,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
 
     private Blockade getTargetBlockade() {
         Logger.debug("Looking for target blockade");
-        Area location = (Area)location();
+        Area location = (Area) location();
         Logger.debug("Looking in current location");
         Blockade result = getTargetBlockade(location, distance);
         if (result != null) {
@@ -116,7 +138,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
         }
         Logger.debug("Looking in neighbouring locations");
         for (EntityID next : location.getNeighbours()) {
-            location = (Area)model.getEntity(next);
+            location = (Area) model.getEntity(next);
             result = getTargetBlockade(location, distance);
             if (result != null) {
                 return result;
@@ -136,7 +158,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
         int x = me().getX();
         int y = me().getY();
         for (EntityID next : ids) {
-            Blockade b = (Blockade)model.getEntity(next);
+            Blockade b = (Blockade) model.getEntity(next);
             double d = findDistanceTo(b, x, y);
             //            Logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
@@ -163,55 +185,86 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> {
             }
 
         }
-        return (int)best;
+        return (int) best;
     }
 
     /**
-       Get the blockade that is nearest this agent.
-       @return The EntityID of the nearest blockade, or null if there are no blockades in the agents current location.
-    */
+     * Get the blockade that is nearest this agent.
+     *
+     * @return The EntityID of the nearest blockade, or null if there are no
+     * blockades in the agents current location.
+     */
     /*
-    public EntityID getNearestBlockade() {
-        return getNearestBlockade((Area)location(), me().getX(), me().getY());
-    }
-    */
-
+     public EntityID getNearestBlockade() {
+     return getNearestBlockade((Area)location(), me().getX(), me().getY());
+     }
+     */
     /**
-       Get the blockade that is nearest a point.
-       @param area The area to check.
-       @param x The X coordinate to look up.
-       @param y The X coordinate to look up.
-       @return The EntityID of the nearest blockade, or null if there are no blockades in this area.
-    */
+     * Get the blockade that is nearest a point.
+     *
+     * @param area The area to check.
+     * @param x The X coordinate to look up.
+     * @param y The X coordinate to look up.
+     * @return The EntityID of the nearest blockade, or null if there are no
+     * blockades in this area.
+     */
     /*
-    public EntityID getNearestBlockade(Area area, int x, int y) {
-        double bestDistance = 0;
-        EntityID best = null;
-        Logger.debug("Finding nearest blockade");
-        if (area.isBlockadesDefined()) {
-            for (EntityID blockadeID : area.getBlockades()) {
-                Logger.debug("Checking " + blockadeID);
-                StandardEntity entity = model.getEntity(blockadeID);
-                Logger.debug("Found " + entity);
-                if (entity == null) {
-                    continue;
-                }
-                Pair<Integer, Integer> location = entity.getLocation(model);
-                Logger.debug("Location: " + location);
-                if (location == null) {
-                    continue;
-                }
-                double dx = location.first() - x;
-                double dy = location.second() - y;
-                double distance = Math.hypot(dx, dy);
-                if (best == null || distance < bestDistance) {
-                    bestDistance = distance;
-                    best = entity.getID();
-                }
-            }
-        }
-        Logger.debug("Nearest blockade: " + best);
-        return best;
+     public EntityID getNearestBlockade(Area area, int x, int y) {
+     double bestDistance = 0;
+     EntityID best = null;
+     Logger.debug("Finding nearest blockade");
+     if (area.isBlockadesDefined()) {
+     for (EntityID blockadeID : area.getBlockades()) {
+     Logger.debug("Checking " + blockadeID);
+     StandardEntity entity = model.getEntity(blockadeID);
+     Logger.debug("Found " + entity);
+     if (entity == null) {
+     continue;
+     }
+     Pair<Integer, Integer> location = entity.getLocation(model);
+     Logger.debug("Location: " + location);
+     if (location == null) {
+     continue;
+     }
+     double dx = location.first() - x;
+     double dy = location.second() - y;
+     double distance = Math.hypot(dx, dy);
+     if (best == null || distance < bestDistance) {
+     bestDistance = distance;
+     best = entity.getID();
+     }
+     }
+     }
+     Logger.debug("Nearest blockade: " + best);
+     return best;
+     }
+     */
+    /*
+     *
+     * Métodos Definidos por nós
+     * 
+     */
+    @Override
+    public int somar(int x, int y) {
+        return x + y;
     }
-    */
+
+    @Override
+    public int subtrair(int x, int y) {
+        return x - y;
+    }
+
+    /*
+     *
+     * Métodos Acessores se necessário
+     *
+     * 
+     */
+    public int getResultado() {
+        return resultado;
+    }
+
+    public void setResultado(int resultado) {
+        this.resultado = resultado;
+    }
 }
