@@ -1,5 +1,6 @@
 package agent;
 
+import agent.interfaces.IFireBrigade;
 import static rescuecore2.misc.Handy.objectsToIDs;
 
 import java.util.List;
@@ -21,17 +22,36 @@ import rescuecore2.standard.entities.FireBrigade;
 import util.DistanceSorter;
 
 /**
-   A sample fire brigade agent.
+ * A sample fire brigade agent.
  */
-public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
+public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> implements IFireBrigade {
+
+     /**
+     *
+     * Variaveis Sample Agent
+     * 
+     */
+    
     private static final String MAX_WATER_KEY = "fire.tank.maximum";
     private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
     private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";
-
     private int maxWater;
     private int maxDistance;
     private int maxPower;
 
+    /**
+     *
+     * Variaveis definidas por nós
+     * 
+     */
+    
+    
+    /*
+     *
+     * Métodos Standard Agent
+     * 
+     */
+    
     @Override
     public String toString() {
         return "Sample fire brigade";
@@ -40,7 +60,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
     @Override
     protected void postConnect() {
         super.postConnect();
-        model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE,StandardEntityURN.HYDRANT,StandardEntityURN.GAS_STATION);
+        model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE, StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION);
         maxWater = config.getIntValue(MAX_WATER_KEY);
         maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
         maxPower = config.getIntValue(MAX_POWER_KEY);
@@ -71,8 +91,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
                 Logger.info("Moving to refuge");
                 sendMove(time, path);
                 return;
-            }
-            else {
+            } else {
                 Logger.debug("Couldn't plan a path to a refuge.");
                 path = randomWalk();
                 Logger.info("Moving randomly");
@@ -107,6 +126,11 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
         sendMove(time, path);
     }
 
+    /**
+     *
+     * Métodos Sample Agent
+     * 
+     */
     @Override
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
         return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
@@ -117,7 +141,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
         List<Building> result = new ArrayList<Building>();
         for (StandardEntity next : e) {
             if (next instanceof Building) {
-                Building b = (Building)next;
+                Building b = (Building) next;
                 if (b.isOnFire()) {
                     result.add(b);
                 }
@@ -136,4 +160,15 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade> {
         }
         return search.breadthFirstSearch(me().getPosition(), objectsToIDs(targets));
     }
+    /*
+     *
+     * Métodos Definidos por nós
+     * 
+     */
+    /*
+     * 
+     * Métodos Acessores se necessário
+     * 
+     * 
+     */
 }

@@ -1,5 +1,6 @@
 package agent;
 
+import agent.interfaces.IAbstractAgent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -25,7 +26,13 @@ import util.BFSearch;
    Abstract base class for sample agents.
    @param <E> The subclass of StandardEntity this agent wants to control.
  */
-public abstract class MASLABAbstractAgent<E extends StandardEntity> extends StandardAgent<E> {
+public abstract class MASLABAbstractAgent<E extends StandardEntity> extends StandardAgent<E> implements IAbstractAgent{
+    
+    /**
+     *
+     * Variaveis Sample Agent
+     * 
+     */
     private static final int RANDOM_WALK_LENGTH = 50;
 
     private static final String SAY_COMMUNICATION_MODEL = StandardCommunicationModel.class.getName();
@@ -58,6 +65,20 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
 
     private Map<EntityID, Set<EntityID>> neighbours;
 
+    
+    /**
+     *
+     * Variaveis definidas por nós
+     * 
+     */
+    
+    
+    /**
+     *
+     * Métodos Standard Agent
+     * 
+     */
+    
     /**
        Construct an AbstractSampleAgent.
     */
@@ -87,6 +108,12 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         Logger.debug("Communcation model: " + config.getValue(Constants.COMMUNICATION_MODEL_KEY));
         Logger.debug(useSpeak ? "Using speak model" : "Using say model");
     }
+    
+    /**
+     *
+     * Métodos Sample Agent
+     * 
+     */
 
     /**
        Construct a random walk starting from this agent's current location to a random building.
@@ -117,4 +144,16 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         }
         return result;
     }
+    
+    /*
+     *
+     * Métodos Definidos por nós
+     * 
+     */
+    /*
+     * 
+     * Métodos Acessores se necessário
+     * 
+     * 
+     */
 }
