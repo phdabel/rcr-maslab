@@ -13,6 +13,7 @@ import rescuecore2.Constants;
 import rescuecore2.log.Logger;
 
 import rescuecore2.standard.components.StandardAgent;
+import rescuecore2.standard.entities.Hydrant;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
@@ -63,6 +64,11 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     */
     protected List<EntityID> refugeIDs;
 
+    /**
+	   Cache of Hydrant IDs.
+    */
+    protected List<EntityID> hydrantIDs;
+    
     private Map<EntityID, Set<EntityID>> neighbours;
 
     
@@ -100,6 +106,9 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
             }
             if (next instanceof Refuge) {
                 refugeIDs.add(next.getID());
+            }
+            if (next instanceof Hydrant) {
+            	hydrantIDs.add(next.getID());
             }
         }
         search = new BFSearch(model);
