@@ -22,6 +22,7 @@ import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import util.BFSearch;
+import util.MASLABRouting;
 
 /**
    Abstract base class for sample agents.
@@ -64,11 +65,6 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     */
     protected List<EntityID> refugeIDs;
 
-    /**
-	   Cache of Hydrant IDs.
-    */
-    protected List<EntityID> hydrantIDs;
-    
     private Map<EntityID, Set<EntityID>> neighbours;
 
     
@@ -77,6 +73,17 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Variaveis definidas por nós
      * 
      */
+    
+    /**
+       The routing algorithms.
+    */
+    protected MASLABRouting routing;    
+ 
+    
+    /**
+	   Cache of Hydrant IDs.
+    */
+    protected List<EntityID> hydrantIDs;
     
     
     /**
@@ -111,6 +118,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
             	hydrantIDs.add(next.getID());
             }
         }
+        //Criação de uma lista com hidrantes e refúgios para os bombeiros
+        List<EntityID> waterIDs = new ArrayList<EntityID>();
+        waterIDs.addAll(refugeIDs);
+        waterIDs.addAll(hydrantIDs);
+
+        //TODO - Depois de ter os setores carregados, passar para o construtor do objeto routing 
+        //routing = new MASLABRouting(s1, s2, s3, s4, p, refugeIDs, waterIDs, buildingIDs);
+
+        
         search = new BFSearch(model);
         neighbours = search.getGraph();
         useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
