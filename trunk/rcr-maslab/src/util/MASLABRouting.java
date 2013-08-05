@@ -3,19 +3,22 @@ package util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import rescuecore2.standard.entities.StandardWorldModel;
 import rescuecore2.worldmodel.EntityID;
 
 public final class MASLABRouting {
 	
-	private List<EntityID> Setor1;
-	private List<EntityID> Setor2;
-	private List<EntityID> Setor3;
-	private List<EntityID> Setor4;
-	private List<EntityID> Principais;
+	private Map<EntityID, EntityID> Setor1;
+	private Map<EntityID, EntityID> Setor2;
+	private Map<EntityID, EntityID> Setor3;
+	private Map<EntityID, EntityID> Setor4;
+	private Map<EntityID, EntityID> Principais;
     private List<EntityID> refugeIDs;
     private List<EntityID> waterIDs;
     private List<EntityID> buildingIDs;
+    protected BFSearch search;
     
     /**
      * @param s1 Grafo do setor 1
@@ -27,8 +30,8 @@ public final class MASLABRouting {
      * @param w Lista com os refúgios e hidrantes
      * @param b Lista com as construções
      */
-	public MASLABRouting(List<EntityID> s1, List<EntityID> s2, List<EntityID> s3, List<EntityID> s4,
-			List<EntityID> p, List<EntityID> r, List<EntityID> w, List<EntityID> b){
+	public MASLABRouting(Map<EntityID, EntityID> s1, Map<EntityID, EntityID> s2, Map<EntityID, EntityID> s3, Map<EntityID, EntityID> s4,
+			Map<EntityID, EntityID> p, List<EntityID> r, List<EntityID> w, List<EntityID> b, StandardWorldModel world){
 		Setor1 = s1;
 		Setor2 = s2;
 		Setor3 = s3;
@@ -37,6 +40,7 @@ public final class MASLABRouting {
 		refugeIDs = r;
 		waterIDs = w;
 		buildingIDs = b;
+		search = new BFSearch(world);
 	}
 	
 	/**
@@ -67,8 +71,11 @@ public final class MASLABRouting {
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
 	public List<EntityID> Abastecer(EntityID Origem, List<EntityID> Bloqueios) {
-		
-		return new ArrayList<EntityID>();
+		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios, Principais.values());
+		List<EntityID> pathaux = search.breadthFirstSearch(path.get(path.size()-1), Bloqueios, Principais.values());
+		path.remove(path.size() -1);
+		path.addAll(pathaux);
+		return path;
 	}
 
 	/**
