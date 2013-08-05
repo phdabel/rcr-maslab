@@ -63,9 +63,10 @@ public final class MASLABRouting {
 	/**
 	 * Calcula o caminho até o Refúgio/Hidrante mais próximo
 	 * @param Origem EntityID da origem do agente 
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Abastecer(EntityID Origem) {
+	public List<EntityID> Abastecer(EntityID Origem, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -75,9 +76,10 @@ public final class MASLABRouting {
 	 * OBS.: Não entrará no edifício.
 	 * @param Origem EntityID da origem do agente (pode ser rua ou edifício)
 	 * @param Destino EntityID do destino do agente (pode ser rua ou edifício)
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Combater(EntityID Origem, EntityID Destino) {
+	public List<EntityID> Combater(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -87,9 +89,10 @@ public final class MASLABRouting {
 	 * OBS.: Não entrará em nenhum edifício.
 	 * @param Origem EntityID da origem do agente (pode ser rua ou edifício)
 	 * @param Setor Setor que deseja ser explorado
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Explorar(EntityID Origem, Setores Setor) {
+	public List<EntityID> Explorar(EntityID Origem, Setores Setor, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -99,9 +102,10 @@ public final class MASLABRouting {
 	 * @param Origem EntityID da origem do agente (pode ser rua ou edifício)
 	 * @param Setor Setor que deseja ser limpo
 	 * @param Tipo Caso o Tipo seja Principal, limpará as vias principais do setor; Caso o Tipo seja Secundario, limpará os caminhos dos edifícios importantes até a via pincipal mais próxima; Caso o Tipo seja Outros, limpará qualquer caminho dentro do setor (não usárá as vias principais/secundárias).
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Limpar(EntityID Origem, Setores Setor, Tipos Tipo) {
+	public List<EntityID> Limpar(EntityID Origem, Setores Setor, Tipos Tipo, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}	
@@ -109,9 +113,10 @@ public final class MASLABRouting {
 	/**
 	 * Calcula a rota até o refúgio mais próximo
 	 * @param Origem EntityID da origem do agente (pode ser rua ou edifício)
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Resgatar(EntityID Origem) {
+	public List<EntityID> Resgatar(EntityID Origem, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -121,9 +126,10 @@ public final class MASLABRouting {
 	 * OBS.: Entrará no edifício para resgatar o agente soterrado.
 	 * @param Origem EntityID da origem do agente (pode ser rua ou edifício)
 	 * @param Destino EntityID de onde o agente está soterrado
-	 * @return Caminho a ser percorrido
+	 * @param Bloqueios Lsita de bloqueios a serem desviados no roteamento 
+	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Resgatar(EntityID Origem, EntityID Destino) {
+	public List<EntityID> Resgatar(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios) {
 		
 		return new ArrayList<EntityID>();
 	}
