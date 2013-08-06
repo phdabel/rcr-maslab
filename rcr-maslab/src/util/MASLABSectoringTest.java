@@ -136,9 +136,9 @@ public abstract class MASLABSectoringTest extends StandardAgent<Road> {
 	
 	public Map<EntityID, Set<EntityID>> getAvenue() {
 		
-		BFSearch bfSearch =  new BFSearch(model);
-		List<EntityID> Avenue_StoN = bfSearch.breadthFirstSearch(idNorte, idSul);
-		List<EntityID> Avenue_LtoO = bfSearch.breadthFirstSearch(idLeste, idOeste);
+		MASLABBFSearch bfSearch =  new MASLABBFSearch(model);
+		List<EntityID> Avenue_StoN = bfSearch.breadthFirstSearch(idNorte, new ArrayList<EntityID>(), idSul);
+		List<EntityID> Avenue_LtoO = bfSearch.breadthFirstSearch(idLeste, new ArrayList<EntityID>(), idOeste);
 
         Map<EntityID, Set<EntityID>> g = bfSearch.getGraph();
         Map<EntityID, Set<EntityID>> MAPPrincipal = new HashMap<EntityID, Set<EntityID>>();
@@ -154,5 +154,21 @@ public abstract class MASLABSectoringTest extends StandardAgent<Road> {
         return MAPPrincipal;
 
     }
+	
+	/*
+	 * 
+	 * S1: Nordeste;
+	 * S2: Sudeste;
+	 * S3: Sudoeste;
+	 * S4: Noroeste.
+	 */
+	public Map<EntityID, Set<EntityID>> getMapNordeste(){
+		
+		
+		
+		return null;
+	}
+	
+	
 
 }
