@@ -54,8 +54,7 @@ public final class MASLABRouting {
      */
 	public MASLABRouting(Map<EntityID, Set<EntityID>> s1, Map<EntityID, Set<EntityID>> s2, Map<EntityID, Set<EntityID>> s3, 
 			Map<EntityID, Set<EntityID>> s4, Map<EntityID, Set<EntityID>> p, List<EntityID> r, List<EntityID> w, List<EntityID> b, 
-			StandardWorldModel world, Hashtable<EntityID, List<EntityID>> pp, List<EntityID> pIDs, List<EntityID> s1IDs,
-			List<EntityID> s2IDs, List<EntityID> s3IDs, List<EntityID> s4IDs){
+			StandardWorldModel world, Hashtable<EntityID, List<EntityID>> pp){
 		/*Setor1 = s1;
 		Setor2 = s2;
 		Setor3 = s3;
@@ -72,11 +71,11 @@ public final class MASLABRouting {
 		waterIDs = w;
 		buildingIDs = b;
 		PontosPrincipais = pp;
-		principalIDs = pIDs;
-		setor1IDs = s1IDs;
-		setor2IDs = s2IDs;
-		setor3IDs = s3IDs;
-		setor4IDs = s4IDs;
+		principalIDs = new ArrayList<EntityID>(p.keySet());
+		setor1IDs = new ArrayList<EntityID>(s1.keySet()); 
+		setor2IDs = new ArrayList<EntityID>(s2.keySet()); 
+		setor3IDs = new ArrayList<EntityID>(s3.keySet()); 
+		setor4IDs = new ArrayList<EntityID>(s4.keySet()); 
 	}
 	
 	/**
