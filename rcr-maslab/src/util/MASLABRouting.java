@@ -239,31 +239,25 @@ public final class MASLABRouting {
 		
 		//Calcula o caminho mais curto entre o destino e a via principal
 		List<EntityID> aux = search.breadthFirstSearch(Destino, Bloqueios, principalIDs);
-		
-		//Verifica se deve ou não entrar no destino
-		if(!EntrarEdificio){
-			//Se não deve e o destino (atualmente é a primeira posição do aux) for um edifício, remove ele do path
-			if(path.get(path.size()-1).getClass().equals(Building.class)){
-				aux.remove(0);
-			}
-		}
-		
+
 		//Reverte a ordem do caminho encontrado pois queremos ir da via para o destino e não ao contrário. 
 		Collections.reverse(aux);
-		
-		//Remove a última posição do caminho para não duplicar e armazena para realizar o roteamento
-		EntityID paux = path.get(path.size()-1);
-		path.remove(path.size()-1);
-		
+
+		//Verifica se deve ou não entrar no destino
+		if(EntrarEdificio){
+			//Se deve entrar adiciona o edificio na rota
+			aux.add(Destino);
+		}
+
 		//Calcula o caminho mais curto da via principal até o ponto da via principal encontrado anteriormente e adiciona ao path
-		path.addAll(Psearch.breadthFirstSearch(paux, Bloqueios, aux.get(0)));
-		
+		path.addAll(Psearch.breadthFirstSearch(path.get(path.size()-1), Bloqueios, aux.get(0)));
+
 		//Remove a primeira possição do aux para não duplicar 
 		aux.remove(0);
 		
 		//Adiciona o caminho final ao path
 		path.addAll(aux);
-		
+
 		return path;
 	}
 

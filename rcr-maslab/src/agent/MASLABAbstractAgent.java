@@ -1,6 +1,8 @@
 package agent;
 
 import agent.interfaces.IAbstractAgent;
+
+import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -104,6 +106,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         buildingIDs = new ArrayList<EntityID>();
         roadIDs = new ArrayList<EntityID>();
         refugeIDs = new ArrayList<EntityID>();
+        hydrantIDs = new ArrayList<EntityID>();
         for (StandardEntity next : model) {
             if (next instanceof Building) {
                 buildingIDs.add(next.getID());
@@ -121,13 +124,33 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         //Criação de uma lista com hidrantes e refúgios para os bombeiros
         List<EntityID> waterIDs = new ArrayList<EntityID>();
         waterIDs.addAll(refugeIDs);
-        waterIDs.addAll(hydrantIDs);
-
-        //TODO - Depois de ter os setores carregados, passar para o construtor do objeto routing 
-        //routing = new MASLABRouting(s1, s2, s3, s4, p, refugeIDs, waterIDs, buildingIDs);
+    	waterIDs.addAll(hydrantIDs);
+        search = new BFSearch(model);
 
         
-        search = new BFSearch(model);
+        
+        
+        
+        //TODO - Depois de ter os setores carregados, passar para o construtor do objeto routing
+        //TODO - Carregar os hashtables e principais pontos da via principal
+        Hashtable<EntityID, List<EntityID>> PontosPrincipais = new Hashtable<EntityID, List<EntityID>>();
+        
+        List<EntityID> principalIDs = new ArrayList<EntityID>();
+        principalIDs.add(new EntityID(274));
+        principalIDs.add(new EntityID(976));
+        
+        List<EntityID> aux = new ArrayList<EntityID>();
+        aux.add(new EntityID(255));
+        PontosPrincipais.put(new EntityID(274), aux);
+        
+        routing = new MASLABRouting(search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(),
+        		refugeIDs,waterIDs,buildingIDs, model, PontosPrincipais, principalIDs);
+        
+        
+        
+        
+        
+        
         neighbours = search.getGraph();
         useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(SPEAK_COMMUNICATION_MODEL);
         Logger.debug("Communcation model: " + config.getValue(Constants.COMMUNICATION_MODEL_KEY));
@@ -175,6 +198,11 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Métodos Definidos por nós
      * 
      */
+    
+    public void debug(int time, String str){
+    	System.out.println(time + " - " + me().getID() + " - " + str);
+    }
+    
     /*
      * 
      * Métodos Acessores se necessário
