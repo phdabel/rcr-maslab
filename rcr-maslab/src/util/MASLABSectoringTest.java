@@ -1,7 +1,12 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import maps.convert.osm2gml.buildings.row.ThinDuplexRowFiller;
 import rescuecore.objects.World;
@@ -129,11 +134,25 @@ public abstract class MASLABSectoringTest extends StandardAgent<Road> {
 	 * @return A Avenida Principal do Mapa
 	 */
 	
-	public List<EntityID> getAvenue() {
+	public Map<EntityID, Set<EntityID>> getAvenue() {
 		
-		
-		
-		return Avenue;
-	}
+		BFSearch bfSearch =  new BFSearch(model);
+		List<EntityID> Avenue_StoN = bfSearch.breadthFirstSearch(idNorte, idSul);
+		List<EntityID> Avenue_LtoO = bfSearch.breadthFirstSearch(idLeste, idOeste);
+
+        Map<EntityID, Set<EntityID>> g = bfSearch.getGraph();
+        Map<EntityID, Set<EntityID>> MAPPrincipal = new HashMap<EntityID, Set<EntityID>>();
+        
+        for(EntityID next: Avenue_StoN){
+        	MAPPrincipal.put(next, g.get(next));
+        }
+
+        for(EntityID next: Avenue_LtoO){
+        	MAPPrincipal.put(next, g.get(next));
+        }
+        
+        return MAPPrincipal;
+
+    }
 
 }
