@@ -145,7 +145,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         PontosPrincipais.put(new EntityID(274), aux);
         
         routing = new MASLABRouting(search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(),
-        		refugeIDs,waterIDs,buildingIDs, model, PontosPrincipais, principalIDs,roadIDs,roadIDs,roadIDs,roadIDs);
+        		refugeIDs,waterIDs,buildingIDs, model, PontosPrincipais);
         
         
         
