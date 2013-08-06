@@ -9,7 +9,10 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+
+import maps.convert.legacy2gml.RoadInfo;
 
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
@@ -18,16 +21,20 @@ import rescuecore2.worldmodel.EntityID;
 
 public final class MASLABRouting {
 	
-	private Map<EntityID, Set<EntityID>> Setor1;
+/*	private Map<EntityID, Set<EntityID>> Setor1;
 	private Map<EntityID, Set<EntityID>> Setor2;
 	private Map<EntityID, Set<EntityID>> Setor3;
 	private Map<EntityID, Set<EntityID>> Setor4;
-	private Map<EntityID, Set<EntityID>> Principais;
+	private Map<EntityID, Set<EntityID>> Principais;*/
     private Hashtable<EntityID, List<EntityID>> PontosPrincipais;
     private List<EntityID> refugeIDs;
     private List<EntityID> waterIDs;
     private List<EntityID> buildingIDs;
     private List<EntityID> principalIDs;
+    private List<EntityID> setor1IDs;
+    private List<EntityID> setor2IDs;
+    private List<EntityID> setor3IDs;
+    private List<EntityID> setor4IDs;
     private MASLABBFSearch GlobalSearch;
     private MASLABBFSearch S1search;
     private MASLABBFSearch S2search;
@@ -47,24 +54,29 @@ public final class MASLABRouting {
      */
 	public MASLABRouting(Map<EntityID, Set<EntityID>> s1, Map<EntityID, Set<EntityID>> s2, Map<EntityID, Set<EntityID>> s3, 
 			Map<EntityID, Set<EntityID>> s4, Map<EntityID, Set<EntityID>> p, List<EntityID> r, List<EntityID> w, List<EntityID> b, 
-			StandardWorldModel world, Hashtable<EntityID, List<EntityID>> pp, List<EntityID> pIDs){
+			StandardWorldModel world, Hashtable<EntityID, List<EntityID>> pp, List<EntityID> pIDs, List<EntityID> s1IDs,
+			List<EntityID> s2IDs, List<EntityID> s3IDs, List<EntityID> s4IDs){
 		/*Setor1 = s1;
 		Setor2 = s2;
 		Setor3 = s3;
 		Setor4 = s4;
 		Principais = p;*/
-
-		PontosPrincipais = pp;
-		refugeIDs = r;
-		waterIDs = w;
-		buildingIDs = b;
-		principalIDs = pIDs;
-		GlobalSearch = new MASLABBFSearch(world);
 		S1search = new MASLABBFSearch(s1);
 		S2search = new MASLABBFSearch(s2);
 		S3search = new MASLABBFSearch(s3);
 		S4search = new MASLABBFSearch(s4);
 		Psearch = new MASLABBFSearch(p);
+		GlobalSearch = new MASLABBFSearch(world);
+
+		refugeIDs = r;
+		waterIDs = w;
+		buildingIDs = b;
+		PontosPrincipais = pp;
+		principalIDs = pIDs;
+		setor1IDs = s1IDs;
+		setor2IDs = s2IDs;
+		setor3IDs = s3IDs;
+		setor4IDs = s4IDs;
 	}
 	
 	/**
@@ -121,9 +133,21 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Explorar(EntityID Origem, Setores Setor, List<EntityID> Bloqueios, Setores... Setores) {
+	public List<EntityID> Explorar(EntityID Origem, Setores Setor, List<EntityID> Bloqueios) {
+		//Transforma os parametros recebidos em um Array
+		MASLABBFSearch search;
 		
-		return new ArrayList<EntityID>();
+		//Obtem o grafo de busca conforme o setor atual 
+		search = getSearch(Setor);
+		
+		//Obtem os roadIDs do setor
+		List<EntityID> roadIDs = getRoadIDs(Setor);
+		
+		//Obtem o caminho de onde estou até um ponto aleatório dentro do setor
+		Random r = new Random();
+		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios, roadIDs.get(r.nextInt(roadIDs.size()-1)));
+		
+		return path;
 	}
 	
 	/**
@@ -181,7 +205,19 @@ public final class MASLABRouting {
 		return GlobalSearch;
 	}
 	
-	public List<EntityID> gotoRefugios(EntityID Origem, List<EntityID> Bloqueios, Setores... Setores) {
+	private List<EntityID> getRoadIDs(Setores Setor){
+		if(Setor == Setores.S1){
+			return setor1IDs;
+		}else if(Setor == Setores.S2){
+			return setor2IDs;
+		}else if(Setor == Setores.S3){
+			return setor3IDs;
+		}else{
+			return setor4IDs;
+		}		
+	}
+	
+	private List<EntityID> gotoRefugios(EntityID Origem, List<EntityID> Bloqueios, Setores... Setores) {
 		//Transforma os parametros recebidos em um Array
 		List<Setores> s = Arrays.asList(Setores);
 		MASLABBFSearch search;
@@ -211,7 +247,7 @@ public final class MASLABRouting {
 		return path;
 	}
 
-	public List<EntityID> gotoDestino(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Boolean EntrarEdificio, Setores... Setores) {
+	private List<EntityID> gotoDestino(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Boolean EntrarEdificio, Setores... Setores) {
 		//Transforma os parametros recebidos em um Array
 		List<Setores> s = Arrays.asList(Setores);
 		MASLABBFSearch search;

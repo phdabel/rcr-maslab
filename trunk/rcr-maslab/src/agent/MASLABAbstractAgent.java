@@ -133,6 +133,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         
         //TODO - Depois de ter os setores carregados, passar para o construtor do objeto routing
         //TODO - Carregar os hashtables e principais pontos da via principal
+        //TODO - Carregar os roadIDs do principal e dos setores 
         Hashtable<EntityID, List<EntityID>> PontosPrincipais = new Hashtable<EntityID, List<EntityID>>();
         
         List<EntityID> principalIDs = new ArrayList<EntityID>();
@@ -144,7 +145,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         PontosPrincipais.put(new EntityID(274), aux);
         
         routing = new MASLABRouting(search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(), search.getGraph(),
-        		refugeIDs,waterIDs,buildingIDs, model, PontosPrincipais, principalIDs);
+        		refugeIDs,waterIDs,buildingIDs, model, PontosPrincipais, principalIDs,roadIDs,roadIDs,roadIDs,roadIDs);
         
         
         
