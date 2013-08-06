@@ -95,7 +95,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Abastecer(EntityID Origem, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> Abastecer(EntityID Origem, List<EntityID> Bloqueios, Setores... Setores) {
 		return gotoRefugios(Origem, Bloqueios, Setores);
 	}
 
@@ -108,7 +108,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Combater(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> Combater(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Setores... Setores) {
 		return gotoDestino(Origem, Destino, Bloqueios, false, Setores);
 	}
 
@@ -121,7 +121,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Explorar(EntityID Origem, Setores Setor, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> Explorar(EntityID Origem, Setores Setor, List<EntityID> Bloqueios, Setores... Setores) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -135,7 +135,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Limpar(EntityID Origem, Setores Setor, Tipos Tipo, Integer... Setores) {
+	public List<EntityID> Limpar(EntityID Origem, Setores Setor, Tipos Tipo, Setores... Setores) {
 		
 		return new ArrayList<EntityID>();
 	}
@@ -147,7 +147,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Resgatar(EntityID Origem, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> Resgatar(EntityID Origem, List<EntityID> Bloqueios, Setores... Setores) {
 		return gotoRefugios(Origem, Bloqueios, Setores);
 	}
 	
@@ -160,7 +160,7 @@ public final class MASLABRouting {
 	 * @param Setores Setor onde o agente se encontra e (se conhecido) setor onde o agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Resgatar(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> Resgatar(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Setores... Setores) {
 		return gotoDestino(Origem, Destino, Bloqueios, true, Setores);
 	}
 	
@@ -168,22 +168,22 @@ public final class MASLABRouting {
 	 * Descobre qual é o grafo a ser utilizado com base no setor atual do agente
 	 * @return Algoritmo que contem o grafo a ser utilizado na busca
 	 */
-	private MASLABBFSearch getSearch(Integer Setor){
-		if(Setor == 1){
+	private MASLABBFSearch getSearch(Setores Setor){
+		if(Setor == Setores.S1){
 			return S1search;
-		}else if(Setor == 2){
+		}else if(Setor == Setores.S2){
 			return S2search;
-		}else if(Setor == 3){
+		}else if(Setor == Setores.S3){
 			return S3search;
-		}else if(Setor == 4){
+		}else if(Setor == Setores.S4){
 			return S4search;
 		}
 		return GlobalSearch;
 	}
 	
-	public List<EntityID> gotoRefugios(EntityID Origem, List<EntityID> Bloqueios, Integer... Setores) {
+	public List<EntityID> gotoRefugios(EntityID Origem, List<EntityID> Bloqueios, Setores... Setores) {
 		//Transforma os parametros recebidos em um Array
-		List<Integer> s = Arrays.asList(Setores);
+		List<Setores> s = Arrays.asList(Setores);
 		MASLABBFSearch search;
 		
 		//Se o setor de origem do agente foi informado, busca somente no local onde ele está
@@ -211,9 +211,9 @@ public final class MASLABRouting {
 		return path;
 	}
 
-	public List<EntityID> gotoDestino(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Boolean EntrarEdificio, Integer... Setores) {
+	public List<EntityID> gotoDestino(EntityID Origem, EntityID Destino, List<EntityID> Bloqueios, Boolean EntrarEdificio, Setores... Setores) {
 		//Transforma os parametros recebidos em um Array
-		List<Integer> s = Arrays.asList(Setores);
+		List<Setores> s = Arrays.asList(Setores);
 		MASLABBFSearch search;
 		
 		//Se o setor de origem do agente foi informado, busca somente no local onde ele está
