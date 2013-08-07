@@ -2,15 +2,10 @@ package util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.lang.model.element.NestingKind;
-
-import org.hamcrest.core.IsInstanceOf;
 
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Hydrant;
@@ -100,28 +95,10 @@ public class MASLABSectoringTest {
 		idLeste = EntMaisProximo(coordinate_MaxX, coordinate_CenterY);
 		idOeste = EntMaisProximo(coordinate_MinX, coordinate_CenterY);
 		
-		System.out.println("coordinate_CenterX - " + coordinate_CenterX);
-		System.out.println("coordinate_CenterY - " + coordinate_CenterY);
-		System.out.println("coordinate_MaxY - " + coordinate_MaxY);
-		System.out.println("coordinate_MinY - " + coordinate_MinY);
-		System.out.println("coordinate_MaxX - " + coordinate_MaxX);
-		System.out.println("coordinate_MinX - " + coordinate_MinX);
-		
 		Avenue_NtoS = search.breadthFirstSearch(idNorte, new ArrayList<EntityID>(), idSul);
 		Avenue_LtoO = search.breadthFirstSearch(idLeste, new ArrayList<EntityID>(), idOeste);
 		
-		System.out.println("idNorte - " + idNorte);
-		System.out.println("idSul - " + idSul);
-		System.out.println("idLeste - " + idLeste);
-		System.out.println("idOeste - " + idOeste);
-		System.out.println("Avenue_NtoS - " + Avenue_NtoS);
-		System.out.println("Avenue_LtoO - " + Avenue_LtoO);
-		
 		CarregaGrafoPrincipal();
-		
-		System.out.println(MapPrincipal.keySet().toString());
-		
-		debug();
 		
 		CarregaGrafosSetores();
 		
@@ -186,10 +163,14 @@ public class MASLABSectoringTest {
 	 */
 	private void CarregaGrafosSetores(){
 		
+		List<EntityID> roadIDss = new ArrayList<EntityID>();
 		List<EntityID> buildingIDs = new ArrayList<EntityID>();
 		List<EntityID> refugeIDs = new ArrayList<EntityID>();
 		List<EntityID> hydrantIDs = new ArrayList<EntityID>();
         for (StandardEntity next : model) {
+            if (next instanceof Road) {
+                roadIDss.add(next.getID());
+            }
             if (next instanceof Building) {
                 buildingIDs.add(next.getID());
             }
@@ -207,22 +188,21 @@ public class MASLABSectoringTest {
 		List<EntityID> Setor3 = new ArrayList<EntityID>();
 		List<EntityID> Setor4 = new ArrayList<EntityID>();
 
-		//Começa pelo nodo mais ao norte
-		//Le todos os vizinhos desse nodo e verifica se ele está a direita ou a esquerda
 		List<EntityID> Principal = new ArrayList<EntityID>(MapPrincipal.keySet());
-		
 		System.out.println(Principal.toString());
+		List<EntityID> validador = new ArrayList<EntityID>(MapPrincipal.keySet());
 		
 		for(EntityID p: Principal){
-			List<EntityID> Nodos = new ArrayList<EntityID>(MapPrincipal.get(p));
+			List<EntityID> Nodos = new ArrayList<EntityID>(search.getGraph().get(p));
 			Road comparador = (Road)model.getEntity(p);
 			
 			for(EntityID next: Nodos){
-				System.out.println("Classe: " + next.getClass() + " - " + next.getValue());
-
 				
-				if(roadIDs.contains(next)){
+				if(roadIDss.contains(next)){
 					Road r = (Road)model.getEntity(next);
+					if(validador.contains(r)){
+						System.out.println("MERDA");
+					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -242,6 +222,9 @@ public class MASLABSectoringTest {
 					}
 				}else if(buildingIDs.contains(next)){
 					Building r = (Building)model.getEntity(next);
+					if(validador.contains(r)){
+						System.out.println("MERDA");
+					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -261,6 +244,9 @@ public class MASLABSectoringTest {
 					}
 				}else if(hydrantIDs.contains(next)){
 					Hydrant r = (Hydrant)model.getEntity(next);
+					if(validador.contains(r)){
+						System.out.println("MERDA");
+					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -278,8 +264,11 @@ public class MASLABSectoringTest {
 						if (!Setor2.contains(next))
 							Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
 					}
-				}else{
+				}else if(refugeIDs.contains(next)){
 					Refuge r = (Refuge)model.getEntity(next);				
+					if(validador.contains(r)){
+						System.out.println("MERDA");
+					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -309,6 +298,9 @@ public class MASLABSectoringTest {
 		MapSetor4 = getGrafo(Setor4);
 		
 		System.out.println(MapSetor1.keySet().toString());
+		System.out.println(MapSetor2.keySet().toString());
+		System.out.println(MapSetor3.keySet().toString());
+		System.out.println(MapSetor4.keySet().toString());
 	}
 	
 	
