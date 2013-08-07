@@ -200,9 +200,6 @@ public class MASLABSectoringTest {
 				
 				if(roadIDss.contains(next)){
 					Road r = (Road)model.getEntity(next);
-					if(validador.contains(r)){
-						System.out.println("MERDA");
-					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -222,9 +219,6 @@ public class MASLABSectoringTest {
 					}
 				}else if(buildingIDs.contains(next)){
 					Building r = (Building)model.getEntity(next);
-					if(validador.contains(r)){
-						System.out.println("MERDA");
-					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -244,9 +238,6 @@ public class MASLABSectoringTest {
 					}
 				}else if(hydrantIDs.contains(next)){
 					Hydrant r = (Hydrant)model.getEntity(next);
-					if(validador.contains(r)){
-						System.out.println("MERDA");
-					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
@@ -266,9 +257,6 @@ public class MASLABSectoringTest {
 					}
 				}else if(refugeIDs.contains(next)){
 					Refuge r = (Refuge)model.getEntity(next);				
-					if(validador.contains(r)){
-						System.out.println("MERDA");
-					}
 					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
 					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
 						if (!Setor4.contains(next))
