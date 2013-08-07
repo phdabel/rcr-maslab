@@ -154,49 +154,28 @@ public final class MASLABBFSearch {
  */
 	public List<EntityID> CompleteBreadthFirstSearch(EntityID start, Collection<EntityID> goals) {
 		List<EntityID> open = new LinkedList<EntityID>();
-		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
+		List<EntityID> Visitado = new ArrayList<EntityID>();
 		open.add(start);
+		Visitado.add(start);
 		EntityID next = null;
 		boolean found = false;
-		ancestors.put(start, start);
 		do {
 			next = open.remove(0);
 			if (!isGoal(next, goals)) {
 				Collection<EntityID> neighbours = graph.get(next);
-				if (neighbours.isEmpty()) {
-				    continue;
-				}
-				for (EntityID neighbour : neighbours) {
-				    if (isGoal(neighbour, goals)) {
-				        ancestors.put(neighbour, next);
-				        next = neighbour;
-				        found = true;
-				        break;
-				    }
-				    else {
-				        if (!ancestors.containsKey(neighbour)) {
-				            open.add(neighbour);
-				            ancestors.put(neighbour, next);
-				        }
-				    }
+				if (!neighbours.isEmpty()) {
+					for (EntityID neighbour : neighbours) {
+					    if (!isGoal(neighbour, goals)) {
+					        if (!Visitado.contains(neighbour)) {
+					            open.add(neighbour);
+					            Visitado.add(neighbour);
+					        }
+					    }
+					}
 				}
 			}
 		} while (!found && !open.isEmpty());
-		if (!found) {
-		    // No path
-		    return new ArrayList<EntityID>();
-		}
-		// Walk back from goal to start
-		EntityID current = next;
-		List<EntityID> path = new LinkedList<EntityID>();
-		do {
-		    path.add(0, current);
-		    current = ancestors.get(current);
-		    if (current == null) {
-		        throw new RuntimeException("Found a node with no ancestor! Something is broken.");
-		    }
-	    } while (current != start);
-	    return path;
+		return Visitado;
 	}
 
 }
