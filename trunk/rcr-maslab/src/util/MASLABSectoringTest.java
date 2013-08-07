@@ -220,33 +220,85 @@ public class MASLABSectoringTest {
 			for(EntityID next: Nodos){
 				System.out.println("Classe: " + next.getClass() + " - " + next.getValue());
 
+				
 				if(roadIDs.contains(next)){
 					Road r = (Road)model.getEntity(next);
+					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
+					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor4.contains(next))
+							Setor4.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e acima (e não fizer parte da via principal) pertence ao setor 1 então
+					}else if(r.getX() >= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor1.contains(next))
+							Setor1.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a esquerda e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() <= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor3.contains(next))
+							Setor3.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() >= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor2.contains(next))
+							Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					}
 				}else if(buildingIDs.contains(next)){
 					Building r = (Building)model.getEntity(next);
+					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
+					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor4.contains(next))
+							Setor4.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e acima (e não fizer parte da via principal) pertence ao setor 1 então
+					}else if(r.getX() >= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor1.contains(next))
+							Setor1.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a esquerda e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() <= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor3.contains(next))
+							Setor3.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() >= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor2.contains(next))
+							Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					}
 				}else if(hydrantIDs.contains(next)){
 					Hydrant r = (Hydrant)model.getEntity(next);
+					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
+					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor4.contains(next))
+							Setor4.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e acima (e não fizer parte da via principal) pertence ao setor 1 então
+					}else if(r.getX() >= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor1.contains(next))
+							Setor1.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a esquerda e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() <= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor3.contains(next))
+							Setor3.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() >= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor2.contains(next))
+							Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					}
 				}else{
 					Refuge r = (Refuge)model.getEntity(next);				
+					//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
+					if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor4.contains(next))
+							Setor4.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e acima (e não fizer parte da via principal) pertence ao setor 1 então
+					}else if(r.getX() >= comparador.getX() && r.getY() >= comparador.getY()){
+						if (!Setor1.contains(next))
+							Setor1.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a esquerda e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() <= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor3.contains(next))
+							Setor3.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					//Se o vizinho estiver a direita e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
+					}else if(r.getX() >= comparador.getX() && r.getY() <= comparador.getY()){
+						if (!Setor2.contains(next))
+							Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
+					}
 				}
-				
-				//Se o vizinho estiver a esquerda e acima (e não fizer parte da via principal) pertence ao setor 4 então
-				if(r.getX() <= comparador.getX() && r.getY() >= comparador.getY()){
-					if (!Setor4.contains(next))
-						Setor4.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
-				//Se o vizinho estiver a direita e acima (e não fizer parte da via principal) pertence ao setor 1 então
-				}else if(r.getX() >= comparador.getX() && r.getY() >= comparador.getY()){
-					if (!Setor1.contains(next))
-						Setor1.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
-				//Se o vizinho estiver a esquerda e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
-				}else if(r.getX() <= comparador.getX() && r.getY() <= comparador.getY()){
-					if (!Setor3.contains(next))
-						Setor3.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
-				//Se o vizinho estiver a direita e abaixo (e não fizer parte da via principal) pertence ao setor 3 então
-				}else if(r.getX() >= comparador.getX() && r.getY() <= comparador.getY()){
-					if (!Setor2.contains(next))
-						Setor2.addAll(search.CompleteBreadthFirstSearch(r.getID(), Principal));
-				}
+
 			}
 		}
 		
@@ -255,7 +307,11 @@ public class MASLABSectoringTest {
 		MapSetor2 = getGrafo(Setor2);
 		MapSetor3 = getGrafo(Setor3);
 		MapSetor4 = getGrafo(Setor4);
+		
+		System.out.println(MapSetor1.keySet().toString());
 	}
+	
+	
 	
 	private Map<EntityID, Set<EntityID>> getGrafo(List<EntityID> nodos){
         Map<EntityID, Set<EntityID>> g = search.getGraph();
