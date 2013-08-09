@@ -447,7 +447,6 @@ public class MASLABSectoringTest {
 
 		// Gera a Região S2: Sudeste;
 		if (sector == 2) {
-			
 			division = GetDivisionLane(2);
 			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
 			Road r2 = null; // Road aux
@@ -455,24 +454,51 @@ public class MASLABSectoringTest {
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					poly.addPoint((int)r.getX(),(int) coordinate_MaxY);
+					poly.addPoint((int)coordinate_MaxX,(int) r.getY());
 					auxpoint =1;					
 				}
 				poly.addPoint((int)r.getX(),(int) r.getY());				
 			}
-			poly.addPoint((int) coordinate_MaxX, (int)r2.getY());
+			poly.addPoint((int) r2.getX(), (int)coordinate_MinY);
 			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
 			
 		} else
 
 		// Gera a Região S3: Sudoeste;
 		if (sector == 3) {
-			
+			division = GetDivisionLane(2);
+			poly.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			Road r2 = null; // Road aux
+			for(EntityID next: division){
+				Road r = (Road) model.getEntity(next);
+				r2 = r;
+				if(auxpoint == 0){
+					poly.addPoint((int)r.getX(),(int)coordinate_MinY);
+					auxpoint =1;					
+				}
+				poly.addPoint((int)r.getX(),(int) r.getY());				
+			}
+			poly.addPoint((int) coordinate_MinX, (int)r2.getY());
+			poly.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
 
 		} else
 
 		// Gera a Região S4: Noroeste;
 		if (sector == 4) {
+			division = GetDivisionLane(2);
+			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
+			Road r2 = null; // Road aux
+			for(EntityID next: division){
+				Road r = (Road) model.getEntity(next);
+				r2 = r;
+				if(auxpoint == 0){
+					poly.addPoint((int)coordinate_MinX,(int)r.getY());
+					auxpoint =1;					
+				}
+				poly.addPoint((int)r.getX(),(int) r.getY());				
+			}
+			poly.addPoint((int) r2.getX(), (int)coordinate_MaxY);
+			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 			
 		}
 		else return false;
