@@ -421,9 +421,7 @@ public class MASLABSectoringTest {
 	private boolean isPointInPolygon(double X, double Y, int sector) {
 		
 		List<EntityID> division =  new LinkedList<EntityID>();
-		double xpoints[] = {100,100,200,200}; //Square      
-		double ypoints[] = {100,200,200,100};
-		
+
 		Polygon poly = new Polygon();
 		int auxpoint = 0;
 		// Gera a Região S1: Nordeste;
@@ -466,7 +464,7 @@ public class MASLABSectoringTest {
 
 		// Gera a Região S3: Sudoeste;
 		if (sector == 3) {
-			division = GetDivisionLane(2);
+			division = GetDivisionLane(3);
 			poly.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
 			Road r2 = null; // Road aux
 			for(EntityID next: division){
@@ -485,7 +483,7 @@ public class MASLABSectoringTest {
 
 		// Gera a Região S4: Noroeste;
 		if (sector == 4) {
-			division = GetDivisionLane(2);
+			division = GetDivisionLane(4);
 			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 			Road r2 = null; // Road aux
 			for(EntityID next: division){
@@ -501,6 +499,7 @@ public class MASLABSectoringTest {
 			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 			
 		}
+		
 		else return false;
 			
 
@@ -514,7 +513,7 @@ public class MASLABSectoringTest {
 
 	
 	/*
-	 *  Gera os limites dos setores (Busca em Largura)
+	 *  Gera os limites dos setores (Busca em Largura na via principal)
 	 */
 	private List<EntityID> GetDivisionLane(int sector) {
 		
