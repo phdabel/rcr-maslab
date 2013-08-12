@@ -5,6 +5,8 @@ import agent.MASLABPoliceForce;
 import agent.MASLABAmbulanceTeam;
 import agent.MASLABCentre;
 import agent.MASLABDummyAgent;
+import agent.TesteRoteamento;
+
 import java.io.IOException;
 
 import rescuecore2.components.ComponentLauncher;
@@ -88,7 +90,7 @@ public final class LaunchMASLABAgents {
         try {
             while (fb-- != 0) {
                 Logger.info("Connecting fire brigade " + (i++) + "...");
-                launcher.connect(new MASLABFireBrigade());
+                launcher.connect(new TesteRoteamento());
                 Logger.info("success");
             }
         }

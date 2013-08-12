@@ -3,14 +3,11 @@ package util;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.hamcrest.CoreMatchers;
 
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Hydrant;
@@ -112,9 +109,8 @@ public class MASLABSectoringTest {
 				new ArrayList<EntityID>(), idOeste);
 
 		CarregaGrafoPrincipal();
-
 		CarregaGrafosSetores();
-
+		debug();
 	}
 
 	/**
@@ -165,13 +161,32 @@ public class MASLABSectoringTest {
 	 */
 	private void CarregaGrafoPrincipal() {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
-
+		Set<EntityID> v = new HashSet<EntityID>();
+		Set<EntityID> v2 = new HashSet<EntityID>();
+		
+		Avenue_NtoS.add(0, idNorte);
 		for (EntityID next : Avenue_NtoS) {
-			MapPrincipal.put(next, g.get(next));
+			v = g.get(next);
+			v2 = new HashSet<EntityID>();
+		
+			for(EntityID t : v){
+				if (Avenue_NtoS.contains(t) || Avenue_LtoO.contains(t))
+					v2.add(t);
+			}
+			MapPrincipal.put(next, v2);
 		}
+		
+		Avenue_LtoO.add(0, idLeste);
 		for (EntityID next : Avenue_LtoO) {
-			if (!MapPrincipal.containsKey(next))
-				MapPrincipal.put(next, g.get(next));
+			if (!MapPrincipal.containsKey(next)){
+				v = g.get(next);
+				v2 = new HashSet<EntityID>();
+				for(EntityID t : v){
+					if (Avenue_LtoO.contains(t) || Avenue_NtoS.contains(t))
+						v2.add(t);
+				}
+				MapPrincipal.put(next, v2);
+			}
 		}
 	}
 
@@ -180,7 +195,6 @@ public class MASLABSectoringTest {
 	 * S1: Nordeste; S2: Sudeste; S3: Sudoeste; S4: Noroeste.
 	 */
 	private void CarregaGrafosSetores() {
-
 		List<EntityID> roadIDss = new ArrayList<EntityID>();
 		List<EntityID> buildingIDs = new ArrayList<EntityID>();
 		List<EntityID> refugeIDs = new ArrayList<EntityID>();
@@ -199,164 +213,12 @@ public class MASLABSectoringTest {
 				hydrantIDs.add(next.getID());
 			}
 		}
-
-		List<EntityID> Setor1 = new ArrayList<EntityID>();
-		List<EntityID> Setor2 = new ArrayList<EntityID>();
-		List<EntityID> Setor3 = new ArrayList<EntityID>();
-		List<EntityID> Setor4 = new ArrayList<EntityID>();
-
-		List<EntityID> Principal = new ArrayList<EntityID>(
-				MapPrincipal.keySet());
-		System.out.println(Principal.toString());
-		List<EntityID> validador = new ArrayList<EntityID>(
-				MapPrincipal.keySet());
-
-		for (EntityID p : Principal) {
-			List<EntityID> Nodos = new ArrayList<EntityID>(search.getGraph()
-					.get(p));
-			Road comparador = (Road) model.getEntity(p);
-
-			for (EntityID next : Nodos) {
-
-				if (roadIDss.contains(next)) {
-					Road r = (Road) model.getEntity(next);
-					// Se o vizinho estiver a esquerda e acima (e não fizer
-					// parte da via principal) pertence ao setor 4 então
-					if (r.getX() <= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor4.contains(next))
-							Setor4.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e acima (e não fizer
-						// parte da via principal) pertence ao setor 1 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor1.contains(next))
-							Setor1.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a esquerda e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() <= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor3.contains(next))
-							Setor3.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor2.contains(next))
-							Setor2.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-					}
-				} else if (buildingIDs.contains(next)) {
-					Building r = (Building) model.getEntity(next);
-					// Se o vizinho estiver a esquerda e acima (e não fizer
-					// parte da via principal) pertence ao setor 4 então
-					if (r.getX() <= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor4.contains(next))
-							Setor4.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e acima (e não fizer
-						// parte da via principal) pertence ao setor 1 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor1.contains(next))
-							Setor1.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a esquerda e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() <= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor3.contains(next))
-							Setor3.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor2.contains(next))
-							Setor2.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-					}
-				} else if (hydrantIDs.contains(next)) {
-					Hydrant r = (Hydrant) model.getEntity(next);
-					// Se o vizinho estiver a esquerda e acima (e não fizer
-					// parte da via principal) pertence ao setor 4 então
-					if (r.getX() <= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor4.contains(next))
-							Setor4.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e acima (e não fizer
-						// parte da via principal) pertence ao setor 1 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor1.contains(next))
-							Setor1.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a esquerda e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() <= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor3.contains(next))
-							Setor3.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor2.contains(next))
-							Setor2.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-					}
-				} else if (refugeIDs.contains(next)) {
-					Refuge r = (Refuge) model.getEntity(next);
-					// Se o vizinho estiver a esquerda e acima (e não fizer
-					// parte da via principal) pertence ao setor 4 então
-					if (r.getX() <= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor4.contains(next))
-							Setor4.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e acima (e não fizer
-						// parte da via principal) pertence ao setor 1 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() >= comparador.getY()) {
-						if (!Setor1.contains(next))
-							Setor1.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a esquerda e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() <= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor3.contains(next))
-							Setor3.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-						// Se o vizinho estiver a direita e abaixo (e não fizer
-						// parte da via principal) pertence ao setor 3 então
-					} else if (r.getX() >= comparador.getX()
-							&& r.getY() <= comparador.getY()) {
-						if (!Setor2.contains(next))
-							Setor2.addAll(search.CompleteBreadthFirstSearch(
-									r.getID(), Principal));
-					}
-				}
-
-			}
-		}
-
-		// Depois de obter os nodos de cada lado, monta os grafos
-		MapSetor1 = getGrafo(Setor1);
-		MapSetor2 = getGrafo(Setor2);
-		MapSetor3 = getGrafo(Setor3);
-		MapSetor4 = getGrafo(Setor4);
-
-		System.out.println(MapSetor1.keySet().toString());
-		System.out.println(MapSetor2.keySet().toString());
-		System.out.println(MapSetor3.keySet().toString());
-		System.out.println(MapSetor4.keySet().toString());
+		
+		DemarcarRegioes(1);
+		DemarcarRegioes(2);
+		DemarcarRegioes(3);
+		DemarcarRegioes(4);
+		
 	}
 
 	private Map<EntityID, Set<EntityID>> getGrafo(List<EntityID> nodos) {
@@ -420,87 +282,107 @@ public class MASLABSectoringTest {
 				System.out.println(v + " não está na lista da avenida");
 			}
 		}
+		
+		int[] xs = SetorNordeste.xpoints;
+		int[] ys = SetorNordeste.ypoints;
+		System.out.println("Nordeste");
+		for(int i = 0; i < xs.length; i++){
+			System.out.println(xs[i] + " " + ys[i] + " - " + i);
+		}
+		
+		xs = SetorSudeste.xpoints;
+		ys = SetorSudeste.ypoints;
+		System.out.println("Sudeste");
+		for(int i = 0; i < xs.length; i++){
+			System.out.println(xs[i] + " " + ys[i] + " - " + i);
+		}
 
+		xs = SetorSudoeste.xpoints;
+		ys = SetorSudoeste.ypoints;
+		System.out.println("Sudoeste");
+		for(int i = 0; i < xs.length; i++){
+			System.out.println(xs[i] + " " + ys[i] + " - " + i);
+		}
+
+		xs = SetorNoroeste.xpoints;
+		ys = SetorNoroeste.ypoints;
+		System.out.println("Noroeste");
+		for(int i = 0; i < xs.length; i++){
+			System.out.println(xs[i] + " " + ys[i] + " - " + i);
+		}
 	}
 
 	
-	private boolean isPointInPolygon(double X, double Y, int sector) {
-
-		if (sector == 1) {
-			if(SetorNordeste.contains(X,Y))
-				return true;
-			else
-				return false;
-			
-		} else
-		if (sector == 2) {
-			if(SetorSudeste.contains(X,Y))
-				return true;
-			else
-				return false;
-			
-		} else
-		if (sector == 3) {
-			if(SetorSudoeste.contains(X,Y))
-				return true;
-			else
-				return false;
-			
+	private int isPointInPolygon(double X, double Y) {
+		if(SetorNordeste.contains(X,Y)){
+			return 1;
+		}else if(SetorSudeste.contains(X,Y)){
+			return 2;
+		} else if(SetorSudoeste.contains(X,Y)){
+			return 3;
+		}else if(SetorNoroeste.contains(X,Y)){
+			return 4;
 		}else
-		if (sector == 4) {
-			if(SetorNoroeste.contains(X,Y))
-				return true;
-			else
-				return false;
-			
-		} else 
-			return false;
-
-		
-		
-		
+			return 0;
 	}
 
 	private void DemarcarRegioes(int sector){
 		
-		List<EntityID> division =  new LinkedList<EntityID>();
+		List<EntityID> division =  new ArrayList<EntityID>();
+		List<Integer> xs = new ArrayList<Integer>();
+		List<Integer> ys = new ArrayList<Integer>();
 		
 		if (sector == 1) {
+			System.out.println("Nordeste");
 			division = GetDivisionLane(1);
-			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
+			xs.add((int)coordinate_MaxX);
+			ys.add((int)coordinate_MaxY);
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					SetorNordeste.addPoint((int)r.getX(),(int) coordinate_MaxY);
+					xs.add((int)r.getX());
+					ys.add((int)coordinate_MaxY);
 					auxpoint =1;					
 				}
-				SetorNordeste.addPoint((int)r.getX(),(int) r.getY());				
+				xs.add((int)r.getX());
+				ys.add((int)r.getY());
 			}
-			SetorNordeste.addPoint((int) coordinate_MaxX, (int)r2.getY());
-			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
-
+			xs.add((int)coordinate_MaxX);
+			ys.add((int)r2.getY());
+			
+			SetorNordeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
+//			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
+			
 		} else
 
 		// Gera a Região S2: Sudeste;
 		if (sector == 2) {
 			division = GetDivisionLane(2);
-			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
+			xs.add((int)coordinate_MaxX);
+			ys.add((int)coordinate_MinY);
+			
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					SetorSudeste.addPoint((int)coordinate_MaxX,(int) r.getY());
+					
+					xs.add((int)coordinate_MaxX);
+					ys.add((int)r.getY());
+					
 					auxpoint =1;					
 				}
-				SetorSudeste.addPoint((int)r.getX(),(int) r.getY());				
+				xs.add((int)r.getX());
+				ys.add((int)r.getY());
 			}
-			SetorSudeste.addPoint((int) r2.getX(), (int)coordinate_MinY);
-			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
+			xs.add((int)r2.getX());
+			ys.add((int)coordinate_MinY);
+			SetorSudeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
+//			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
 			
 		} else
 
@@ -508,41 +390,80 @@ public class MASLABSectoringTest {
 		if (sector == 3) {
 			division = GetDivisionLane(3);
 			int auxpoint = 0;
-			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			xs.add((int)coordinate_MinX);
+			ys.add((int)coordinate_MinY);
 			Road r2 = null; // Road aux
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
+					xs.add((int)r.getX());
+					ys.add((int)coordinate_MinY);
 					SetorSudoeste.addPoint((int)r.getX(),(int)coordinate_MinY);
 					auxpoint =1;					
 				}
-				SetorSudoeste.addPoint((int)r.getX(),(int) r.getY());				
+				xs.add((int)r.getX());
+				ys.add((int)r.getY());
 			}
-			SetorSudoeste.addPoint((int) coordinate_MinX, (int)r2.getY());
-			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			xs.add((int)coordinate_MinX);
+			ys.add((int)r2.getY());
+			SetorSudoeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
+//			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
 
 		} else
 
 		// Gera a Região S4: Noroeste;
 		if (sector == 4) {
 			division = GetDivisionLane(4);
-			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
+			xs.add((int)coordinate_MinX);
+			ys.add((int)coordinate_MaxY);
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					SetorNoroeste.addPoint((int)coordinate_MinX,(int)r.getY());
+					xs.add((int)coordinate_MinX);
+					ys.add((int)r.getY());
 					auxpoint =1;					
 				}
-				SetorNoroeste.addPoint((int)r.getX(),(int) r.getY());				
+				xs.add((int)r.getX());
+				ys.add((int)r.getY());
 			}
-			SetorNoroeste.addPoint((int) r2.getX(), (int)coordinate_MaxY);
-			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
-			
+			xs.add((int)r2.getX());
+			ys.add((int)coordinate_MaxY);
+			SetorNoroeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
+//			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 		}
+
+		int[] xss = SetorNordeste.xpoints;
+		int[] yss = SetorNordeste.ypoints;
+		System.out.println("Nordeste");
+		for(int i = 0; i < xss.length; i++){
+			System.out.println(xss[i] + " " + yss[i] + " - " + i);
+		}
+
+		xss = SetorSudeste.xpoints;
+		yss = SetorSudeste.ypoints;
+		System.out.println("Sudeste");
+		for(int i = 0; i < xss.length; i++){
+			System.out.println(xss[i] + " " + yss[i] + " - " + i);
+		}
+
+		xss = SetorSudoeste.xpoints;
+		yss = SetorSudoeste.ypoints;
+		System.out.println("Sudoeste");
+		for(int i = 0; i < xss.length; i++){
+			System.out.println(xss[i] + " " + yss[i] + " - " + i);
+		}
+
+		xss = SetorNoroeste.xpoints;
+		yss = SetorNoroeste.ypoints;
+		System.out.println("Noroeste");
+		for(int i = 0; i < xss.length; i++){
+			System.out.println(xss[i] + " " + yss[i] + " - " + i);
+		}
+		
 	}
 
 	
@@ -551,78 +472,29 @@ public class MASLABSectoringTest {
 	 */
 	private List<EntityID> GetDivisionLane(int sector) {
 		
-		EntityID start = null;
-		EntityID next = null;
-		Collection<EntityID> goals  = new LinkedList<EntityID>();
-		List<EntityID> open = new LinkedList<EntityID>();
-	    Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
-	    boolean found = false;
-		
-	    if(sector == 1){
-			start = idNorte;
-			goals.add(idLeste);
+		System.out.println(MapPrincipal.keySet());
+		MASLABBFSearch bfSearch = new MASLABBFSearch(MapPrincipal);
+
+		if(sector == 1){
+			return bfSearch.breadthFirstSearch(idNorte, idLeste);
 		}
 		if(sector == 2){
-			start = idLeste;
-			goals.add(idSul);
+			return bfSearch.breadthFirstSearch(idLeste, idSul);
 		}
 		if(sector == 3){
-			start = idSul;
-			goals.add(idOeste);
+			return bfSearch.breadthFirstSearch(idSul, idOeste);
 		}
 		if(sector == 4){
-			start = idOeste;
-			goals.add(idNorte);
+			return bfSearch.breadthFirstSearch(idOeste, idNorte);
 		}
-			 
-	    open.add(start);
-	     
-	    ancestors.put(start, start);
-	    do {
-	           next = open.remove(0);
-	           if (isGoal(next, goals)) {
-	               found = true;
-	               break;
-	            }
-		            Collection<EntityID> neighbours = MapPrincipal.get(next);
-		            if (neighbours.isEmpty()) {
-		                continue;
-		            }
-		            for (EntityID neighbour : neighbours) {
-		                if (isGoal(neighbour, goals)) {
-		                    ancestors.put(neighbour, next);
-		                    next = neighbour;
-		                    found = true;
-		                    break;
-		                }
-		                else {
-		                    if (!ancestors.containsKey(neighbour)) {
-		                        open.add(neighbour);
-		                        ancestors.put(neighbour, next);
-		                    }
-		                }
-		            }
-	        } while (!found && !open.isEmpty());
-	        
-	    	if (!found) {
-	            return null;
-	        }
-	        
-	        EntityID current = next;
-	        List<EntityID> path = new LinkedList<EntityID>();
-	        do {
-	            path.add(0, current);
-	            current = ancestors.get(current);
-	            if (current == null) {
-	                throw new RuntimeException("Found a node with no ancestor! Something is broken.");
-	            }
-	        } while (current != start);
-	
-		return path;
+		else{
+			return null;
+		}
 	}
-	
-	  private boolean isGoal(EntityID e, Collection<EntityID> test) {
-	        return test.contains(e);
-	    }
-
+	int[] toIntArray(List<Integer> list){
+		  int[] ret = new int[list.size()];
+		  for(int i = 0;i < ret.length;i++)
+		    ret[i] = list.get(i);
+		  return ret;
+		}
 }

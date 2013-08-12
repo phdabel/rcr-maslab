@@ -81,7 +81,15 @@ public final class MASLABBFSearch {
         return breadthFirstSearch(start, Bloqueios, Arrays.asList(goals));
     }
 
-    /**
+    public List<EntityID> breadthFirstSearch(EntityID start, Collection<EntityID> goals) {
+    	return breadthFirstSearch(start, new ArrayList<EntityID>(), goals);
+    }
+
+    public List<EntityID> breadthFirstSearch(EntityID start, EntityID goals) {
+    	return breadthFirstSearch(start, new ArrayList<EntityID>(), goals);
+    }
+
+    	/**
        Do a breadth first search from one location to the closest (in terms of number of nodes) of a set of goals.
        @param start The location we start at.
        @param goals The set of possible goals.
@@ -94,35 +102,60 @@ public final class MASLABBFSearch {
         EntityID next = null;
         boolean found = false;
         ancestors.put(start, start);
-        do {
-            next = open.remove(0);
-            if (isGoal(next, goals)) {
-                found = true;
-                break;
-            }
-            if(!isBlocked(next, Bloqueios)){
-	            Collection<EntityID> neighbours = graph.get(next);
-	            if (neighbours.isEmpty()) {
-	                continue;
+        try{
+	        do {
+	            next = open.remove(0);
+	            if (isGoal(next, goals)) {
+	                found = true;
+	                break;
 	            }
-	            for (EntityID neighbour : neighbours) {
-	                if (isGoal(neighbour, goals)) {
-	                    ancestors.put(neighbour, next);
-	                    next = neighbour;
-	                    found = true;
-	                    break;
-	                }
-	                else {
-	                    if (!ancestors.containsKey(neighbour)) {
-	                        open.add(neighbour);
-	                        ancestors.put(neighbour, next);
-	                    }
-	                }
+	            if(!isBlocked(next, Bloqueios)){
+		            Collection<EntityID> neighbours = graph.get(next);
+		            if (neighbours.isEmpty()) {
+		                continue;
+		            }
+		            for (EntityID neighbour : neighbours) {
+		                if (isGoal(neighbour, goals)) {
+		                    ancestors.put(neighbour, next);
+		                    next = neighbour;
+		                    found = true;
+		                    break;
+		                }
+		                else {
+		                    if (!ancestors.containsKey(neighbour)) {
+		                        open.add(neighbour);
+		                        ancestors.put(neighbour, next);
+		                    }
+		                }
+		            }
 	            }
-            }
-        } while (!found && !open.isEmpty());
+	        } while (!found && !open.isEmpty());
+        }catch(Exception e){
+        	System.out.println(ancestors.keySet());
+        	System.out.println(open);
+            EntityID current = next;
+            List<EntityID> path = new LinkedList<EntityID>();
+            do {
+                path.add(0, current);
+                current = ancestors.get(current);
+                if (current == null) {
+                    throw new RuntimeException("Found a node with no ancestor! Something is broken.");
+                }
+            } while (current != start);
+            System.out.println(path);
+        }
         if (!found) {
             // No path
+            EntityID current = next;
+            List<EntityID> path = new LinkedList<EntityID>();
+            do {
+                path.add(0, current);
+                current = ancestors.get(current);
+                if (current == null) {
+                    throw new RuntimeException("Found a node with no ancestor! Something is broken.");
+                }
+            } while (current != start);
+            System.out.println(path);
             return null;
         }
         // Walk back from goal to start
