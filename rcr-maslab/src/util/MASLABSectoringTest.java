@@ -195,10 +195,17 @@ public class MASLABSectoringTest {
 	 * S1: Nordeste; S2: Sudeste; S3: Sudoeste; S4: Noroeste.
 	 */
 	private void CarregaGrafosSetores() {
+		MASLABBFSearch MapP = new MASLABBFSearch(MapPrincipal);
+		
+		Map<EntityID, Set<EntityID>> searchP = MapP.getGraph();
+		
 		List<EntityID> roadIDss = new ArrayList<EntityID>();
 		List<EntityID> buildingIDs = new ArrayList<EntityID>();
 		List<EntityID> refugeIDs = new ArrayList<EntityID>();
 		List<EntityID> hydrantIDs = new ArrayList<EntityID>();
+		List<EntityID> p = new ArrayList<EntityID>();
+		List<EntityID> aux = new ArrayList<EntityID>();
+		
 		for (StandardEntity next : model) {
 			if (next instanceof Road) {
 				roadIDss.add(next.getID());
@@ -219,8 +226,66 @@ public class MASLABSectoringTest {
 		DemarcarRegioes(3);
 		DemarcarRegioes(4);
 		
+		for(EntityID next : roadIDss){
+			Road r = (Road)model.getEntity(next);
+			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
+		}
+		for(EntityID next : buildingIDs){
+			Building r = (Building)model.getEntity(next);
+			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
+		}
+		for(EntityID next : refugeIDs){
+			Refuge r = (Refuge)model.getEntity(next);
+			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
+		}
+		for(EntityID next : hydrantIDs){
+			Hydrant r = (Hydrant)model.getEntity(next);
+			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
+		}
+		
+		//Adiciona a parte correspondente da via principal
+		p = GetDivisionLane(1);
+		aux = new ArrayList<EntityID>(MapSetor1.keySet());
+		for(EntityID e : p){
+			if(!aux.contains(e))
+				MapSetor1.put(e, searchP.get(e));
+		}
+
+		p = GetDivisionLane(2);
+		aux = new ArrayList<EntityID>(MapSetor2.keySet());
+		for(EntityID e : p){
+			if(!aux.contains(e))
+				MapSetor2.put(e, searchP.get(e));
+		}
+
+		p = GetDivisionLane(3);
+		aux = new ArrayList<EntityID>(MapSetor3.keySet());
+		for(EntityID e : p){
+			if(!aux.contains(e))
+				MapSetor3.put(e, searchP.get(e));
+		}
+		
+		p = GetDivisionLane(4);
+		aux = new ArrayList<EntityID>(MapSetor4.keySet());
+		for(EntityID e : p){
+			if(!aux.contains(e))
+				MapSetor4.put(e, searchP.get(e));
+		}
 	}
 
+	private void addGrafoSetor(EntityID e, int setor){
+		Map<EntityID, Set<EntityID>> g = search.getGraph();
+		if(setor == 1){
+			MapSetor1.put(e, g.get(e));
+		}else if (setor == 2){
+			MapSetor2.put(e, g.get(e));
+		}else if (setor == 3){
+			MapSetor3.put(e, g.get(e));
+		}else if (setor == 4){
+			MapSetor4.put(e, g.get(e));
+		}
+	}
+	
 	private Map<EntityID, Set<EntityID>> getGrafo(List<EntityID> nodos) {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
 		Map<EntityID, Set<EntityID>> aux = new HashMap<EntityID, Set<EntityID>>();
@@ -313,7 +378,7 @@ public class MASLABSectoringTest {
 	}
 
 	
-	private int isPointInPolygon(double X, double Y) {
+	private int getSetorPertencente(double X, double Y) {
 		if(SetorNordeste.contains(X,Y)){
 			return 1;
 		}else if(SetorSudeste.contains(X,Y)){
@@ -435,7 +500,7 @@ public class MASLABSectoringTest {
 			SetorNoroeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
 //			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 		}
-
+/*
 		int[] xss = SetorNordeste.xpoints;
 		int[] yss = SetorNordeste.ypoints;
 		System.out.println("Nordeste");
@@ -462,7 +527,7 @@ public class MASLABSectoringTest {
 		System.out.println("Noroeste");
 		for(int i = 0; i < xss.length; i++){
 			System.out.println(xss[i] + " " + yss[i] + " - " + i);
-		}
+		}*/
 		
 	}
 
