@@ -80,64 +80,6 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
     	debug(time, routing.Combater(me().getPosition(), new EntityID(958), Bloqueios, Setores.S1, Setores.S2).toString());
     	debug(time, routing.Resgatar(me().getPosition(), Bloqueios, Setores.S1).toString());
     	debug(time, routing.Resgatar(me().getPosition(), new EntityID(958), Bloqueios, Setores.S1).toString());
-    	
-    	/*
-        if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
-            // Subscribe to channel 1
-            sendSubscribe(time, 1);
-        }
-        for (Command next : heard) {
-            Logger.debug("Heard " + next);
-        }
-        FireBrigade me = me();
-        // Are we currently filling with water?
-        if (me.isWaterDefined() && me.getWater() < maxWater && location() instanceof Refuge) {
-            Logger.info("Filling with water at " + location());
-            sendRest(time);
-            return;
-        }
-        // Are we out of water?
-        if (me.isWaterDefined() && me.getWater() == 0) {
-            // Head for a refuge
-            List<EntityID> path = search.breadthFirstSearch(me().getPosition(), refugeIDs);
-            if (path != null) {
-                Logger.info("Moving to refuge");
-                sendMove(time, path);
-                return;
-            } else {
-                Logger.debug("Couldn't plan a path to a refuge.");
-                path = randomWalk();
-                Logger.info("Moving randomly");
-                sendMove(time, path);
-                return;
-            }
-        }
-        // Find all buildings that are on fire
-        Collection<EntityID> all = getBurningBuildings();
-        // Can we extinguish any right now?
-        for (EntityID next : all) {
-            if (model.getDistance(getID(), next) <= maxDistance) {
-                Logger.info("Extinguishing " + next);
-                sendExtinguish(time, next, maxPower);
-                sendSpeak(time, 1, ("Extinguishing " + next).getBytes());
-                return;
-            }
-        }
-        // Plan a path to a fire
-        for (EntityID next : all) {
-            List<EntityID> path = planPathToFire(next);
-            if (path != null) {
-                Logger.info("Moving to target");
-                sendMove(time, path);
-                return;
-            }
-        }
-        List<EntityID> path = null;
-        Logger.debug("Couldn't plan a path to a fire.");
-        path = randomWalk();
-        Logger.info("Moving randomly");
-        sendMove(time, path);
-        */
     }
 
     /**
