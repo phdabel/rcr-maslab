@@ -60,6 +60,12 @@ public class MASLABSectoringTest {
 	private static EntityID idLeste;
 	private static EntityID idOeste;
 
+	private Polygon SetorNordeste = new Polygon();
+	private Polygon SetorSudeste = new Polygon();
+	private Polygon SetorSudoeste = new Polygon();
+	private Polygon SetorNoroeste = new Polygon();
+	
+	
 	private StandardWorldModel model;
 
 	MASLABBFSearch search;
@@ -419,96 +425,124 @@ public class MASLABSectoringTest {
 
 	
 	private boolean isPointInPolygon(double X, double Y, int sector) {
+
+		if (sector == 1) {
+			if(SetorNordeste.contains(X,Y))
+				return true;
+			else
+				return false;
+			
+		} else
+		if (sector == 2) {
+			if(SetorSudeste.contains(X,Y))
+				return true;
+			else
+				return false;
+			
+		} else
+		if (sector == 3) {
+			if(SetorSudoeste.contains(X,Y))
+				return true;
+			else
+				return false;
+			
+		}else
+		if (sector == 4) {
+			if(SetorNoroeste.contains(X,Y))
+				return true;
+			else
+				return false;
+			
+		} else 
+			return false;
+
+		
+		
+		
+	}
+
+	private void DemarcarRegioes(int sector){
 		
 		List<EntityID> division =  new LinkedList<EntityID>();
-
-		Polygon poly = new Polygon();
-		int auxpoint = 0;
-		// Gera a Região S1: Nordeste;
+		
 		if (sector == 1) {
 			division = GetDivisionLane(1);
-			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
+			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
 			Road r2 = null; // Road aux
+			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					poly.addPoint((int)r.getX(),(int) coordinate_MaxY);
+					SetorNordeste.addPoint((int)r.getX(),(int) coordinate_MaxY);
 					auxpoint =1;					
 				}
-				poly.addPoint((int)r.getX(),(int) r.getY());				
+				SetorNordeste.addPoint((int)r.getX(),(int) r.getY());				
 			}
-			poly.addPoint((int) coordinate_MaxX, (int)r2.getY());
-			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
+			SetorNordeste.addPoint((int) coordinate_MaxX, (int)r2.getY());
+			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
 
 		} else
 
 		// Gera a Região S2: Sudeste;
 		if (sector == 2) {
 			division = GetDivisionLane(2);
-			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
+			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
 			Road r2 = null; // Road aux
+			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					poly.addPoint((int)coordinate_MaxX,(int) r.getY());
+					SetorSudeste.addPoint((int)coordinate_MaxX,(int) r.getY());
 					auxpoint =1;					
 				}
-				poly.addPoint((int)r.getX(),(int) r.getY());				
+				SetorSudeste.addPoint((int)r.getX(),(int) r.getY());				
 			}
-			poly.addPoint((int) r2.getX(), (int)coordinate_MinY);
-			poly.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
+			SetorSudeste.addPoint((int) r2.getX(), (int)coordinate_MinY);
+			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
 			
 		} else
 
 		// Gera a Região S3: Sudoeste;
 		if (sector == 3) {
 			division = GetDivisionLane(3);
-			poly.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			int auxpoint = 0;
+			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
 			Road r2 = null; // Road aux
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					poly.addPoint((int)r.getX(),(int)coordinate_MinY);
+					SetorSudoeste.addPoint((int)r.getX(),(int)coordinate_MinY);
 					auxpoint =1;					
 				}
-				poly.addPoint((int)r.getX(),(int) r.getY());				
+				SetorSudoeste.addPoint((int)r.getX(),(int) r.getY());				
 			}
-			poly.addPoint((int) coordinate_MinX, (int)r2.getY());
-			poly.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			SetorSudoeste.addPoint((int) coordinate_MinX, (int)r2.getY());
+			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
 
 		} else
 
 		// Gera a Região S4: Noroeste;
 		if (sector == 4) {
 			division = GetDivisionLane(4);
-			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
+			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 			Road r2 = null; // Road aux
+			int auxpoint = 0;
 			for(EntityID next: division){
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if(auxpoint == 0){
-					poly.addPoint((int)coordinate_MinX,(int)r.getY());
+					SetorNoroeste.addPoint((int)coordinate_MinX,(int)r.getY());
 					auxpoint =1;					
 				}
-				poly.addPoint((int)r.getX(),(int) r.getY());				
+				SetorNoroeste.addPoint((int)r.getX(),(int) r.getY());				
 			}
-			poly.addPoint((int) r2.getX(), (int)coordinate_MaxY);
-			poly.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
+			SetorNoroeste.addPoint((int) r2.getX(), (int)coordinate_MaxY);
+			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
 			
 		}
-		
-		else return false;
-			
-
-		if(poly.contains(X,Y))
-			return true;
-		else
-			return false;
-		
-		
 	}
 
 	
