@@ -1,0 +1,53 @@
+<MASLAB_Preprocessamento>
+	<Setorizacao>
+		<!-- Delimita o grafo das lanes principais N/S e L/O-->
+		<AvenidaPrincipal>
+			<!-- <Node: Nodes_vizinhos> -->
+			<id:id0,id1,..,idN>
+		</AvenidaPrincipal>
+	
+		<!-- Define os pontos(X,Y) que limitam a região Nordeste-->
+		<AvenidaSL>
+			<X,Y>
+		</AvenidaSL>	
+	
+		<!-- Define os pontos(X,Y) que limitam a região Sudeste-->
+		<AvenidaLN>
+			<X,Y>
+		</AvenidaLN>	
+	
+		<!-- Define os pontos(X,Y) que limitam a região Sudoeste-->
+		<AvenidaSO>
+			<X,Y>
+		</AvenidaSO>	
+	
+		<!-- Define os pontos(X,Y) que limitam a região Noroeste-->
+		<AvenidaON>
+			<X,Y>
+		</AvenidaON>	
+	
+		<!-- Define o mapa do setor Nordeste-->
+		<SetorNordeste>
+			<id:id0,id1,..,idN>
+		</SetorNordeste>
+	
+		<!-- Define o mapa do setor Sudeste-->
+		<SetorSudeste>
+			<id:id0,id1,..,idN>
+		</SetorSudeste>
+	
+		<!-- Define o mapa do setor Sudoeste-->
+		<SetorSudoeste>
+			<id:id0,id1,..,idN>
+		</SetorNoroeste>
+	
+		<!-- Define o mapa do setor Noroeste-->
+		<SetorNoroeste>
+			<id:id0,id1,..,idN>
+		</SetorNoroeste>	
+			
+	</Setorizacao>
+	
+	</>
+	
+</MASLAB_Preprocessamento>
