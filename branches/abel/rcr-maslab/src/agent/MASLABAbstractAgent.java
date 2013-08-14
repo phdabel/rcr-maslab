@@ -1,10 +1,15 @@
 package agent;
 
 import agent.interfaces.IAbstractAgent;
+import agent.worldmodel.AgentState;
 
+import java.util.Collection;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
@@ -21,10 +26,12 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.Human;
+import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import util.BFSearch;
 import util.MASLABRouting;
+import agent.worldmodel.Task;
 
 /**
    Abstract base class for sample agents.
@@ -81,6 +88,23 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     */
     protected MASLABRouting routing;    
  
+    /**
+     *  ABEL
+     *  fila de estados stateQueue
+     */
+    protected Queue<AgentState> stateQueue = new LinkedList<AgentState>();
+    /**
+     *  tarefa atual do agente
+     *  
+     */
+    protected Task currentTask = null;
+    /**
+     *  variavel booleana que informa se ha um caminho definido
+     */
+    protected Boolean pathDefined = false;
+    protected List<EntityID> currentPath = new ArrayList<EntityID>();
+    protected List<EntityID> lastPath = new ArrayList<EntityID>();
+    
     
     /**
 	   Cache of Hydrant IDs.
@@ -125,8 +149,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         List<EntityID> waterIDs = new ArrayList<EntityID>();
         waterIDs.addAll(refugeIDs);
     	waterIDs.addAll(hydrantIDs);
-        search = new BFSearch(model);
-
+    	search = new BFSearch(model);
         
         
         
@@ -210,4 +233,79 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * 
      * 
      */
+    /**
+     * método walk
+     * @param path - currentPath do agente
+     * @param local - local de destino
+     * @return
+     */
+    protected List<EntityID> walk(List<EntityID> path, EntityID local) {
+    	
+    	if(path.isEmpty()){
+    		
+    		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
+    		List<Road> road = new ArrayList<Road>();
+    		for (StandardEntity next : e)
+    		{
+    			Road r = (Road)next;
+    			road.add(r);
+    		}
+    		Integer index = new Random().nextInt(road.size());
+    		
+    		EntityID destiny = road.get(index).getID();
+    		path = search.breadthFirstSearch(local, destiny);
+    		//path = this.getDijkstraPath(local, destiny, this.mapTmp);
+    	}else{
+    		
+    		//path = search.breadthFirstSearch(location().getID(), path.get((path.size() - 1)));
+    		List<EntityID> tmp = new ArrayList<EntityID>();
+    		int ct = 0;
+    		for(EntityID p : path)
+    		{
+    			
+    			if(p != local && ct == 0)
+    			{
+    				tmp.add(p);
+    			}else if(p == local)
+    			{
+    				ct = 1;
+    				tmp.add(p);
+    			}
+    		}
+
+    		//System.out.println("Tamanho do caminho atual "+path.size());
+    		path.removeAll(tmp);
+    		//System.out.println("Tamanho para remoção "+tmp.size()); */
+    	}
+    	return path;
+    }
+    
+    /**
+     * adiciona um novo estado ao início da fila
+     * @param newState
+     */
+    protected void addBeginingQueue(AgentState newState)
+    {
+    	Queue<AgentState> tmpQueue = new LinkedList<AgentState>();
+		tmpQueue.addAll(stateQueue);
+		stateQueue.clear();
+		stateQueue.add(newState);
+		stateQueue.addAll(tmpQueue);
+    }
+    
+    /**
+     * imprime a fila no timestep
+     */
+    protected void printQueue()
+    {
+    	int ct = 1;
+    	System.out.println("------------------------------------");
+        for(AgentState a : this.stateQueue)
+        {
+        	System.out.println("Estado "+ct+" - "+a.getState());
+        	System.out.println("Alvo: "+a.getId());
+        	ct++;
+        }
+        System.out.println("------------------------------------");
+    }
 }

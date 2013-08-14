@@ -5,9 +5,9 @@
 package agent.interfaces;
 
 /**
- *
+ * 
  * @author rgrunitzki
  */
 public interface IFireBrigade {
-    
+
 }

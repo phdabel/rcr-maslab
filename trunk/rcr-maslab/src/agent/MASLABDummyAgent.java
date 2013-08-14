@@ -11,21 +11,22 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 
 /**
-   A no-op agent.
+ * A no-op agent.
  */
 public class MASLABDummyAgent extends StandardAgent<StandardEntity> {
-    @Override
-    protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-        sendRest(time);
-    }
+	@Override
+	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		sendRest(time);
+	}
 
-    @Override
-    protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
-        return EnumSet.of(StandardEntityURN.FIRE_BRIGADE,
-                          StandardEntityURN.FIRE_STATION,
-                          StandardEntityURN.AMBULANCE_TEAM,
-                          StandardEntityURN.AMBULANCE_CENTRE,
-                          StandardEntityURN.POLICE_FORCE,
-                          StandardEntityURN.POLICE_OFFICE);
-    }
+	@Override
+	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
+		return EnumSet
+				.of(StandardEntityURN.FIRE_BRIGADE,
+						StandardEntityURN.FIRE_STATION,
+						StandardEntityURN.AMBULANCE_TEAM,
+						StandardEntityURN.AMBULANCE_CENTRE,
+						StandardEntityURN.POLICE_FORCE,
+						StandardEntityURN.POLICE_OFFICE);
+	}
 }

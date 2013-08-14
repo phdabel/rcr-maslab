@@ -26,105 +26,115 @@ import util.MASLABSectoringTest;
 /**
  * A sample fire brigade agent.
  */
-public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements IFireBrigade {
+public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
+		IFireBrigade {
 
-     /**
-     *
-     * Variaveis Sample Agent
-     * 
-     */
-    
-    private static final String MAX_WATER_KEY = "fire.tank.maximum";
-    private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
-    private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";
-    private int maxWater;
-    private int maxDistance;
-    private int maxPower;
+	/**
+	 * 
+	 * Variaveis Sample Agent
+	 * 
+	 */
 
-    /**
-     *
-     * Variaveis definidas por nós
-     * 
-     */
-    
-    private List<EntityID> Bloqueios;
-    
-    /*
-     *
-     * Métodos Standard Agent
-     * 
-     */
-    
-    @Override
-    public String toString() {
-        return "Sample fire brigade";
-    }
+	private static final String MAX_WATER_KEY = "fire.tank.maximum";
+	private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
+	private static final String MAX_POWER_KEY = "fire.extinguish.max-sum";
+	private int maxWater;
+	private int maxDistance;
+	private int maxPower;
 
-    @Override
-    protected void postConnect() {
-        super.postConnect();
-        model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE, StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION);
-        maxWater = config.getIntValue(MAX_WATER_KEY);
-        maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
-        maxPower = config.getIntValue(MAX_POWER_KEY);
-        Logger.info("Sample fire brigade connected: max extinguish distance = " + maxDistance + ", max power = " + maxPower + ", max tank = " + maxWater);
-        Bloqueios = new ArrayList<EntityID>();
-        MASLABSectoringTest sectoring = new MASLABSectoringTest(model);
-        
-    }
+	/**
+	 * 
+	 * Variaveis definidas por nós
+	 * 
+	 */
 
-    @Override
-    protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-    	
-    	debug(time, routing.Abastecer(me().getPosition(), Bloqueios, Setores.S1).toString());
-    	debug(time, routing.Combater(me().getPosition(), new EntityID(958), Bloqueios, Setores.S1, Setores.S2).toString());
-    	debug(time, routing.Resgatar(me().getPosition(), Bloqueios, Setores.S1).toString());
-    	debug(time, routing.Resgatar(me().getPosition(), new EntityID(958), Bloqueios, Setores.S1).toString());
-    }
+	private List<EntityID> Bloqueios;
 
-    /**
-     *
-     * Métodos Sample Agent
-     * 
-     */
-    @Override
-    protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
-        return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
-    }
+	/*
+	 * 
+	 * Métodos Standard Agent
+	 */
 
-    private Collection<EntityID> getBurningBuildings() {
-        Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.BUILDING);
-        List<Building> result = new ArrayList<Building>();
-        for (StandardEntity next : e) {
-            if (next instanceof Building) {
-                Building b = (Building) next;
-                if (b.isOnFire()) {
-                    result.add(b);
-                }
-            }
-        }
-        // Sort by distance
-        Collections.sort(result, new DistanceSorter(location(), model));
-        return objectsToIDs(result);
-    }
+	@Override
+	public String toString() {
+		return "Sample fire brigade";
+	}
 
-    private List<EntityID> planPathToFire(EntityID target) {
-        // Try to get to anything within maxDistance of the target
-        Collection<StandardEntity> targets = model.getObjectsInRange(target, maxDistance);
-        if (targets.isEmpty()) {
-            return null;
-        }
-        return search.breadthFirstSearch(me().getPosition(), objectsToIDs(targets));
-    }
-    /*
-     *
-     * Métodos Definidos por nós
-     * 
-     */
-    /*
-     * 
-     * Métodos Acessores se necessário
-     * 
-     * 
-     */
+	@Override
+	protected void postConnect() {
+		super.postConnect();
+		model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE,
+				StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION);
+		maxWater = config.getIntValue(MAX_WATER_KEY);
+		maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
+		maxPower = config.getIntValue(MAX_POWER_KEY);
+		Logger.info("Sample fire brigade connected: max extinguish distance = "
+				+ maxDistance + ", max power = " + maxPower + ", max tank = "
+				+ maxWater);
+		Bloqueios = new ArrayList<EntityID>();
+		MASLABSectoringTest sectoring = new MASLABSectoringTest(model);
+
+	}
+
+	@Override
+	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+
+		debug(time, routing
+				.Abastecer(me().getPosition(), Bloqueios, Setores.S1)
+				.toString());
+		debug(time,
+				routing.Combater(me().getPosition(), new EntityID(958),
+						Bloqueios, Setores.S1, Setores.S2).toString());
+		debug(time, routing.Resgatar(me().getPosition(), Bloqueios, Setores.S1)
+				.toString());
+		debug(time,
+				routing.Resgatar(me().getPosition(), new EntityID(958),
+						Bloqueios, Setores.S1).toString());
+	}
+
+	/**
+	 * 
+	 * Métodos Sample Agent
+	 * 
+	 */
+	@Override
+	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
+		return EnumSet.of(StandardEntityURN.FIRE_BRIGADE);
+	}
+
+	private Collection<EntityID> getBurningBuildings() {
+		Collection<StandardEntity> e = model
+				.getEntitiesOfType(StandardEntityURN.BUILDING);
+		List<Building> result = new ArrayList<Building>();
+		for (StandardEntity next : e) {
+			if (next instanceof Building) {
+				Building b = (Building) next;
+				if (b.isOnFire()) {
+					result.add(b);
+				}
+			}
+		}
+		// Sort by distance
+		Collections.sort(result, new DistanceSorter(location(), model));
+		return objectsToIDs(result);
+	}
+
+	private List<EntityID> planPathToFire(EntityID target) {
+		// Try to get to anything within maxDistance of the target
+		Collection<StandardEntity> targets = model.getObjectsInRange(target,
+				maxDistance);
+		if (targets.isEmpty()) {
+			return null;
+		}
+		return search.breadthFirstSearch(me().getPosition(),
+				objectsToIDs(targets));
+	}
+	/*
+	 * 
+	 * Métodos Definidos por nós
+	 */
+	/*
+	 * 
+	 * Métodos Acessores se necessário
+	 */
 }
