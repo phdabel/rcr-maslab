@@ -97,6 +97,7 @@ public final class LaunchMASLABAgents {
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
+        
         try {
             while (pf-- != 0) {
                 Logger.info("Connecting police force " + (i++) + "...");
