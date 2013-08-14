@@ -61,8 +61,7 @@ public class MASLABSectoringTest {
 	private Polygon SetorSudeste = new Polygon();
 	private Polygon SetorSudoeste = new Polygon();
 	private Polygon SetorNoroeste = new Polygon();
-	
-	
+
 	private StandardWorldModel model;
 
 	MASLABBFSearch search;
@@ -163,25 +162,25 @@ public class MASLABSectoringTest {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
 		Set<EntityID> v = new HashSet<EntityID>();
 		Set<EntityID> v2 = new HashSet<EntityID>();
-		
+
 		Avenue_NtoS.add(0, idNorte);
 		for (EntityID next : Avenue_NtoS) {
 			v = g.get(next);
 			v2 = new HashSet<EntityID>();
-		
-			for(EntityID t : v){
+
+			for (EntityID t : v) {
 				if (Avenue_NtoS.contains(t) || Avenue_LtoO.contains(t))
 					v2.add(t);
 			}
 			MapPrincipal.put(next, v2);
 		}
-		
+
 		Avenue_LtoO.add(0, idLeste);
 		for (EntityID next : Avenue_LtoO) {
-			if (!MapPrincipal.containsKey(next)){
+			if (!MapPrincipal.containsKey(next)) {
 				v = g.get(next);
 				v2 = new HashSet<EntityID>();
-				for(EntityID t : v){
+				for (EntityID t : v) {
 					if (Avenue_LtoO.contains(t) || Avenue_NtoS.contains(t))
 						v2.add(t);
 				}
@@ -196,16 +195,16 @@ public class MASLABSectoringTest {
 	 */
 	private void CarregaGrafosSetores() {
 		MASLABBFSearch MapP = new MASLABBFSearch(MapPrincipal);
-		
+
 		Map<EntityID, Set<EntityID>> searchP = MapP.getGraph();
-		
+
 		List<EntityID> roadIDss = new ArrayList<EntityID>();
 		List<EntityID> buildingIDs = new ArrayList<EntityID>();
 		List<EntityID> refugeIDs = new ArrayList<EntityID>();
 		List<EntityID> hydrantIDs = new ArrayList<EntityID>();
 		List<EntityID> p = new ArrayList<EntityID>();
 		List<EntityID> aux = new ArrayList<EntityID>();
-		
+
 		for (StandardEntity next : model) {
 			if (next instanceof Road) {
 				roadIDss.add(next.getID());
@@ -220,72 +219,72 @@ public class MASLABSectoringTest {
 				hydrantIDs.add(next.getID());
 			}
 		}
-		
+
 		DemarcarRegioes(1);
 		DemarcarRegioes(2);
 		DemarcarRegioes(3);
 		DemarcarRegioes(4);
-		
-		for(EntityID next : roadIDss){
-			Road r = (Road)model.getEntity(next);
+
+		for (EntityID next : roadIDss) {
+			Road r = (Road) model.getEntity(next);
 			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
 		}
-		for(EntityID next : buildingIDs){
-			Building r = (Building)model.getEntity(next);
+		for (EntityID next : buildingIDs) {
+			Building r = (Building) model.getEntity(next);
 			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
 		}
-		for(EntityID next : refugeIDs){
-			Refuge r = (Refuge)model.getEntity(next);
+		for (EntityID next : refugeIDs) {
+			Refuge r = (Refuge) model.getEntity(next);
 			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
 		}
-		for(EntityID next : hydrantIDs){
-			Hydrant r = (Hydrant)model.getEntity(next);
+		for (EntityID next : hydrantIDs) {
+			Hydrant r = (Hydrant) model.getEntity(next);
 			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
 		}
-		
-		//Adiciona a parte correspondente da via principal
+
+		// Adiciona a parte correspondente da via principal
 		p = GetDivisionLane(1);
 		aux = new ArrayList<EntityID>(MapSetor1.keySet());
-		for(EntityID e : p){
-			if(!aux.contains(e))
+		for (EntityID e : p) {
+			if (!aux.contains(e))
 				MapSetor1.put(e, searchP.get(e));
 		}
 
 		p = GetDivisionLane(2);
 		aux = new ArrayList<EntityID>(MapSetor2.keySet());
-		for(EntityID e : p){
-			if(!aux.contains(e))
+		for (EntityID e : p) {
+			if (!aux.contains(e))
 				MapSetor2.put(e, searchP.get(e));
 		}
 
 		p = GetDivisionLane(3);
 		aux = new ArrayList<EntityID>(MapSetor3.keySet());
-		for(EntityID e : p){
-			if(!aux.contains(e))
+		for (EntityID e : p) {
+			if (!aux.contains(e))
 				MapSetor3.put(e, searchP.get(e));
 		}
-		
+
 		p = GetDivisionLane(4);
 		aux = new ArrayList<EntityID>(MapSetor4.keySet());
-		for(EntityID e : p){
-			if(!aux.contains(e))
+		for (EntityID e : p) {
+			if (!aux.contains(e))
 				MapSetor4.put(e, searchP.get(e));
 		}
 	}
 
-	private void addGrafoSetor(EntityID e, int setor){
+	private void addGrafoSetor(EntityID e, int setor) {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
-		if(setor == 1){
+		if (setor == 1) {
 			MapSetor1.put(e, g.get(e));
-		}else if (setor == 2){
+		} else if (setor == 2) {
 			MapSetor2.put(e, g.get(e));
-		}else if (setor == 3){
+		} else if (setor == 3) {
 			MapSetor3.put(e, g.get(e));
-		}else if (setor == 4){
+		} else if (setor == 4) {
 			MapSetor4.put(e, g.get(e));
 		}
 	}
-	
+
 	private Map<EntityID, Set<EntityID>> getGrafo(List<EntityID> nodos) {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
 		Map<EntityID, Set<EntityID>> aux = new HashMap<EntityID, Set<EntityID>>();
@@ -347,219 +346,215 @@ public class MASLABSectoringTest {
 				System.out.println(v + " não está na lista da avenida");
 			}
 		}
-		
+
 		int[] xs = SetorNordeste.xpoints;
 		int[] ys = SetorNordeste.ypoints;
 		System.out.println("Nordeste");
-		for(int i = 0; i < xs.length; i++){
+		for (int i = 0; i < xs.length; i++) {
 			System.out.println(xs[i] + " " + ys[i] + " - " + i);
 		}
-		
+
 		xs = SetorSudeste.xpoints;
 		ys = SetorSudeste.ypoints;
 		System.out.println("Sudeste");
-		for(int i = 0; i < xs.length; i++){
+		for (int i = 0; i < xs.length; i++) {
 			System.out.println(xs[i] + " " + ys[i] + " - " + i);
 		}
 
 		xs = SetorSudoeste.xpoints;
 		ys = SetorSudoeste.ypoints;
 		System.out.println("Sudoeste");
-		for(int i = 0; i < xs.length; i++){
+		for (int i = 0; i < xs.length; i++) {
 			System.out.println(xs[i] + " " + ys[i] + " - " + i);
 		}
 
 		xs = SetorNoroeste.xpoints;
 		ys = SetorNoroeste.ypoints;
 		System.out.println("Noroeste");
-		for(int i = 0; i < xs.length; i++){
+		for (int i = 0; i < xs.length; i++) {
 			System.out.println(xs[i] + " " + ys[i] + " - " + i);
 		}
 	}
 
-	
 	private int getSetorPertencente(double X, double Y) {
-		if(SetorNordeste.contains(X,Y)){
+		if (SetorNordeste.contains(X, Y)) {
 			return 1;
-		}else if(SetorSudeste.contains(X,Y)){
+		} else if (SetorSudeste.contains(X, Y)) {
 			return 2;
-		} else if(SetorSudoeste.contains(X,Y)){
+		} else if (SetorSudoeste.contains(X, Y)) {
 			return 3;
-		}else if(SetorNoroeste.contains(X,Y)){
+		} else if (SetorNoroeste.contains(X, Y)) {
 			return 4;
-		}else
+		} else
 			return 0;
 	}
 
-	private void DemarcarRegioes(int sector){
-		
-		List<EntityID> division =  new ArrayList<EntityID>();
+	private void DemarcarRegioes(int sector) {
+
+		List<EntityID> division = new ArrayList<EntityID>();
 		List<Integer> xs = new ArrayList<Integer>();
 		List<Integer> ys = new ArrayList<Integer>();
-		
+
 		if (sector == 1) {
 			System.out.println("Nordeste");
 			division = GetDivisionLane(1);
-			xs.add((int)coordinate_MaxX);
-			ys.add((int)coordinate_MaxY);
+			xs.add((int) coordinate_MaxX);
+			ys.add((int) coordinate_MaxY);
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
-			for(EntityID next: division){
+			for (EntityID next : division) {
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
-				if(auxpoint == 0){
-					xs.add((int)r.getX());
-					ys.add((int)coordinate_MaxY);
-					auxpoint =1;					
+				if (auxpoint == 0) {
+					xs.add((int) r.getX());
+					ys.add((int) coordinate_MaxY);
+					auxpoint = 1;
 				}
-				xs.add((int)r.getX());
-				ys.add((int)r.getY());
+				xs.add((int) r.getX());
+				ys.add((int) r.getY());
 			}
-			xs.add((int)coordinate_MaxX);
-			ys.add((int)r2.getY());
-			
-			SetorNordeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-//			SetorNordeste.addPoint((int)coordinate_MaxX, (int)coordinate_MaxY);
-			
+			xs.add((int) coordinate_MaxX);
+			ys.add((int) r2.getY());
+
+			SetorNordeste = new Polygon(toIntArray(xs), toIntArray(ys),
+					xs.size());
+			// SetorNordeste.addPoint((int)coordinate_MaxX,
+			// (int)coordinate_MaxY);
+
 		} else
 
 		// Gera a Região S2: Sudeste;
 		if (sector == 2) {
 			division = GetDivisionLane(2);
-			xs.add((int)coordinate_MaxX);
-			ys.add((int)coordinate_MinY);
-			
+			xs.add((int) coordinate_MaxX);
+			ys.add((int) coordinate_MinY);
+
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
-			for(EntityID next: division){
+			for (EntityID next : division) {
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
-				if(auxpoint == 0){
-					
-					xs.add((int)coordinate_MaxX);
-					ys.add((int)r.getY());
-					
-					auxpoint =1;					
+				if (auxpoint == 0) {
+
+					xs.add((int) coordinate_MaxX);
+					ys.add((int) r.getY());
+
+					auxpoint = 1;
 				}
-				xs.add((int)r.getX());
-				ys.add((int)r.getY());
+				xs.add((int) r.getX());
+				ys.add((int) r.getY());
 			}
-			xs.add((int)r2.getX());
-			ys.add((int)coordinate_MinY);
-			SetorSudeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-//			SetorSudeste.addPoint((int)coordinate_MaxX, (int)coordinate_MinY);
-			
+			xs.add((int) r2.getX());
+			ys.add((int) coordinate_MinY);
+			SetorSudeste = new Polygon(toIntArray(xs), toIntArray(ys),
+					xs.size());
+			// SetorSudeste.addPoint((int)coordinate_MaxX,
+			// (int)coordinate_MinY);
+
 		} else
 
 		// Gera a Região S3: Sudoeste;
 		if (sector == 3) {
 			division = GetDivisionLane(3);
 			int auxpoint = 0;
-			xs.add((int)coordinate_MinX);
-			ys.add((int)coordinate_MinY);
+			xs.add((int) coordinate_MinX);
+			ys.add((int) coordinate_MinY);
 			Road r2 = null; // Road aux
-			for(EntityID next: division){
+			for (EntityID next : division) {
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
-				if(auxpoint == 0){
-					xs.add((int)r.getX());
-					ys.add((int)coordinate_MinY);
-					SetorSudoeste.addPoint((int)r.getX(),(int)coordinate_MinY);
-					auxpoint =1;					
+				if (auxpoint == 0) {
+					xs.add((int) r.getX());
+					ys.add((int) coordinate_MinY);
+					SetorSudoeste.addPoint((int) r.getX(),
+							(int) coordinate_MinY);
+					auxpoint = 1;
 				}
-				xs.add((int)r.getX());
-				ys.add((int)r.getY());
+				xs.add((int) r.getX());
+				ys.add((int) r.getY());
 			}
-			xs.add((int)coordinate_MinX);
-			ys.add((int)r2.getY());
-			SetorSudoeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-//			SetorSudoeste.addPoint((int)coordinate_MinX, (int)coordinate_MinY);
+			xs.add((int) coordinate_MinX);
+			ys.add((int) r2.getY());
+			SetorSudoeste = new Polygon(toIntArray(xs), toIntArray(ys),
+					xs.size());
+			// SetorSudoeste.addPoint((int)coordinate_MinX,
+			// (int)coordinate_MinY);
 
 		} else
 
 		// Gera a Região S4: Noroeste;
 		if (sector == 4) {
 			division = GetDivisionLane(4);
-			xs.add((int)coordinate_MinX);
-			ys.add((int)coordinate_MaxY);
+			xs.add((int) coordinate_MinX);
+			ys.add((int) coordinate_MaxY);
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
-			for(EntityID next: division){
+			for (EntityID next : division) {
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
-				if(auxpoint == 0){
-					xs.add((int)coordinate_MinX);
-					ys.add((int)r.getY());
-					auxpoint =1;					
+				if (auxpoint == 0) {
+					xs.add((int) coordinate_MinX);
+					ys.add((int) r.getY());
+					auxpoint = 1;
 				}
-				xs.add((int)r.getX());
-				ys.add((int)r.getY());
+				xs.add((int) r.getX());
+				ys.add((int) r.getY());
 			}
-			xs.add((int)r2.getX());
-			ys.add((int)coordinate_MaxY);
-			SetorNoroeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-//			SetorNoroeste.addPoint((int)coordinate_MinX, (int)coordinate_MaxY);
+			xs.add((int) r2.getX());
+			ys.add((int) coordinate_MaxY);
+			SetorNoroeste = new Polygon(toIntArray(xs), toIntArray(ys),
+					xs.size());
+			// SetorNoroeste.addPoint((int)coordinate_MinX,
+			// (int)coordinate_MaxY);
 		}
-/*
-		int[] xss = SetorNordeste.xpoints;
-		int[] yss = SetorNordeste.ypoints;
-		System.out.println("Nordeste");
-		for(int i = 0; i < xss.length; i++){
-			System.out.println(xss[i] + " " + yss[i] + " - " + i);
-		}
+		/*
+		 * int[] xss = SetorNordeste.xpoints; int[] yss = SetorNordeste.ypoints;
+		 * System.out.println("Nordeste"); for(int i = 0; i < xss.length; i++){
+		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
+		 * 
+		 * xss = SetorSudeste.xpoints; yss = SetorSudeste.ypoints;
+		 * System.out.println("Sudeste"); for(int i = 0; i < xss.length; i++){
+		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
+		 * 
+		 * xss = SetorSudoeste.xpoints; yss = SetorSudoeste.ypoints;
+		 * System.out.println("Sudoeste"); for(int i = 0; i < xss.length; i++){
+		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
+		 * 
+		 * xss = SetorNoroeste.xpoints; yss = SetorNoroeste.ypoints;
+		 * System.out.println("Noroeste"); for(int i = 0; i < xss.length; i++){
+		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
+		 */
 
-		xss = SetorSudeste.xpoints;
-		yss = SetorSudeste.ypoints;
-		System.out.println("Sudeste");
-		for(int i = 0; i < xss.length; i++){
-			System.out.println(xss[i] + " " + yss[i] + " - " + i);
-		}
-
-		xss = SetorSudoeste.xpoints;
-		yss = SetorSudoeste.ypoints;
-		System.out.println("Sudoeste");
-		for(int i = 0; i < xss.length; i++){
-			System.out.println(xss[i] + " " + yss[i] + " - " + i);
-		}
-
-		xss = SetorNoroeste.xpoints;
-		yss = SetorNoroeste.ypoints;
-		System.out.println("Noroeste");
-		for(int i = 0; i < xss.length; i++){
-			System.out.println(xss[i] + " " + yss[i] + " - " + i);
-		}*/
-		
 	}
 
-	
 	/*
-	 *  Gera os limites dos setores (Busca em Largura na via principal)
+	 * Gera os limites dos setores (Busca em Largura na via principal)
 	 */
 	private List<EntityID> GetDivisionLane(int sector) {
-		
+
 		System.out.println(MapPrincipal.keySet());
 		MASLABBFSearch bfSearch = new MASLABBFSearch(MapPrincipal);
 
-		if(sector == 1){
+		if (sector == 1) {
 			return bfSearch.breadthFirstSearch(idNorte, idLeste);
 		}
-		if(sector == 2){
+		if (sector == 2) {
 			return bfSearch.breadthFirstSearch(idLeste, idSul);
 		}
-		if(sector == 3){
+		if (sector == 3) {
 			return bfSearch.breadthFirstSearch(idSul, idOeste);
 		}
-		if(sector == 4){
+		if (sector == 4) {
 			return bfSearch.breadthFirstSearch(idOeste, idNorte);
-		}
-		else{
+		} else {
 			return null;
 		}
 	}
-	int[] toIntArray(List<Integer> list){
-		  int[] ret = new int[list.size()];
-		  for(int i = 0;i < ret.length;i++)
-		    ret[i] = list.get(i);
-		  return ret;
-		}
+
+	int[] toIntArray(List<Integer> list) {
+		int[] ret = new int[list.size()];
+		for (int i = 0; i < ret.length; i++)
+			ret[i] = list.get(i);
+		return ret;
+	}
 }
