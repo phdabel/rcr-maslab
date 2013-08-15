@@ -2,6 +2,7 @@
 \usepackage[latin1]{inputenc}
 \usepackage{graphicx}
 \usepackage{ae}
+\usepackage{amsmath}
 %
 % LaTeX2e class SBATeX
 %
@@ -127,7 +128,7 @@ Este artigo apresenta a metodologia adotada pela equipe Epicenter para programaç
 
 \section{Modelagem dos agentes}
 
-\lerolero
+Esta seção apresenta a modelagem dos agentes da equipe Epicenter. De modo geral, os agentes de pelotão (ambulâncias, bombeiros e policiais) são implementados com uma máquina de estados e uma fila de atividades. Cada agente preenche a fila com diferentes atividades e esse processo é descrito a seguir.
 
 %---------------------------------------------------------------------------------------------------
 
@@ -182,7 +183,8 @@ Essas rotas combinadas formam as vias principais, destacadas no mapa de Kobe (Fi
 \label{fig:setores}
 \end{figure}
 
-Após a identificação dos limites de cada área, aloca-se cada entidade (ruas, construções, refúgios, hidrantes e postos de combustíveis) a seus respectivos setores.
+Após a identificação dos limites de cada área, o setor de cada entidade (ruas, construções, refúgios, hidrantes e postos de combustíveis) é identificado.
+
 Os agentes também serão alocados proporcionalmente aos setores, conforme descrito na Seção \ref{sec:alocacao}.
 
 %---------------------------------------------------------------------------------------------------
@@ -190,7 +192,40 @@ Os agentes também serão alocados proporcionalmente aos setores, conforme descrit
 \subsection{Alocação dos Agentes}
 \label{sec:alocacao}
 
-\lerolero
+Dada a divisão do mapa em setores, é necessário alocar adequadamente os agentes de acordo com a importância de cada setor. A alocação dos agentes é realizada na etapa de pré-processamento e também durante a simulação. A alocação durante a simulação é importante porque a importância de um setor pode mudar durante a simulação devido ao aparecimento ou desaparecimento de problemas. 
+
+Cada setor possui uma importância para cada tipo de agente (ambulância, bombeiro ou policial). A importância de um setor para um tipo de agente é um valor numérico atribuído de acordo com os problemas daquele setor com os quais os agentes daquele tipo têm que lidar. Em seguida, a quantidade de agentes de cada tipo é calculada para cada setor, com base na importância do setor em relação aos demais.
+
+Durante a etapa de pré-processamento, existem apenas informações estáticas sobre o ambiente (como a localização de refúgios, prédios, postos de combustível e hidrantes, por exemplo). Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte forma:
+
+\begin{itemize}
+  \item Bombeiros: quantidade de prédios e quantidade de postos de combustível. Atribui-se inicialmente maior importância a setores onde há maior potencial de propagação de incêndios.
+  \item Policiais: quantidade de refúgios e hidrantes. Atribui-se inicialmente maior importância a setores onde recursos estratégicos estão posicionados.
+  \item Ambulâncias: quantidade de prédios. Atribui-se inicialmente maior importância a setores onde há maior probabilidade de haver civis soterrados e supõe-se que esta probabilidade aumente com o número de prédios de um setor.
+\end{itemize}
+
+
+Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, cada agente calcula a importância de um setor da seguinte forma:
+
+\begin{itemize}
+  \item Bombeiros: quantidade de postos de combustível e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêncios, mas os postos de combustível devem ser protegidos.
+  \item Policiais: quantidade de bloqueios em vias estratégicas. Atribui-se maior importância a setores onde recursos estratégicos (como refúgios e hidrantes) estão bloqueados.
+  \item Ambulâncias: quantidade de civis soterrados. Atribui-se maior importância a setores onde há maior número de civis soterrados.
+\end{itemize}
+
+O cálculo do percentual de agentes de cada tipo que deve estar em cada setor é descrito a seguir. Seja $S$ o conjunto de setores do mapa, $a_s$, $b_s$ e $p_s$ o valor numérico que representa a importância de cada setor $s$ para as ambulâncias, bombeiros e policiais, respectivamente e. O percentual de agentes que deve estar em cada setor é proporcional à importância de um setor em relação ao somatório das importâncias. A Eq. \ref{eq:alocacao} formaliza o cálculo do percentual de agentes em cada setor.
+
+\begin{equation}
+\begin{split}
+\label{eq:alocacao}
+\%ambulancias_s = \frac{a_s}{\sum_{s \in S} a_s} \\
+\%bombeiros_s = \frac{b_s}{\sum_{s \in S} b_s} \\
+\%policiais_s = \frac{p_s}{\sum_{s \in S} p_s} 
+\end{split}
+\end{equation}
+
+
+O cálculo descrito na Eq. \ref{eq:alocacao} é feito pelas centrais, de acordo com as informações que os agentes repassaram a elas. Após o cálculo, as centrais notificam os agentes que devem mudar de setor para que o percentual calculado de agentes em cada setor seja obtido.
 
 %---------------------------------------------------------------------------------------------------
 
