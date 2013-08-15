@@ -102,10 +102,17 @@ public class MASLABSectoringTest {
 		idLeste = EntMaisProximo(coordinate_MaxX, coordinate_CenterY);
 		idOeste = EntMaisProximo(coordinate_MinX, coordinate_CenterY);
 
+		System.out.println(model.getEntity(idNorte));
+		System.out.println(model.getEntity(idSul));
+		System.out.println(model.getEntity(idLeste));
+		System.out.println(model.getEntity(idOeste));
+		
 		Avenue_NtoS = search.breadthFirstSearch(idNorte,
-				new ArrayList<EntityID>(), idSul);
+				new ArrayList<EntityID>(), idSul, false);
 		Avenue_LtoO = search.breadthFirstSearch(idLeste,
-				new ArrayList<EntityID>(), idOeste);
+				new ArrayList<EntityID>(), idOeste, false);
+		System.out.println(Avenue_NtoS);
+		System.out.println(Avenue_LtoO);
 
 		CarregaGrafoPrincipal();
 		CarregaGrafosSetores();
@@ -432,6 +439,8 @@ public class MASLABSectoringTest {
 			Road r2 = null; // Road aux
 			int auxpoint = 0;
 			for (EntityID next : division) {
+				System.out.println(next.getValue());
+				System.out.println(model.getEntity(next).getClass());
 				Road r = (Road) model.getEntity(next);
 				r2 = r;
 				if (auxpoint == 0) {

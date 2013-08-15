@@ -2,6 +2,7 @@ package util;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.Entity;
+import rescuecore2.misc.WorkerThread;
 import rescuecore2.misc.collections.LazyMap;
 
 import java.util.ArrayList;
@@ -15,6 +16,9 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import org.hamcrest.core.IsNull;
+
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardWorldModel;
 import rescuecore2.standard.entities.Area;
 
@@ -24,6 +28,7 @@ import rescuecore2.standard.entities.Area;
 public final class MASLABBFSearch {
 
 	private Map<EntityID, Set<EntityID>> graph;
+	private StandardWorldModel model;
 
 	/**
 	 * Construct a new SampleSearch.
@@ -32,6 +37,7 @@ public final class MASLABBFSearch {
 	 *            The world model to construct the neighbourhood graph from.
 	 */
 	public MASLABBFSearch(StandardWorldModel world) {
+		model = world;
 		Map<EntityID, Set<EntityID>> neighbours = new LazyMap<EntityID, Set<EntityID>>() {
 			@Override
 			public Set<EntityID> createValue() {
@@ -152,8 +158,6 @@ public final class MASLABBFSearch {
 				}
 			} while (!found && !open.isEmpty());
 		} catch (Exception e) {
-			System.out.println(ancestors.keySet());
-			System.out.println(open);
 			EntityID current = next;
 			List<EntityID> path = new LinkedList<EntityID>();
 			do {
@@ -164,7 +168,6 @@ public final class MASLABBFSearch {
 							"Found a node with no ancestor! Something is broken.");
 				}
 			} while (current != start);
-			System.out.println(path);
 		}
 		if (!found) {
 			// No path
@@ -178,7 +181,6 @@ public final class MASLABBFSearch {
 							"Found a node with no ancestor! Something is broken.");
 				}
 			} while (current != start);
-			System.out.println(path);
 			return null;
 		}
 		// Walk back from goal to start
@@ -203,42 +205,80 @@ public final class MASLABBFSearch {
 		return test.contains(e);
 	}
 
-	/**
-	 * Do a breadth first search from one location to the closest (in terms of
-	 * number of nodes) of a set of goals.
-	 * 
-	 * @param start
-	 *            The location we start at.
-	 * @param goals
-	 *            The set of possible goals.
-	 * @return The path from start to one of the goals, or null if no path can
-	 *         be found.
-	 */
-	public List<EntityID> CompleteBreadthFirstSearch(EntityID start,
-			Collection<EntityID> goals) {
+	public List<EntityID> breadthFirstSearch(EntityID start, List<EntityID> Bloqueios, 
+			EntityID goal, Boolean ConsiderarBuildings) {
+		Collection<EntityID> goals = Arrays.asList(goal);
 		List<EntityID> open = new LinkedList<EntityID>();
-		List<EntityID> Visitado = new ArrayList<EntityID>();
+		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
 		open.add(start);
-		Visitado.add(start);
 		EntityID next = null;
 		boolean found = false;
+		ancestors.put(start, start);
 		do {
 			next = open.remove(0);
-			if (!isGoal(next, goals)) {
+			if (isGoal(next, goals)) {
+				found = true;
+				break;
+			}
+			
+			if (!isBlocked(next, Bloqueios)) {
 				Collection<EntityID> neighbours = graph.get(next);
-				if (!neighbours.isEmpty()) {
-					for (EntityID neighbour : neighbours) {
-						if (!isGoal(neighbour, goals)) {
-							if (!Visitado.contains(neighbour)) {
-								open.add(neighbour);
-								Visitado.add(neighbour);
-							}
+				if(neighbours.isEmpty()){
+					continue;
+				}
+				if (!ConsiderarBuildings){
+					Collection<EntityID> aux = new ArrayList<EntityID>(neighbours);
+					for(EntityID neighbour : aux) {
+						if(model.getEntity(neighbour).getClass().equals(Building.class)){
+							System.out.println(neighbour.getValue());
+							neighbours.remove(neighbour);
+						}
+					}
+				}
+				if (neighbours.isEmpty()) {
+					continue;
+				}
+				for (EntityID neighbour : neighbours) {
+					if (isGoal(neighbour, goals)) {
+						ancestors.put(neighbour, next);
+						next = neighbour;
+						found = true;
+						break;
+					} else {
+						if (!ancestors.containsKey(neighbour)) {
+							open.add(neighbour);
+							ancestors.put(neighbour, next);
 						}
 					}
 				}
 			}
 		} while (!found && !open.isEmpty());
-		return Visitado;
+		if (!found) {
+			// No path
+			EntityID current = next;
+			List<EntityID> path = new LinkedList<EntityID>();
+			do {
+				path.add(0, current);
+				current = ancestors.get(current);
+				if (current == null) {
+					throw new RuntimeException(
+							"Found a node with no ancestor! Something is broken.");
+				}
+			} while (current != start);
+			return null;
+		}
+		// Walk back from goal to start
+		EntityID current = next;
+		List<EntityID> path = new LinkedList<EntityID>();
+		do {
+			path.add(0, current);
+			current = ancestors.get(current);
+			if (current == null) {
+				throw new RuntimeException(
+						"Found a node with no ancestor! Something is broken.");
+			}
+		} while (current != start);
+		return path;
 	}
-
+	
 }
