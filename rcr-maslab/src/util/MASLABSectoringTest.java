@@ -42,6 +42,12 @@ public class MASLABSectoringTest {
 	private static double coordinate_MinY = 0;
 	private static double coordinate_CenterX = 0;
 	private static double coordinate_CenterY = 0;
+	
+	private static final int NORTH_EAST = 1;
+	private static final int SOUTH_EAST = 2;
+	private static final int SOUTH_WEST = 3;
+	private static final int NORTH_WEST = 4;
+	private static final int UNDEFINED_SECTOR = 0;
 
 	private List<EntityID> Avenue_NtoS;
 	private List<EntityID> Avenue_LtoO;
@@ -385,15 +391,15 @@ public class MASLABSectoringTest {
 
 	private int getSetorPertencente(double X, double Y) {
 		if (SetorNordeste.contains(X, Y)) {
-			return 1;
+			return NORTH_EAST;
 		} else if (SetorSudeste.contains(X, Y)) {
-			return 2;
+			return SOUTH_EAST;
 		} else if (SetorSudoeste.contains(X, Y)) {
-			return 3;
+			return SOUTH_WEST;
 		} else if (SetorNoroeste.contains(X, Y)) {
-			return 4;
+			return NORTH_WEST;
 		} else
-			return 0;
+			return UNDEFINED_SECTOR;
 	}
 
 	private void DemarcarRegioes(int sector) {
