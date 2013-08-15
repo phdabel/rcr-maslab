@@ -1,5 +1,6 @@
 \documentclass[conference,harvard,brazil,english]{sbatex}
 \usepackage[latin1]{inputenc}
+\usepackage{graphicx}
 \usepackage{ae}
 %
 % LaTeX2e class SBATeX
@@ -121,12 +122,6 @@ teste
 
 %===================================================================================================
 
-\section{Modelagem do ambiente}
-
-\lerolero
-
-%===================================================================================================
-
 \section{Modelagem dos agentes}
 
 \lerolero
@@ -174,11 +169,18 @@ A setorização consiste em dividir o mapa em quatro setores, de modo que os agent
 Esse processo é realizado no preprocessamento, de modo que os agentes saibam dessa informação quando iniciarem a simulação.
 
 Para delimitar os setores, selecionam-se 4 pontos: Norte, Sul, Leste e Oeste.
-Em seguida, obtém-se os nós do grafo do mapa mais próximos a esses pontos e utiliza-se o método de busca em largura para traçar 2 rotas: Norte para Sul e Leste para Oeste.
-As todas podem ser vistas destacadas na Figura \textbf{INSERIR FIGURA KOBE}.
+Em seguida, obtém-se os nós do grafo do mapa mais próximos a esses pontos.
+Por fim, utiliza-se o método de busca em largura para traçar 2 rotas: Norte para Sul e Leste para Oeste.
+Essas rotas combinadas formam as vias principais, destacadas no mapa de Kobe (Figura \ref{fig:setores}).
+
+\begin{figure}[!h]
+\centerline{\includegraphics[width=0.5\textwidth]{setores.pdf}}
+\caption{Vias Principais no mapa Kobe.}
+\label{fig:setores}
+\end{figure}
 
 Após a identificação dos limites de cada área, aloca-se cada entidade (ruas, construções, refúgios, hidrantes e postos de combustíveis) a seus respectivos setores.
-Os agentes também serão alocados proporcionalmente aos setores, conforme descrito na seção \ref{sec:alocacao}.
+Os agentes também serão alocados proporcionalmente aos setores, conforme descrito na Seção \ref{sec:alocacao}.
 
 %---------------------------------------------------------------------------------------------------
 
@@ -201,10 +203,6 @@ Desse modo, um grupo de policiais ficará responsável por limpar as vias principa
 Desse modo, sempre que um agente tiver de se locomover, ele utilizará as vias principais e secundárias.
 A Figura \textbf{REFERENCIAR FIGURA} mostra o exemplo de um bombeiro que estava combatendo um incêndio e que precisa abastecer.
 Pode-se verificar que mesmo que exista um caminho mais curto até o refúgio, por entre os setores, a rota dele define que ele deverá ir para as vias principais e das vias principais para o refúgio, através de uma via secundária.
-
-\subsection{Arquivo de pré-processamento}
-
-\lerolero
 
 %===================================================================================================
 
