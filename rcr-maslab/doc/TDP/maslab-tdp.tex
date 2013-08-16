@@ -76,12 +76,12 @@ No simulador, times de bombeiros, paramédicos e policiais devem se coordenar par
 
 Este artigo apresenta a metodologia adotada pela equipe Epicenter para programação dos times de agentes, com foco na  divisão do mapa em setores, a alocação de agentes para cada setor e os métodos empregados para cálculo de rotas, que consideram os setores que foram determinados no mapa.
 
-Os agentes são modelados com base em Estratégias Gerais e Específicas.
+Os agentes são modelados com base em estratégias gerais e específicas.
 As estratégias gerais definem o comportamento comum dos agentes, como por exemplo, método de locomoção, exploração, setorização e distribuição dos agentes entre os setores.
 As estratégias específicas descrevem como cada grupo de agentes (ambulâncias, bombeiros e policiais) irá atuar.
 
-Na Seção \ref{sec:geral} são apresentadas as estratégias gerais: Setorização (Seção \ref{sec:setorizacao}), Alocação dos Agentes (Seção \ref{sec:alocacao}), Roteamento (Seção \ref{sec:roteamento}) e Exploração (Seção \ref{sec:exploracao}) e Comunicação (Seção \ref{sec:comunicacao}).
-Em seguida, na Seção \ref{sec:especifico} são descritas as estratégias específicas de cada grupo de agentes: Ambulâncias (Seção \ref{sec:ambulancias}), Bombeiros (Seção \ref{sec:bombeiros}) e Policiais (Seção \ref{sec:policiais}).
+Na Seção \ref{sec:geral} são apresentadas as estratégias gerais: setorização (Seção \ref{sec:setorizacao}), alocação dos agentes (Seção \ref{sec:alocacao}), roteamento (Seção \ref{sec:roteamento}), exploração (Seção \ref{sec:exploracao}) e comunicação (Seção \ref{sec:comunicacao}).
+Em seguida, na Seção \ref{sec:especifico} são descritas as estratégias específicas de cada grupo de agentes: ambulâncias (Seção \ref{sec:ambulancias}), bombeiros (Seção \ref{sec:bombeiros}) e policiais (Seção \ref{sec:policiais}).
 Ao final, na Seção \ref{sec:consideracoes} são discutidas as considerações finais acerca das estratégias implementadas.
 
 %===================================================================================================
@@ -90,16 +90,16 @@ Ao final, na Seção \ref{sec:consideracoes} são discutidas as considerações finai
 \label{sec:geral}
 
 Nessa seção são discutidas as estratégias genéricas aplicadas a todos os agentes.
-Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar ps setores para que os agentes possam ser alocados (Seção \ref{sec:roteamento}) com base na importância do setor.
+Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar ps setores para que os agentes possam ser alocados (Seção \ref{sec:alocacao}) com base na importância do setor.
 Outro papel importante da setorização se relaciona com a técnica de roteamento (Seção \ref{sec:roteamento}), a qual busca traçar rotas priorizando a expectativa do estado da via em relação a distância.
-Espera-se que a priorização da limpeza de determinadas vias faça com que, em geral, os agentes se desloquem mais rapidamente, se comparado com o mais curto, devido a trechos não desbloqueados.
+Espera-se que a priorização da limpeza de determinadas vias faça com que, em geral, os agentes se desloquem mais rapidamente, se comparado com o caminho mais curto, devido a trechos bloqueados.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Setorização}
 \label{sec:setorizacao}
 
-A setorização consiste em dividir o mapa em quatro setores, de modo que os agentes possam ser alocados a cada setor conforme sua importância (descrito na seção \ref{sec:alocacao}).
+A setorização consiste em dividir o mapa em quatro setores, de modo que os agentes possam ser alocados a cada setor conforme sua importância (descrito na Seção \ref{sec:alocacao}).
 Devido ao tempo gasto para realizar essa tarefa, o processo é realizado no preprocessamento, de modo que os agentes saibam dessa informação quando iniciarem a simulação.
 
 Para delimitar os setores, selecionam-se 4 pontos: Norte, Sul, Leste e Oeste.
@@ -123,7 +123,7 @@ Os agentes também serão alocados proporcionalmente aos setores, conforme descrit
 
 Dada a divisão do mapa em setores, é necessário alocar adequadamente os agentes de acordo com a importância de cada setor.
 A alocação dos agentes é realizada na etapa de pré-processamento e também durante a simulação.
-A alocação durante a simulação é importante porque a importância de um setor pode mudar durante a simulação devido ao aparecimento ou desaparecimento de problemas.
+A alocação durante a simulação é relevante porque a importância de um setor pode mudar durante a simulação devido ao aparecimento ou desaparecimento de problemas.
 
 Cada setor possui uma importância para cada tipo de agente (ambulâncias, bombeiros ou policiais).
 A importância de um setor para um tipo de agente é um valor numérico atribuído de acordo com os problemas daquele setor com os quais os agentes daquele tipo têm que lidar.
@@ -141,7 +141,7 @@ Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte f
 Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, cada agente calcula a importância de um setor da seguinte forma:
 
 \begin{itemize}
-  \item Bombeiros: quantidade de postos de combustíveis e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêndios, mas os postos de combustíveis devem ser protegidos.
+  \item Bombeiros: quantidade de postos de combustíveis e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêndios, e além disso os postos de combustíveis devem ser protegidos.
   \item Policiais: quantidade de bloqueios em vias estratégicas. Atribui-se maior importância a setores onde recursos estratégicos (como refúgios e hidrantes) estão bloqueados.
   \item Ambulâncias: quantidade de civis soterrados. Atribui-se maior importância a setores onde há maior número de civis soterrados.
 \end{itemize}
