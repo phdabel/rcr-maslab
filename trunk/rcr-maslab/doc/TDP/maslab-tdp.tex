@@ -1,8 +1,7 @@
 \documentclass[conference,harvard,brazil,english]{sbatex}
 \usepackage[latin1]{inputenc}
-\usepackage{graphicx}
 \usepackage{ae}
-\usepackage{amsmath}
+\usepackage{graphicx}
 %
 % LaTeX2e class SBATeX
 %
@@ -64,7 +63,7 @@
 
 % CABEÇALHO
 
-\title{Epicenter Team Description Paper}
+\title{Maslab Team Description Paper}
 
 \author{Abel Corrêa}{acorrea@inf.ufrgs.br}
 \address{Instituto de Informática, Universidade Federal do Rio Grande do Sul \\ Porto Alegre, RS, Brasil}
@@ -80,6 +79,8 @@
 \author[1]{Ricardo Grunitzki}{rgrunitzki@inf.ufrgs.br}
 
 \author[1]{Ana L. C. Bazzan}{bazzan@inf.ufrgs.br}
+
+\author[1]{Luiz H. D. Souza}{lhdsouza@inf.ufrgs.br}
 
 % Com a opção 'journal' pode-se definir
 %\volume{X}
@@ -116,19 +117,21 @@
 
 \section{Introdução}
 
-Operações de resgate em situações de desastre (como terremotos, inundações, furacões, entre outros) são uma questão social séria. Essas operações envolvem diversos agentes (policiais, bombeiros, paramédicos, entre outros) em um ambiente hostil: construções desabam, ruas ficam bloqueadas, fornecimento de água e eletricidade fica comprometido e meios de comunicação operam com limitações, tornando escassas e imprecisas as informações sobre o problema. 
-
-Situações assim requerem sistemas que possam criar planos robustos, dinâmicos e inteligentes de busca e resgate que auxiliem o esforço humano. Tendo isso em vista, o simulador de desastres RoboCup Rescue provê um ambiente para programação de times de agentes virtuais para promover pesquisa e desenvolvimento no campo de coordenação em sistemas multiagente. No simulador, times de bombeiros, paramédicos e policiais devem se coordenar para minimizar os problemas causados a uma cidade por um terremoto.
-
-Este artigo apresenta a metodologia adotada pela equipe Epicenter para programação dos times de agentes, com foco na  divisão do mapa em setores, a alocação de agentes para cada setor e os métodos empregados para cálculo de rotas, que consideram os setores que foram determinados no mapa.
+\lerolero
 
 \textbf{Falar dos objetivos da setorização: Alocação dos agentes e roteamento}
 
 %===================================================================================================
 
+\section{Modelagem do ambiente}
+
+\lerolero
+
+%===================================================================================================
+
 \section{Modelagem dos agentes}
 
-Esta seção apresenta a modelagem dos agentes da equipe Epicenter. De modo geral, os agentes de pelotão (ambulâncias, bombeiros e policiais) são implementados com uma máquina de estados e uma fila de atividades. Cada agente preenche a fila com diferentes atividades e esse processo é descrito a seguir.
+\lerolero
 
 %---------------------------------------------------------------------------------------------------
 
@@ -139,8 +142,25 @@ Esta seção apresenta a modelagem dos agentes da equipe Epicenter. De modo geral,
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Bombeiros}
+\label{sec:bombeiro}
+Os bombeiros, agentes responsáveis por apagar incendios, possuem em sua concepção listas de tarefas ordenadas por prioridades. Tais listas são atualizadas através de suas percepções do ambiente e também por meio de informações recebidas dos demais agentes, seja por canais de comunicação ou voz. As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade civis na construção e intensidade do fogo.
 
-\lerolero
+É dado prioridade máxima a incêndios com a maior quantidade de civis dentro. Em seguida, caso não hajam civis, são priorizados incêndios pequenos, esta medida impede que o fogo se alastre para as demais construções. Caso o incêndio esteja em um estágio avançado, e o bombeiro considere não ser viável apagá-lo, então, este irá controlar o fogo dos prédios visinhos, evitando assim que o incêndio se propague. A avaliação da viabilidade de apagar um incêndio ou não é dada por meio de uma rede neural artificial. Esta rede, recebe como dados de entrada informações da construção em chamas, e retorna o tempo necessário para a consturção queimar completamente em passos de tempo.
+
+Para construir a rede, desenvolveu-se bombeiros observadores responsaveis capturar informações de constuções em chamas em simulações \textit{offline} de diferentes mapas. Estas informações são compostas por: area total, temperatura e fieryness, além do tempo total gasto para a construção queimar completamente. Cerca de 1300 destas instâncias foram utilizadas para gerar o arquivo de treinamento da rede. Em seguinda treinou-se uma rede neural \textsl{multi layer perceptron}. A topologia da rede pode ser observada na figura \ref{fig:rede}.
+
+\begin{figure}[!htb]
+     \centering
+     \includegraphics[width=8cm]{img/mlp.png}
+     \caption{Topologia da rede neural.}
+     \label{fig:rede}
+\end{figure}
+
+Como se pode observar, a rede possue três camadas, sendo que: Na camada de entrada, o \textit{Fieriness}
+representa a intensidade do fogo, e tem três possíveis valores: \textit{heating}, \textit{burning} e \textit{inferno} que são representados respectivamente por 1, 2 e 3. A entrada \textit{Temperature}, representada por um número inteiro, refere-se ao aquecimento da construção. Por fim, a entrada \textit{Area},
+representada por um inteiro positivo, refere-se à área total construída, levando em
+consideração a quantidade de andares da construção. Na camada de saída, \textit{time} representa um valor
+inteiro de unidades de tempo (\textit{timesteps}).
 
 \subsubsection{Classificação dos Incêndios}
 
@@ -173,59 +193,18 @@ A setorização consiste em dividir o mapa em quatro setores, de modo que os agent
 Esse processo é realizado no preprocessamento, de modo que os agentes saibam dessa informação quando iniciarem a simulação.
 
 Para delimitar os setores, selecionam-se 4 pontos: Norte, Sul, Leste e Oeste.
-Em seguida, obtém-se os nós do grafo do mapa mais próximos a esses pontos.
-Por fim, utiliza-se o método de busca em largura para traçar 2 rotas: Norte para Sul e Leste para Oeste.
-Essas rotas combinadas formam as vias principais, destacadas no mapa de Kobe (Figura \ref{fig:setores}).
+Em seguida, obtém-se os nós do grafo do mapa mais próximos a esses pontos e utiliza-se o método de busca em largura para traçar 2 rotas: Norte para Sul e Leste para Oeste.
+As todas podem ser vistas destacadas na Figura \textbf{INSERIR FIGURA KOBE}.
 
-\begin{figure}[!h]
-\centerline{\includegraphics[width=0.5\textwidth]{setores.pdf}}
-\caption{Vias Principais no mapa Kobe.}
-\label{fig:setores}
-\end{figure}
-
-Após a identificação dos limites de cada área, o setor de cada entidade (ruas, construções, refúgios, hidrantes e postos de combustíveis) é identificado.
-
-Os agentes também serão alocados proporcionalmente aos setores, conforme descrito na Seção \ref{sec:alocacao}.
+Após a identificação dos limites de cada área, aloca-se cada entidade (ruas, construções, refúgios, hidrantes e postos de combustíveis) a seus respectivos setores.
+Os agentes também serão alocados proporcionalmente aos setores, conforme descrito na seção \ref{sec:alocacao}.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Alocação dos Agentes}
 \label{sec:alocacao}
 
-Dada a divisão do mapa em setores, é necessário alocar adequadamente os agentes de acordo com a importância de cada setor. A alocação dos agentes é realizada na etapa de pré-processamento e também durante a simulação. A alocação durante a simulação é importante porque a importância de um setor pode mudar durante a simulação devido ao aparecimento ou desaparecimento de problemas. 
-
-Cada setor possui uma importância para cada tipo de agente (ambulância, bombeiro ou policial). A importância de um setor para um tipo de agente é um valor numérico atribuído de acordo com os problemas daquele setor com os quais os agentes daquele tipo têm que lidar. Em seguida, a quantidade de agentes de cada tipo é calculada para cada setor, com base na importância do setor em relação aos demais.
-
-Durante a etapa de pré-processamento, existem apenas informações estáticas sobre o ambiente (como a localização de refúgios, prédios, postos de combustível e hidrantes, por exemplo). Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte forma:
-
-\begin{itemize}
-  \item Bombeiros: quantidade de prédios e quantidade de postos de combustível. Atribui-se inicialmente maior importância a setores onde há maior potencial de propagação de incêndios.
-  \item Policiais: quantidade de refúgios e hidrantes. Atribui-se inicialmente maior importância a setores onde recursos estratégicos estão posicionados.
-  \item Ambulâncias: quantidade de prédios. Atribui-se inicialmente maior importância a setores onde há maior probabilidade de haver civis soterrados e supõe-se que esta probabilidade aumente com o número de prédios de um setor.
-\end{itemize}
-
-
-Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, cada agente calcula a importância de um setor da seguinte forma:
-
-\begin{itemize}
-  \item Bombeiros: quantidade de postos de combustível e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêncios, mas os postos de combustível devem ser protegidos.
-  \item Policiais: quantidade de bloqueios em vias estratégicas. Atribui-se maior importância a setores onde recursos estratégicos (como refúgios e hidrantes) estão bloqueados.
-  \item Ambulâncias: quantidade de civis soterrados. Atribui-se maior importância a setores onde há maior número de civis soterrados.
-\end{itemize}
-
-O cálculo do percentual de agentes de cada tipo que deve estar em cada setor é descrito a seguir. Seja $S$ o conjunto de setores do mapa, $a_s$, $b_s$ e $p_s$ o valor numérico que representa a importância de cada setor $s$ para as ambulâncias, bombeiros e policiais, respectivamente e. O percentual de agentes que deve estar em cada setor é proporcional à importância de um setor em relação ao somatório das importâncias. A Eq. \ref{eq:alocacao} formaliza o cálculo do percentual de agentes em cada setor.
-
-\begin{equation}
-\begin{split}
-\label{eq:alocacao}
-\%ambulancias_s = \frac{a_s}{\sum_{s \in S} a_s} \\
-\%bombeiros_s = \frac{b_s}{\sum_{s \in S} b_s} \\
-\%policiais_s = \frac{p_s}{\sum_{s \in S} p_s} 
-\end{split}
-\end{equation}
-
-
-O cálculo descrito na Eq. \ref{eq:alocacao} é feito pelas centrais, de acordo com as informações que os agentes repassaram a elas. Após o cálculo, as centrais notificam os agentes que devem mudar de setor para que o percentual calculado de agentes em cada setor seja obtido.
+\lerolero
 
 %---------------------------------------------------------------------------------------------------
 
@@ -241,6 +220,10 @@ Desse modo, um grupo de policiais ficará responsável por limpar as vias principa
 Desse modo, sempre que um agente tiver de se locomover, ele utilizará as vias principais e secundárias.
 A Figura \textbf{REFERENCIAR FIGURA} mostra o exemplo de um bombeiro que estava combatendo um incêndio e que precisa abastecer.
 Pode-se verificar que mesmo que exista um caminho mais curto até o refúgio, por entre os setores, a rota dele define que ele deverá ir para as vias principais e das vias principais para o refúgio, através de uma via secundária.
+
+\subsection{Arquivo de pré-processamento}
+
+\lerolero
 
 %===================================================================================================
 
