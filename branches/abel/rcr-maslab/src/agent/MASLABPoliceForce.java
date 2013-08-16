@@ -93,10 +93,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         		
         	}
         		
-        }else if (this.stateQueue.isEmpty() && time > 5){
+        }else if (this.stateQueue.isEmpty() && time > config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)){
         	stateQueue.add(new AgentState("RandomWalk"));
         	
         }
+        this.printQueue();
         
         /**
          * AÇÃO e CONTROLE
@@ -143,7 +144,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			}
         			if(target != null)
         			{
-        				this.addBeginingQueue(new AgentState("Unblock"));
+        				this.addBeginingQueue(new AgentState("Unblock", target.getID()));
         				this.addBeginingQueue(new AgentState("Walk", target.getPosition()));
         			}
         			break;
@@ -156,7 +157,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         				currentPath = this.walk(currentPath, me().getPosition());
         				if(lastPath.size() == currentPath.size())
         				{
-        					this.addBeginingQueue(new AgentState("Unblock"));
+        					this.addBeginingQueue(new AgentState("Unblock",me().getPosition()));
         				}
         				sendMove(time, currentPath);
         				return;
@@ -167,7 +168,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         				
         				if(lastPath.size() == currentPath.size())
         				{
-        					this.addBeginingQueue(new AgentState("Unblock"));
+        					this.addBeginingQueue(new AgentState("Unblock", me().getPosition()));
         				}
         				sendMove(time, currentPath);
         				return;
@@ -181,27 +182,64 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			break;
         		
         		case "Unblock":
-        			Blockade newTarget = getTargetBlockade();
-        			if(newTarget != null && newTarget.isPositionDefined()){
-        				Logger.info("Clearing blockade " + newTarget);
-        				
-        				List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(newTarget.getApexes()), true);
-        	            double best = Double.MAX_VALUE;
-        	            Point2D bestPoint = null;
-        	            Point2D origin = new Point2D(me().getX(), me().getY());
-        	            for (Line2D next : lines) {
-        	                Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-        	                double d = GeometryTools2D.getDistance(origin, closest);
-        	                if (d < best) {
-        	                    best = d;
-        	                    bestPoint = closest;
-        	                }
-        	            }
-        	            Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-        	            v = v.normalised().scale(1000000);
-        	            sendClear(time, (int) (me().getX() + v.getX()), (int) (me().getY() + v.getY()));
-        				return;
-        				//sendClear(time, newTarget.getID());
+        			Area newTarget = (Area)model.getEntity(currentAction.getId());
+        			if(newTarget.isBlockadesDefined())
+        			{
+        				/**
+        				 * pegar ponto mais próximo da próxima Road
+        				 */
+        				Area nextLocation = (Area)model.getEntity(this.nextVertex());
+        				List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(nextLocation.getApexList()), true);
+    					double best = Double.MAX_VALUE;
+    					Point2D bestPoint = null;
+    					Point2D origin = new Point2D(me().getX(), me().getY());
+    					for(Line2D next : lines)
+    					{
+    						Point2D closest = GeometryTools2D.getClosestPoint(next, origin);
+    						double d = GeometryTools2D.getDistance(origin, closest);
+    						if(d < best)
+    						{
+    							best = d;
+    							bestPoint = closest;
+    						}
+    					}
+    					Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
+    					v = v.normalised().scale(1000000);
+    					/**
+    					 * 
+    					 */
+    					
+        				Double bestBlockadeDist = Double.MAX_VALUE;
+        				Point2D candidateBlockade = null;
+        				Vector2D v2 = null;
+        				for(EntityID b:newTarget.getBlockades())
+        				{
+        					Blockade bloqueio = (Blockade)model.getEntity(b);
+        					List<Line2D> linesBlockade = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(bloqueio.getApexes()), true);
+        					double bestBlockadeD = Double.MAX_VALUE;
+        					Point2D bestBlockadePoint = null;
+        					for(Line2D nextLine: linesBlockade)
+        					{
+        						Point2D closestBlockade = GeometryTools2D.getClosestPoint(nextLine, new Point2D(v.getX(),v.getY()));
+        						double dBlock = GeometryTools2D.getDistance(new Point2D(v.getX(), v.getY()), closestBlockade);
+        						if(dBlock < bestBlockadeD)
+        						{
+        							bestBlockadeD = dBlock;
+        							bestBlockadePoint = closestBlockade;
+        						}
+        						v2 = bestBlockadePoint.minus(new Point2D(me().getX(), me().getY()));
+            					v2 = v2.normalised().scale(1000000);
+        					}
+        					if(bestBlockadeD < bestBlockadeDist)
+        					{
+        						candidateBlockade = bestBlockadePoint;
+        						bestBlockadeDist = bestBlockadeD;
+        					}
+        				}
+        			       			
+        			sendClear(time, (int) (me().getX() + v2.getX()), (int) (me().getY() + v2.getY()));
+        			return;
+        		
         			}else{
         				stateQueue.poll();
         			}
@@ -258,6 +296,36 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             }
         }
         return result;
+    }
+    
+    private void cleanBlockadeAhead(int time){
+    	
+    	Blockade newTarget = getTargetBlockade();
+		
+		if(newTarget != null && newTarget.isPositionDefined()){
+			Logger.info("Clearing blockade " + newTarget);
+			
+			List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(newTarget.getApexes()), true);
+            double best = Double.MAX_VALUE;
+            Point2D bestPoint = null;
+            Point2D origin = new Point2D(me().getX(), me().getY());
+            for (Line2D next : lines) {
+                Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+                double d = GeometryTools2D.getDistance(origin, closest);
+                if (d < best) {
+                    best = d;
+                    bestPoint = closest;
+                }
+            }
+            Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
+            v = v.normalised().scale(1000000);
+            sendClear(time, (int) (me().getX() + v.getX()), (int) (me().getY() + v.getY()));
+			return;
+			//sendClear(time, newTarget.getID());
+		}else{
+			stateQueue.poll();
+		}
+    	
     }
 
     private Blockade getTargetBlockade() {

@@ -87,6 +87,7 @@ public final class LaunchMASLABAgents {
 
     private static void connect(ComponentLauncher launcher, int fb, int pf, int at, Config config) throws InterruptedException, ConnectionException {
         int i = 0;
+        /*
         try {
             while (fb-- != 0) {
                 Logger.info("Connecting fire brigade " + (i++) + "...");
@@ -97,7 +98,7 @@ public final class LaunchMASLABAgents {
         catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
-        
+        */
         try {
             while (pf-- != 0) {
                 Logger.info("Connecting police force " + (i++) + "...");

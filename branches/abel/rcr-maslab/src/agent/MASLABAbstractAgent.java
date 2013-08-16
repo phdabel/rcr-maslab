@@ -270,6 +270,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     			{
     				ct = 1;
     				tmp.add(p);
+    				break;
     			}
     		}
 
@@ -278,6 +279,26 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     		//System.out.println("Tamanho para remoção "+tmp.size()); */
     	}
     	return path;
+    }
+    
+    /**
+     * retorna proxima EntityID do caminho
+     */
+    protected EntityID nextVertex()
+    {
+    	int ct = 0;
+    	for(EntityID next:currentPath)
+    	{
+    		if(location().getID() == next && ct == 0)
+    		{
+    			ct = 1;
+    		}else if(ct == 1)
+    		{
+    			return next;
+    		}
+    	}
+		return null;
+    	
     }
     
     /**
