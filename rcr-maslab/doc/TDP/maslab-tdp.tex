@@ -50,7 +50,7 @@
 \begin{abstract}
 The present work presents the methodology proposed by the team Epicenter for the multiagent simulator RoboCup Rescue.
 The methodology is centered in map setorization, agente allocation to sectors, routing based in roads priorities and in the firefighting supported by a neural network.
-Besides, with the goal of increasing the number of rescued civilians, priority queues are used, where we try to estimate the chances of survival of a civilian.
+Besides, priority queues are used for the rescue of civilians, where we try to estimate if the buried civilian has chances of surviving, with the goal of increasing the number of rescued civilians.
 \end{abstract}
 \keywords{}
 
@@ -112,7 +112,7 @@ Por fim, utiliza-se o método de busca em largura para traçar 2 rotas: Norte para
 Essas rotas aparecem destacadas no mapa de Kobe (Figura \ref{fig:setores}).
 
 \begin{figure}[!ht]
-\centerline{\includegraphics[width=0.5\textwidth]{setores.pdf}}
+\centerline{\includegraphics[width=0.5\textwidth]{img/setores.pdf}}
 \caption{Vias Principais no mapa Kobe.}
 \label{fig:setores}
 \end{figure}
@@ -142,7 +142,7 @@ Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte f
   \item Ambulâncias: quantidade de construções. Atribui-se inicialmente maior importância a setores onde há maior probabilidade de haver civis soterrados e supõe-se que esta probabilidade aumente com o número de construções de um setor.
 \end{itemize}
 
-Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, a importância de um setor é calculada da seguinte forma:
+Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, cada agente calcula a importância de um setor da seguinte forma:
 
 \begin{itemize}
   \item Bombeiros: quantidade de postos de combustíveis e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêndios, e além disso os postos de combustíveis devem ser protegidos.
@@ -187,7 +187,7 @@ Pode-se verificar que mesmo que exista um caminho mais curto até o refúgio por e
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=\linewidth]{rota.pdf}
+  \includegraphics[width=\linewidth]{img/rota.pdf}
   \caption{Rota de um agente até um refúgio.}
   \label{fig:roteamento}
 \end{figure*}
@@ -274,7 +274,7 @@ A avaliação da viabilidade de apagar um incêndio ou não é dada por meio de uma r
 Esta rede, recebe informações da construção em chamas como dados de entrada, e retorna o tempo necessário para a construção queimar completamente em passos de tempo.
 
 Para construir a rede, desenvolveu-se bombeiros observadores responsáveis capturar informações de construções em chamas em exercícios simulados em diferentes mapas.
-Estas informações são compostas por: \textit{Area}, \textit{Temperature} e \textit{Fieryness}, além do tempo total gasto para a construção queimar completamente.
+Estas informações são compostas por: \textit{Area}, \textit{Temperature} e \textit{Fieriness}, além do tempo total gasto para a construção queimar completamente.
 Cerca de 1300 instâncias foram utilizadas para gerar o arquivo de treinamento da rede.
 Em seguida treinou-se uma RNA \textit{multi layer perceptron}.
 A topologia da rede pode ser observada na Figura \ref{fig:rede}.
@@ -290,7 +290,7 @@ Como pode ser observado, a rede possui três camadas.
 A entrada da rede é composta pelas três variáveis citadas anteriormente:
 
 \begin{itemize}
-\item \textit{Fieryness}: representa a intensidade do fogo: \textit{heating}, \textit{burning} e \textit{inferno}, representados respectivamente por 1, 2 e 3;
+\item \textit{Fieriness}: representa a intensidade do fogo: \textit{heating}, \textit{burning} e \textit{inferno}, representados respectivamente por 1, 2 e 3;
 \item \textit{Temperature}: refere-se ao aquecimento da construção e é representada por um número inteiro;
 \item \textit{Area}: refere-se à área total construída considerando a quantidade de andares da construção, representada por um inteiro positivo.
 \end{itemize}
@@ -343,7 +343,7 @@ Por fim, a estratégia de combate a incêndios está baseada na classificação dos f
 %===================================================================================================
 
 \section*{Agradecimentos}
-
+Este trabalho foi parcialmente financiado com recursos das agências CNPq,  FAPERGS e CAPES.
 %===================================================================================================
 
 % BIBLIOGRAFIA

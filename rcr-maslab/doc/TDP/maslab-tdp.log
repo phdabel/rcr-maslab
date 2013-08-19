@@ -1,17 +1,27 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.7.10)  16 AUG 2013 10:01
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012/Debian) (format=pdflatex 2013.8.13)  19 AUG 2013 13:14
 entering extended mode
+ restricted \write18 enabled.
  %&-line parsing enabled.
 **maslab-tdp.tex
 (./maslab-tdp.tex
-LaTeX2e <2009/09/24>
-Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
-yphenation, loaded.
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, dumylang, nohyphenation, et
+hiopic, farsi, arabic, pinyin, croatian, bulgarian, ukrainian, russian, slovak,
+ czech, danish, dutch, usenglishmax, ukenglish, finnish, french, basque, ngerma
+n, german, swissgerman, ngerman-x-2012-05-30, german-x-2012-05-30, monogreek, g
+reek, ibycus, ancientgreek, hungarian, bengali, tamil, hindi, telugu, gujarati,
+ sanskrit, malayalam, kannada, assamese, marathi, oriya, panjabi, italian, lati
+n, latvian, lithuanian, mongolian, mongolianlmc, nynorsk, bokmal, indonesian, e
+speranto, coptic, welsh, irish, interlingua, serbian, serbianc, slovenian, friu
+lan, romansh, estonian, romanian, armenian, uppersorbian, turkish, afrikaans, i
+celandic, kurmanji, polish, portuguese, galician, catalan, spanish, swedish, th
+ai, loaded.
 (./sbatex.cls
 Document Class: sbatex 2000/12/18 LaTeX2e class for Revista SBA - 1.0 alpha
-(/usr/share/texmf-texlive/tex/latex/base/ifthen.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
 )
-(/usr/share/texmf-texlive/tex/latex/tools/calc.sty
+(/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
 Package: calc 2007/08/22 v4.3 Infix arithmetic (KKT,FJ)
 \calc@Acount=\count79
 \calc@Bcount=\count80
@@ -24,9 +34,9 @@ LaTeX Info: Redefining \addtolength on input line 77.
 \calc@Ccount=\count81
 \calc@Cskip=\skip43
 )
-(/usr/share/texmf-texlive/tex/latex/base/article.cls
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
-(/usr/share/texmf-texlive/tex/latex/base/size10.clo
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
 File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count82
@@ -41,57 +51,53 @@ File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 \belowcaptionskip=\skip45
 \bibindent=\dimen104
 )
-(/usr/share/texmf-texlive/tex/generic/babel/babel.sty
-Package: babel 2008/07/06 v3.8l The Babel package
+(/var/lib/texmf/tex/generic/babel/babel.sty
+Package: babel 2008/07/08 v3.8m The Babel package
 
-(/usr/share/texmf-texlive/tex/generic/babel/portuges.ldf
+(/usr/share/texlive/texmf-dist/tex/generic/babel/portuges.ldf
 Language: portuges 2008/03/18 v1.2q Portuguese support from the babel system
 
-(/usr/share/texmf-texlive/tex/generic/babel/babel.def
-File: babel.def 2008/07/06 v3.8l Babel common definitions
+(/usr/share/texlive/texmf-dist/tex/generic/babel/babel.def
+File: babel.def 2008/07/08 v3.8m Babel common definitions
 \babel@savecnt=\count90
 \U@D=\dimen105
 )
-
-Package babel Warning: No hyphenation patterns were loaded for
-(babel)                the language `Portuguese'
-(babel)                I will use the patterns loaded for \language=0 instead.
-
-\l@portuges = a dialect from \language0
 \l@brazil = a dialect from \language\l@portuges 
 Package babel Info: Making " an active character on input line 145.
-) (/usr/share/texmf-texlive/tex/generic/babel/english.ldf
+)
+(/usr/share/texlive/texmf-dist/tex/generic/babel/english.ldf
 Language: english 2005/03/30 v3.3o English support from the babel system
-\l@british = a dialect from \language\l@english 
-\l@UKenglish = a dialect from \language\l@english 
 \l@canadian = a dialect from \language\l@american 
 \l@australian = a dialect from \language\l@british 
 \l@newzealand = a dialect from \language\l@british 
 ))
-(/usr/share/texmf-texlive/tex/latex/tools/theorem.sty
+(/usr/share/texlive/texmf-dist/tex/latex/tools/theorem.sty
 Package: theorem 1995/11/23 v2.2c Theorem extension package (FMi)
 \theorem@style=\toks14
 \theorem@bodyfont=\toks15
 \theorempreskipamount=\skip46
 \theorempostskipamount=\skip47
 
-(/usr/share/texmf-texlive/tex/latex/tools/thp.sty
+(/usr/share/texlive/texmf-dist/tex/latex/tools/thp.sty
 File: thp.sty 1995/11/23 v2.2c Theorem extension package (FMi)
 ))
-(/usr/share/texmf-texlive/tex/latex/geometry/geometry.sty
-Package: geometry 2008/12/21 v4.2 Page Geometry
+(/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
 
-(/usr/share/texmf-texlive/tex/latex/graphics/keyval.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
 \KV@toks@=\toks16
 )
-(/usr/share/texmf-texlive/tex/generic/oberdiek/ifpdf.sty
-Package: ifpdf 2009/04/10 v2.0 Provides the ifpdf switch (HO)
-Package ifpdf Info: pdfTeX in pdf mode detected.
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
 )
-(/usr/share/texmf-texlive/tex/generic/oberdiek/ifvtex.sty
-Package: ifvtex 2008/11/04 v1.4 Switches for detecting VTeX and its modes (HO)
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
 Package ifvtex Info: VTeX not detected.
+)
+(/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
 )
 \Gm@cnth=\count91
 \Gm@cntv=\count92
@@ -100,9 +106,13 @@ Package ifvtex Info: VTeX not detected.
 \Gm@wd@mp=\dimen107
 \Gm@odd@mp=\dimen108
 \Gm@even@mp=\dimen109
+\Gm@layoutwidth=\dimen110
+\Gm@layoutheight=\dimen111
+\Gm@layouthoffset=\dimen112
+\Gm@layoutvoffset=\dimen113
 \Gm@dimlist=\toks17
 )
-(/usr/share/texmf-texlive/tex/latex/base/latexsym.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/latexsym.sty
 Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
 \symlasy=\mathgroup4
 LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
@@ -116,68 +126,75 @@ LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
  (./harvard.sty
 Package: harvard 
 )
-(/usr/share/texmf-texlive/tex/latex/base/inputenc.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
 Package: inputenc 2008/03/30 v1.1d Input encoding file
 \inpenc@prehook=\toks18
 \inpenc@posthook=\toks19
 
-(/usr/share/texmf-texlive/tex/latex/base/latin1.def
+(/usr/share/texlive/texmf-dist/tex/latex/base/latin1.def
 File: latin1.def 2008/03/30 v1.1d Input encoding file
 ))
-(/usr/share/texmf-texlive/tex/latex/graphics/graphicx.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
 
-(/usr/share/texmf-texlive/tex/latex/graphics/graphics.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
 Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
 
-(/usr/share/texmf-texlive/tex/latex/graphics/trig.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
 Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
 )
-(/etc/texmf/tex/latex/config/graphics.cfg
-File: graphics.cfg 2009/08/28 v1.8 graphics configuration of TeX Live
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/graphics.cfg
+File: graphics.cfg 2010/04/23 v1.9 graphics configuration of TeX Live
 )
 Package graphics Info: Driver file: pdftex.def on input line 91.
 
-(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
-File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
+(/usr/share/texlive/texmf-dist/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+)
 \Gread@gobject=\count98
 ))
-\Gin@req@height=\dimen110
-\Gin@req@width=\dimen111
+\Gin@req@height=\dimen114
+\Gin@req@width=\dimen115
 )
-(/usr/share/texmf-texlive/tex/latex/ae/ae.sty
+(/usr/share/texlive/texmf-dist/tex/latex/ae/ae.sty
 Package: ae 2001/02/12 1.3 Almost European Computer Modern
 
-(/usr/share/texmf-texlive/tex/latex/base/fontenc.sty
+(/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
 
-(/usr/share/texmf-texlive/tex/latex/base/t1enc.def
+(/usr/share/texlive/texmf-dist/tex/latex/base/t1enc.def
 File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
 )
 LaTeX Font Info:    Try loading font information for T1+aer on input line 100.
 
-(/usr/share/texmf-texlive/tex/latex/ae/t1aer.fd
+(/usr/share/texlive/texmf-dist/tex/latex/ae/t1aer.fd
 File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 )))
-(/usr/share/texmf-texlive/tex/latex/amsmath/amsmath.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2000/07/18 v2.13 AMS math features
 \@mathmargin=\skip48
 
 For additional information on amsmath, use the `?' option.
-(/usr/share/texmf-texlive/tex/latex/amsmath/amstext.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
 Package: amstext 2000/06/29 v2.01
 
-(/usr/share/texmf-texlive/tex/latex/amsmath/amsgen.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0
 \@emptytoks=\toks20
-\ex@=\dimen112
+\ex@=\dimen116
 ))
-(/usr/share/texmf-texlive/tex/latex/amsmath/amsbsy.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d
-\pmbraise@=\dimen113
+\pmbraise@=\dimen117
 )
-(/usr/share/texmf-texlive/tex/latex/amsmath/amsopn.sty
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 1999/12/14 v2.01 operator names
 )
 \inf@bad=\count99
@@ -192,7 +209,7 @@ LaTeX Info: Redefining \dots on input line 382.
 LaTeX Info: Redefining \cdots on input line 467.
 \Mathstrutbox@=\box26
 \strutbox@=\box27
-\big@size=\dimen114
+\big@size=\dimen118
 LaTeX Font Info:    Redeclaring font encoding OML on input line 567.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
 \macc@depth=\count104
@@ -205,12 +222,12 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
 \column@=\count109
 \maxfields@=\count110
 \andhelp@=\toks22
-\eqnshift@=\dimen115
-\alignsep@=\dimen116
-\tagshift@=\dimen117
-\tagwidth@=\dimen118
-\totwidth@=\dimen119
-\lineht@=\dimen120
+\eqnshift@=\dimen119
+\alignsep@=\dimen120
+\tagshift@=\dimen121
+\tagwidth@=\dimen122
+\totwidth@=\dimen123
+\lineht@=\dimen124
 \@envbody=\toks23
 \multlinegap=\skip49
 \multlinetaggap=\skip50
@@ -233,62 +250,100 @@ LaTeX Font Info:    ... okay on input line 13.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 13.
 LaTeX Font Info:    ... okay on input line 13.
 
-*geometry auto-detecting driver*
-*geometry detected driver: pdftex*
--------------------- Geometry parameters
-paper: class default
-landscape: --
-twocolumn: true
-twoside: --
-asymmetric: --
-h-parts: 72.18733pt, 453.1332pt, 72.18735pt
-v-parts: 48.93872pt, 722.7pt, 73.40813pt
-hmarginratio: 1:1
-vmarginratio: 2:3
-lines: --
-heightrounded: --
-bindingoffset: 0.0pt
-truedimen: --
-includehead: --
-includefoot: --
-includemp: --
-driver: pdftex
--------------------- Page layout dimensions and switches
-\paperwidth  597.50787pt
-\paperheight 845.04684pt
-\textwidth  453.1332pt
-\textheight 722.7pt
-\oddsidemargin  -0.08266pt
-\evensidemargin -0.08266pt
-\topmargin  -23.33127pt
-\headheight 0.0pt
-\headsep    0.0pt
-\footskip   0.0pt
-\marginparwidth 4.0pt
-\marginparsep   10.0pt
-\columnsep  21.68121pt
-\skip\footins  9.0pt plus 4.0pt minus 2.0pt
-\hoffset 0.0pt
-\voffset 0.0pt
-\mag 1000
-\@twocolumntrue 
-(1in=72.27pt, 1cm=28.45pt)
------------------------
-(/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(72.18733pt, 453.1332pt, 72.18735pt)
+* v-part:(T,H,B)=(48.93872pt, 722.7pt, 73.40813pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=453.1332pt
+* \textheight=722.7pt
+* \oddsidemargin=-0.08266pt
+* \evensidemargin=-0.08266pt
+* \topmargin=-23.33127pt
+* \headheight=0.0pt
+* \headsep=0.0pt
+* \topskip=10.0pt
+* \footskip=0.0pt
+* \marginparwidth=4.0pt
+* \marginparsep=10.0pt
+* \columnsep=21.68121pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumntrue
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+(/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count111
-\scratchdimen=\dimen121
+\scratchdimen=\dimen125
 \scratchbox=\box28
 \nofMPsegments=\count112
 \nofMParguments=\count113
 \everyMPshowfont=\toks25
 \MPscratchCnt=\count114
-\MPscratchDim=\dimen122
+\MPscratchDim=\dimen126
 \MPnumerator=\count115
+\makeMPintoPDFobject=\count116
 \everyMPtoPDFconversion=\toks26
-) (./maslab-tdp.loa
+) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifluatex.sty
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+(/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
+Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
+
+(/usr/share/texlive/texmf-dist/tex/latex/oberdiek/grfext.sty
+Package: grfext 2010/08/19 v1.1 Manage graphics extensions (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvdefinekeys.sty
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+))
+(/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/kvsetkeys.sty
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/etexcmds.sty
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 452.
+
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
+))
+(./maslab-tdp.loa
 LaTeX Font Info:    Try loading font information for U+lasy on input line 1.
- (/usr/share/texmf-texlive/tex/latex/base/ulasy.fd
+ (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 ))
 \tf@loa=\write3
@@ -299,106 +354,101 @@ File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 \tf@los=\write4
 \openout4 = `maslab-tdp.los'.
 
-LaTeX Font Info:    Try loading font information for T1+aett on input line 60.
- (/usr/share/texmf-texlive/tex/latex/ae/t1aett.fd
+LaTeX Font Info:    Try loading font information for T1+aett on input line 64.
+ (/usr/share/texlive/texmf-dist/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
-LaTeX Font Info:    Try loading font information for T1+aess on input line 60.
+LaTeX Font Info:    Try loading font information for T1+aess on input line 64.
 
-(/usr/share/texmf-texlive/tex/latex/ae/t1aess.fd
+(/usr/share/texlive/texmf-dist/tex/latex/ae/t1aess.fd
 File: t1aess.fd 1997/11/16 Font definitions for T1/aess.
 )
-Underfull \hbox (badness 1147) in paragraph at lines 70--72
-\T1/aer/m/n/10 Operações de res-gate em situ-ações de de-sas-
- []
 
-
-Underfull \hbox (badness 1112) in paragraph at lines 83--86
-\T1/aer/m/n/10 gerais: se-tor-iza-ção (Seção 2.1[]), alo-cação dos
- []
+LaTeX Warning: Citation 'Kitano2000' on page 1 undefined on input line 78.
 
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
 ]
-<setores.pdf, id=13, 483.8075pt x 299.1175pt>
-File: setores.pdf Graphic file (type pdf)
- <use setores.pdf>
-LaTeX Font Info:    Try loading font information for OMS+aer on input line 136.
+<img/setores.pdf, id=14, 483.8075pt x 299.1175pt>
+File: img/setores.pdf Graphic file (type pdf)
+ <use img/setores.pdf>
+Package pdftex.def Info: img/setores.pdf used on input line 115.
+(pdftex.def)             Requested size: 226.56659pt x 140.07861pt.
+LaTeX Font Info:    Try loading font information for OMS+aer on input line 140.
 
 
-(/usr/share/texmf-texlive/tex/latex/ae/omsaer.fd
+(/usr/share/texlive/texmf-dist/tex/latex/ae/omsaer.fd
 File: omsaer.fd 1999/12/27
 )
 LaTeX Font Info:    Font shape `OMS/aer/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 136.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 140.
 
-Underfull \hbox (badness 7064) in paragraph at lines 136--137
-[]\T1/aer/m/n/10 Bombeiros: quan-ti-dade de con-struções
+Underfull \hbox (badness 7064) in paragraph at lines 140--141
+[]\T1/aer/m/n/10 Bombeiros: quan-ti-dade de cons-tru-ções
  []
 
 
-Underfull \hbox (badness 1540) in paragraph at lines 136--137
-\T1/aer/m/n/10 e quan-ti-dade de pos-tos de com-bustíveis.
+Underfull \hbox (badness 1540) in paragraph at lines 140--141
+\T1/aer/m/n/10 e quan-ti-dade de pos-tos de com-bus-tí-veis.
  []
 
 
-Underfull \hbox (badness 1057) in paragraph at lines 138--139
-[]\T1/aer/m/n/10 Ambulâncias: quan-ti-dade de con-struções.
+Underfull \hbox (badness 1057) in paragraph at lines 142--143
+[]\T1/aer/m/n/10 Ambulâncias: quan-ti-dade de cons-tru-ções.
  []
 
-[2 <./setores.pdf>]
+[2 <./img/setores.pdf>] <img/rota.pdf, id=26, 845.04686pt x 597.50786pt>
+File: img/rota.pdf Graphic file (type pdf)
 
-pdfTeX warning: /usr/bin/pdflatex (file ./rota.pdf): PDF inclusion: found PDF v
-ersion <1.5>, but at most version <1.4> allowed
-<rota.pdf, id=26, 845.04686pt x 597.50786pt>
-File: rota.pdf Graphic file (type pdf)
- <use rota.pdf>
-Underfull \hbox (badness 1502) in paragraph at lines 222--224
-[]\T1/aer/m/n/10 Contudo, em am-bi-entes sem cen-trais, os
- []
+<use img/rota.pdf>
+Package pdftex.def Info: img/rota.pdf used on input line 190.
+(pdftex.def)             Requested size: 453.1332pt x 320.39748pt.
 
-[3] [4 <./rota.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 272--277
-[]\T1/aer/m/n/10 Para con-struir a rede, desenvolveu-se
- []
+Underfull \vbox (badness 3000) has occurred while \output is active []
 
-
-Underfull \hbox (badness 2512) in paragraph at lines 272--277
-\T1/aer/m/n/10 bombeiros ob-ser-vadores re-spon-sáveis cap-turar
- []
-
-<img/mlp.png, id=89, 1131.59605pt x 348.98802pt>
+ [3]
+[4 <./img/rota.pdf>] <img/mlp.png, id=90, 1131.47719pt x 349.305pt>
 File: img/mlp.png Graphic file (type png)
- <use img/mlp.png> [5 <./img/mlp.png>] (./maslab-tdp.bbl
+
+<use img/mlp.png>
+Package pdftex.def Info: img/mlp.png used on input line 284.
+(pdftex.def)             Requested size: 213.39566pt x 65.87828pt.
+ [5 <./img/mlp.png (PNG copy)>] (./maslab-tdp.bbl
 
 LaTeX Warning: Empty `thebibliography' environment on input line 3.
 
 ) [6
 
-] (./maslab-tdp.aux) ) 
+] (./maslab-tdp.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3003 strings out of 495061
- 37188 string characters out of 1182621
- 101406 words of memory out of 3000000
- 6103 multiletter control sequences out of 15000+50000
+ 3670 strings out of 493485
+ 48619 string characters out of 3143526
+ 121851 words of memory out of 3000000
+ 6862 multiletter control sequences out of 15000+200000
  21849 words of font info for 47 fonts, out of 3000000 for 9000
- 28 hyphenation exceptions out of 8191
- 33i,16n,30p,665b,367s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/
-cmbx10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx8.pfb><
-/usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share
-/texmf-texlive/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-texl
-ive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/t
-ype1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public/
-amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/
-cmr8.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/te
-xmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-texlive
-/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on maslab-tdp.pdf (6 pages, 1912922 bytes).
+ 957 hyphenation exceptions out of 8191
+ 38i,16n,30p,665b,371s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/font
+s/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.
+pfb>
+Output written on maslab-tdp.pdf (6 pages, 1976943 bytes).
 PDF statistics:
  135 PDF objects out of 1000 (max. 8388607)
+ 94 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
