@@ -230,7 +230,6 @@ public final class MASLABBFSearch {
 					Collection<EntityID> aux = new ArrayList<EntityID>(neighbours);
 					for(EntityID neighbour : aux) {
 						if(model.getEntity(neighbour).getClass().equals(Building.class)){
-							System.out.println(neighbour.getValue());
 							neighbours.remove(neighbour);
 						}
 					}
