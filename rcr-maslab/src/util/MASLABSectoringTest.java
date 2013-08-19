@@ -43,12 +43,22 @@ public class MASLABSectoringTest {
 	private static double coordinate_CenterX = 0;
 	private static double coordinate_CenterY = 0;
 	
-	private static final int NORTH_EAST = 1;
-	private static final int SOUTH_EAST = 2;
-	private static final int SOUTH_WEST = 3;
-	private static final int NORTH_WEST = 4;
-	private static final int UNDEFINED_SECTOR = 0;
+	//aliases for the sector identifiers
+	public static final int NORTH_EAST = 1;
+	public static final int SOUTH_EAST = 2;
+	public static final int SOUTH_WEST = 3;
+	public static final int NORTH_WEST = 4;
+	public static final int UNDEFINED_SECTOR = 0;
 
+	
+	//aliases for the agent types
+	public static final int AMBULANCE_TEAM = 1;
+	public static final int FIRE_BRIGADE = 2;
+	public static final int POLICE_FORCE = 3;
+	public static final int UNDEFINED_PLATOON = 0;
+
+	
+	
 	private List<EntityID> Avenue_NtoS;
 	private List<EntityID> Avenue_LtoO;
 
@@ -284,6 +294,45 @@ public class MASLABSectoringTest {
 				MapSetor4.put(e, searchP.get(e));
 		}
 	}
+	
+	/**
+	 * Returns the importance of a given sector_id for the given agent type
+	 * @param sectorId
+	 * @param agentType
+	 * @return
+	 */
+	public int getSectorImportance(int sectorId, int agentType){
+		//works only for ambulance so far
+		if (sectorId == 1){
+			return getSectorImportance(MapSetor1, agentType);
+		}
+		return 0;
+		
+	}
+	
+	/**
+	 * Returns the importance of a given sector for the given agent type
+	 * @param sectorId
+	 * @param agentType
+	 * @return
+	 */
+	public int getSectorImportance(Map<EntityID, Set<EntityID>> sector, int agentType){
+		if (agentType == AMBULANCE_TEAM){
+			//counts the number of buildings (pre-processing stage)
+			//TODO: implement importance calculation during the simulation
+			
+			int numbuildings = 0;
+			for (EntityID id : sector.keySet()){
+				if(model.getEntity(id) instanceof Building){
+					numbuildings++;
+				}
+			}
+			return numbuildings;
+		}
+		return 0;
+	}
+	
+	
 
 	private void addGrafoSetor(EntityID e, int setor) {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();

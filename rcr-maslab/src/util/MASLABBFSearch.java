@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.hamcrest.core.IsNull;
+//import org.hamcrest.core.IsNull;
 
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardWorldModel;
