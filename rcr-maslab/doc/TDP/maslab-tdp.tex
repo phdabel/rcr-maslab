@@ -48,7 +48,9 @@
 
 \selectlanguage{english}
 \begin{abstract}
-bbbb
+The present work presents the methodology proposed by the team Epicenter for the multiagent simulator RoboCup Rescue.
+The methodology is centered in map setorization, agente allocation to sectors, routing based in roads priorities and in the firefighting supported by a neural network.
+Besides, priority queues are used for the rescue of civilians, where we try to estimate if the buried civilian has chances of surviving, with the goal of increasing the number of rescued civilians.
 \end{abstract}
 \keywords{}
 
@@ -73,7 +75,7 @@ Operações de resgate em situações de desastre (como terremotos, inundações, fura
 Essas operações envolvem diversos agentes (policiais, bombeiros, paramédicos, entre outros) em um ambiente hostil: construções desabam, ruas ficam bloqueadas, fornecimento de água e eletricidade fica comprometido e meios de comunicação operam com limitações, tornando escassas e imprecisas as informações sobre o problema. 
 
 Situações assim requerem sistemas que possam criar planos robustos, dinâmicos e inteligentes de busca e resgate que auxiliem o esforço humano.
-Tendo isso em vista, o simulador de desastres RoboCup Rescue provê um ambiente para programação de times de agentes virtuais para promover pesquisa e desenvolvimento no campo de coordenação em sistemas multiagente.
+Tendo isso em vista, o simulador de desastres RoboCup Rescue \cite{Kitano2000} provê um ambiente para programação de times de agentes virtuais para promover pesquisa e desenvolvimento no campo de coordenação em sistemas multiagente.
 No simulador, times de bombeiros, paramédicos e policiais devem se coordenar para minimizar os problemas causados a uma cidade por um terremoto.
 
 Este artigo apresenta a metodologia adotada pela equipe Epicenter para programação dos times de agentes, com foco na  divisão do mapa em setores, a alocação de agentes para cada setor e os métodos empregados para cálculo de rotas, que consideram os setores que foram determinados no mapa.
