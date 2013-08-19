@@ -21,7 +21,7 @@ import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
 import util.DistanceSorter;
 import util.MASLABRouting.Setores;
-import util.MASLABSectoringTest;
+import util.MASLABSectoring;
 
 /**
  * A sample fire brigade agent.
@@ -72,7 +72,7 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 				+ maxDistance + ", max power = " + maxPower + ", max tank = "
 				+ maxWater);
 		Bloqueios = new ArrayList<EntityID>();
-		MASLABSectoringTest sectoring = new MASLABSectoringTest(model);
+		MASLABSectoring sectoring = new MASLABSectoring(model);
 
 	}
 
