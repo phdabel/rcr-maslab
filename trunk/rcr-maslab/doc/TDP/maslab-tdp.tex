@@ -56,7 +56,7 @@ bbbb
 \begin{abstract}
 O presente trabalho tem o objetivo de apresentar a metologia proposta pela equipe Epicenter para o simulador multiagente Robocup Rescue.
 A metodologia está centrada em técnicas de setorização de alocação dos agentes ao setores, roteamento com base na priorização de limpeza das vias e no controle e combate a incêndios, apoiado por uma rede neural.
-Além disso, são utilizadas filas de prioridade para o resgate de civis onde busca-se estimar se o agente soterrado tem chance de sobreviver, buscando aumentar o número de civis resgatados.
+Além disso, são utilizadas filas de prioridade para o resgate de civis onde busca-se estimar se o agente soterrado tem chance de sobreviver, objetivando aumentar o número de civis resgatados.
 \end{abstract}
 \keywords{}
 ]
@@ -92,7 +92,7 @@ Ao final, na Seção \ref{sec:consideracoes} são discutidas as considerações finai
 \label{sec:geral}
 
 Nessa seção são discutidas as estratégias genéricas aplicadas a todos os agentes.
-Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar ps setores para que os agentes possam ser alocados (Seção \ref{sec:alocacao}) com base na importância do setor.
+Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar os setores para que os agentes possam ser alocados (Seção \ref{sec:alocacao}) com base na importância do setor.
 Outro papel importante da setorização se relaciona com a técnica de roteamento (Seção \ref{sec:roteamento}), a qual busca traçar rotas priorizando a expectativa do estado da via em relação a distância.
 Espera-se que a priorização da limpeza de determinadas vias faça com que, em geral, os agentes se desloquem mais rapidamente, se comparado com o caminho mais curto, devido a trechos bloqueados.
 
@@ -248,7 +248,7 @@ Sempre que um civil for identificado, a informação repassada será o tipo do agen
 Com base nessa lista, a prioridade de resgate seguirá o critério de tipo de agente e em seguida o tempo estimado de resgate do agente.
 Prioritariamente busca-se resgatar ambulâncias, bombeiros, policiais e civis nesta ordem.
 Quando houver mais de um agente do mesmo tipo (situação comum no caso dos civis), o critério de desempate será o tempo estimado para o resgate do agente ($t_i$).
-A Eq. \ref{eq:resgate} mostra a função utilização para estimar o tempo de resgate do agente, onde $hp_i$ é a energia do agente, $dm_i$ é o dano sofrido pelo agente em cada passo de tempo, $resc_i$ sendo o tempo estimado para retirar o agente dos escombros e $dist_i$ é a distância da ambulância em relação ao agente $i$ e do agente em relação ao refúgio mais próximo.
+A Eq. \ref{eq:resgate} mostra a função utilização para estimar o tempo de resgate do agente, onde $hp_i$ é a energia do agente, $dm_i$ é o dano sofrido pelo agente em cada passo de tempo, $resc_i$ sendo o tempo estimado para retirar o agente dos escombros e $dist_i$ é a distância, em passos de tempo, da ambulância em relação ao agente $i$ e do agente em relação ao refúgio mais próximo.
 
 \begin{equation}
 \label{eq:resgate}
@@ -306,10 +306,10 @@ Com base nessa quantidade de demanda, os agentes foram separados em três grupos,
 \begin{itemize}
 \item Grupo 1: Responsável por limpar as vias principais: assim que as vias principais forem limpas, os agentes irão realizar outras atividades, como atender a solicitações, limpas as vias secundárias e demais vias.
 \item Grupo 2: Responsável por limpar as vias secundárias: assim que as vias secundárias forem limpas, esses agentes irão atender a chamados, limpar as demais vias e por fim, verificar o estado das vias principais e secundárias.
-\item Grupo 3: Responsável por limpar as demais vias: Esses agentes tem a função de limpar as vias não se classificaram como primárias ou secundárias. Quando as demais vias forem limpas, eles irão atender a chamados e verificar as vias principais e secundárias.
+\item Grupo 3: Responsável por limpar as demais vias: Esses agentes tem a função de limpar as vias que não se classificaram como primárias ou secundárias. Quando as demais vias forem limpas, eles irão atender a chamados e verificar as vias principais e secundárias.
 \end{itemize}
 
-Apesar de todos os agentes estares alocados em setores, os agentes do Grupo 1 deverão limpar as vias principais, que ficam nos limites entre os setores.
+Apesar de todos os agentes estarem alocados em setores, os agentes do Grupo 1 deverão limpar as vias principais, que ficam nos limites entre os setores.
 Enquanto realizam essa atividade, eles irão se deslocar entre todos os setores.
 Quando a tarefa principal for concluída, eles retornam ao setor que foram alocados e priorizam outras atividades.
 
