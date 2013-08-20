@@ -48,9 +48,9 @@
 
 \selectlanguage{english}
 \begin{abstract}
-The present work presents the methodology proposed by the team Epicenter for the multiagent simulator RoboCup Rescue.
-The methodology is centered in map setorization, agente allocation to sectors, routing based in roads priorities and in the firefighting supported by a neural network.
-Besides, priority queues are used for the rescue of civilians, where we try to estimate if the buried civilian has chances of surviving, with the goal of increasing the number of rescued civilians.
+This work presents the methodology proposed by the team Epicenter for the multiagent simulator RoboCup Rescue.
+The methodology is centered in map setorization, agents allocation in sectors, roads priorities-based routing, and firefighting supported by a neural network.
+Besides, priority queues are used for rescuing civilians, where we try to estimate whether the buried civilian has chances of surviving or not, aiming to increase the number of rescued civilians.
 \end{abstract}
 \keywords{}
 
@@ -58,7 +58,7 @@ Besides, priority queues are used for the rescue of civilians, where we try to e
 \begin{abstract}
 O presente trabalho tem o objetivo de apresentar a metologia proposta pela equipe Epicenter para o simulador multiagente Robocup Rescue.
 A metodologia está centrada em técnicas de setorização de alocação dos agentes ao setores, roteamento com base na priorização de limpeza das vias e no controle e combate a incêndios, apoiado por uma rede neural.
-Além disso, são utilizadas filas de prioridade para o resgate de civis onde busca-se estimar se o agente soterrado tem chance de sobreviver, objetivando aumentar o número de civis resgatados.
+Além disso, são utilizadas filas de prioridade para o resgate de civis onde busca-se estimar se o agente soterrado tem chance de sobreviver, visando aumentar o número de civis resgatados.
 \end{abstract}
 \keywords{}
 ]
@@ -71,17 +71,17 @@ Além disso, são utilizadas filas de prioridade para o resgate de civis onde busc
 
 \section{Introdução}
 
-Operações de resgate em situações de desastre (como terremotos, inundações, furacões, entre outros) são uma questão social séria.
+Operações de resgate em situações de desastre (como terremotos, inundações, furacões, entre outros) são uma séria questão social.
 Essas operações envolvem diversos agentes (policiais, bombeiros, paramédicos, entre outros) em um ambiente hostil: construções desabam, ruas ficam bloqueadas, fornecimento de água e eletricidade fica comprometido e meios de comunicação operam com limitações, tornando escassas e imprecisas as informações sobre o problema. 
 
 Situações assim requerem sistemas que possam criar planos robustos, dinâmicos e inteligentes de busca e resgate que auxiliem o esforço humano.
 Tendo isso em vista, o simulador de desastres RoboCup Rescue \cite{Kitano2000} provê um ambiente para programação de times de agentes virtuais para promover pesquisa e desenvolvimento no campo de coordenação em sistemas multiagente.
-No simulador, times de bombeiros, paramédicos e policiais devem se coordenar para minimizar os problemas causados a uma cidade por um terremoto.
+No simulador, times de bombeiros, paramédicos e policiais devem se coordenar para minimizar os problemas causados em uma cidade por um terremoto.
 
-Este artigo apresenta a metodologia adotada pela equipe Epicenter para programação dos times de agentes, com foco na  divisão do mapa em setores, a alocação de agentes para cada setor e os métodos empregados para cálculo de rotas, que consideram os setores que foram determinados no mapa.
+Este artigo apresenta a metodologia adotada pela equipe Epicenter para programação dos times de agentes, com foco na  divisão do mapa em setores, na alocação de agentes em setores e em métodos para cálculo de rotas, que consideram os setores determinados no mapa.
 
 Os agentes são modelados com base em estratégias gerais e específicas.
-As estratégias gerais definem o comportamento comum dos agentes, como por exemplo, método de locomoção, exploração, setorização e distribuição dos agentes entre os setores.
+As estratégias gerais definem o comportamento comum dos agentes, como por exemplo, os métodos de locomoção, exploração, setorização e distribuição dos agentes nos setores.
 As estratégias específicas descrevem como cada grupo de agentes (ambulâncias, bombeiros e policiais) irá atuar.
 
 Na Seção \ref{sec:geral} são apresentadas as estratégias gerais: setorização (Seção \ref{sec:setorizacao}), alocação dos agentes (Seção \ref{sec:alocacao}), roteamento (Seção \ref{sec:roteamento}), exploração (Seção \ref{sec:exploracao}) e comunicação (Seção \ref{sec:comunicacao}).
@@ -93,9 +93,9 @@ Ao final, na Seção \ref{sec:consideracoes} são discutidas as considerações finai
 \section{Estratégia Geral}
 \label{sec:geral}
 
-Nessa seção são discutidas as estratégias genéricas aplicadas a todos os agentes.
-Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar os setores para que os agentes possam ser alocados (Seção \ref{sec:alocacao}) com base na importância do setor.
-Outro papel importante da setorização se relaciona com a técnica de roteamento (Seção \ref{sec:roteamento}), a qual busca traçar rotas priorizando a expectativa do estado da via em relação a distância.
+Nesta seção são discutidas as estratégias genéricas aplicadas a todos os agentes.
+Inicialmente é abordado o processo de setorização (Seção \ref{sec:setorizacao}), que tem por objetivo delimitar os setores nos quais os agentes serão alocados (Seção \ref{sec:alocacao}) com base na importância dos setores.
+Outro papel importante da setorização se relaciona com a técnica de roteamento (Seção \ref{sec:roteamento}), a qual busca traçar rotas priorizando a expectativa do estado da via em relação à distância.
 Espera-se que a priorização da limpeza de determinadas vias faça com que, em geral, os agentes se desloquem mais rapidamente, se comparado com o caminho mais curto, devido a trechos bloqueados.
 
 %---------------------------------------------------------------------------------------------------
@@ -103,17 +103,17 @@ Espera-se que a priorização da limpeza de determinadas vias faça com que, em ger
 \subsection{Setorização}
 \label{sec:setorizacao}
 
-A setorização consiste em dividir o mapa em quatro setores, de modo que os agentes possam ser alocados a cada setor conforme sua importância (descrito na Seção \ref{sec:alocacao}).
-Devido ao tempo gasto para realizar essa tarefa, o processo é realizado no preprocessamento, de modo que os agentes saibam dessa informação quando iniciarem a simulação.
+A setorização consiste em dividir o mapa em quatro setores.
+Devido ao tempo gasto para realizar essa tarefa, ela é realizada no pré-processamento, de modo que os agentes possam acessar essa informação quando a simulação é iniciada.
 
 Para delimitar os setores, selecionam-se 4 pontos: Norte, Sul, Leste e Oeste.
 Em seguida, obtém-se os nós do grafo do mapa mais próximos a esses pontos.
-Por fim, utiliza-se o método de busca em largura para traçar 2 rotas: Norte para Sul e Leste para Oeste.
-Essas rotas aparecem destacadas no mapa de Kobe (Figura \ref{fig:setores}).
+Por fim, utiliza-se o método de busca em largura para traçar 2 rotas: de Norte a Sul e de Leste a Oeste.
+Essas rotas, denominadas vias principais, aparecem destacadas no mapa de Kobe, na Figura \ref{fig:setores}.
 
 \begin{figure}[!ht]
 \centerline{\includegraphics[width=0.5\textwidth]{img/setores.pdf}}
-\caption{Vias Principais no mapa Kobe.}
+\caption{Vias principais no mapa Kobe.}
 \label{fig:setores}
 \end{figure}
 
@@ -133,11 +133,11 @@ Cada setor possui uma importância para cada tipo de agente (ambulâncias, bombeir
 A importância de um setor para um tipo de agente é um valor numérico atribuído de acordo com os problemas daquele setor com os quais os agentes daquele tipo têm que lidar.
 Em seguida, a quantidade de agentes de cada tipo é calculada para cada setor, com base na importância do setor em relação aos demais.
 
-Durante a etapa de pré-processamento, existem apenas informações estáticas sobre o ambiente (como a localização de refúgios, prédios, postos de combustíveis e hidrantes, por exemplo).
+Durante a etapa de pré-processamento, existem apenas informações estáticas sobre o ambiente (como a localização de refúgios, prédios, postos de combustível e hidrantes, por exemplo).
 Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte forma:
 
 \begin{itemize}
-  \item Bombeiros: quantidade de construções e quantidade de postos de combustíveis. Atribui-se inicialmente maior importância a setores onde há maior potencial de propagação de incêndios;
+  \item Bombeiros: quantidade de construções e quantidade de postos de combustível. Atribui-se inicialmente maior importância a setores onde há maior potencial de propagação de incêndios;
   \item Policiais: quantidade de refúgios e hidrantes. Atribui-se inicialmente maior importância a setores onde recursos estratégicos estão posicionados;
   \item Ambulâncias: quantidade de construções. Atribui-se inicialmente maior importância a setores onde há maior probabilidade de haver civis soterrados e supõe-se que esta probabilidade aumente com o número de construções de um setor.
 \end{itemize}
@@ -145,14 +145,14 @@ Nessa etapa, cada tipo de agente calcula a importância de um setor da seguinte f
 Durante a simulação, os agentes coletam informações sobre os problemas do ambiente (bloqueios, incêndios e civis feridos). Assim, cada agente calcula a importância de um setor da seguinte forma:
 
 \begin{itemize}
-  \item Bombeiros: quantidade de postos de combustíveis e quantidade de prédios em chamas. Mais bombeiros devem ser alocados onde há mais incêndios, e além disso os postos de combustíveis devem ser protegidos.
+  \item Bombeiros: quantidade de postos de combustível e quantidade de prédios em chamas. Onde há mais incêndios, mais bombeiros devem ser alocados, além disso, os postos de combustível devem ser protegidos.
   \item Policiais: quantidade de bloqueios em vias estratégicas. Atribui-se maior importância a setores onde recursos estratégicos (como refúgios e hidrantes) estão bloqueados.
   \item Ambulâncias: quantidade de civis soterrados. Atribui-se maior importância a setores onde há maior número de civis soterrados.
 \end{itemize}
 
 O cálculo do percentual de agentes de cada tipo que deve estar em cada setor é descrito a seguir.
 Seja $S$ o conjunto de setores do mapa, $a_s$, $b_s$ e $p_s$ o valor numérico que representa a importância de cada setor $s$ para as ambulâncias, bombeiros e policiais, respectivamente.
-O percentual de agentes que deve estar em cada setor é proporcional à importância de um setor em relação ao somatório das importâncias.
+O percentual de agentes que deve estar em cada setor é proporcional à importância de um setor em relação ao somatório das importâncias de todos os setores.
 A Eq. \ref{eq:alocacao} formaliza o cálculo do percentual de agentes em cada setor.
 
 \begin{equation}
@@ -174,16 +174,17 @@ Após o cálculo, as centrais notificam os agentes que devem mudar de setor para q
 \subsection{Roteamento}
 \label{sec:roteamento}
 
-O roteamento utilizado consiste em montar as rota com base em uma separação hierárquica das vias.
+O roteamento utilizado consiste em montar as rotas com base na divisão hierárquica das vias.
+Neste sentido, as vias principais (Norte-Sul e Leste-Oeste) podem ser utilizadas neste processo.
 Na setorização identifica-se os limites dos setores como sendo duas rotas (Norte-Sul e Leste-Oeste).
-Uma vez que elas sempre irão se encontrar em algum ponto, podem levar um agente de um setor para outro, sendo assim, consideramos essas duas rotas como as vias principais.
-Além disso, definimos como vias secundárias o conjunto de rotas que leva os refúgios e postos de combustíveis até o ponto mais próximo das vias principais.
+Uma vez que elas sempre irão se encontrar em algum ponto, podem levar um agente de um setor para outro.
+As vias secundárias por suas vez, são o conjunto de rotas que conectam os refúgios e postos de combustível ao ponto mais próximo das vias principais.
 
-O objetivo do roteamento é fazer com que os agentes utilizem as vias que tenham maior probabilidade de estarem limpas, uma vez que as vias principais e secundárias serão limpas com maior probabilidade, conforme descrito na seção \ref{sec:policiais}.
-Desse modo, sempre que um agente tiver de se locomover, ele utilizará as vias principais e secundárias.
+O objetivo do roteamento é fazer com que os agentes utilizem as vias que tenham maior probabilidade de estarem limpas, que correspondem às vias principais e secundárias (detalhes desta estapa serão descritos na seção \ref{sec:policiais}).
+Desse modo, sempre que um agente precisar de se locomover, ele dará preferência às vias principais e secundárias.
 
-A Figura \ref{fig:roteamento} mostra o exemplo de um bombeiro que estava combatendo um incêndio e precisa reabastecer.
-Pode-se verificar que mesmo que exista um caminho mais curto até o refúgio por entre os setores, a rota dele é definida de modo que percorra o menor caminho até algum ponto das vias principais, se desloque através das vias principais até o mais ponto mais próximo do refúgio (ainda nas vias principais) e então chegue ao refúgio.
+A Figura \ref{fig:roteamento} mostra o exemplo de um bombeiro que, durante o combate a um incêndio, precisa se deslocar até um refúgio para reabastecer.
+Pode-se verificar que, mesmo que exista um caminho mais curto sem utilizar as vias principais, a rota dele é definida de modo que percorra o menor caminho até algum ponto das vias principais, se desloque através destas até o mais ponto mais próximo do refúgio (ainda nas vias principais) e então chegue ao refúgio.
 
 \begin{figure*}[ht]
   \centering
@@ -192,25 +193,23 @@ Pode-se verificar que mesmo que exista um caminho mais curto até o refúgio por e
   \label{fig:roteamento}
 \end{figure*}
 
-Vale ressaltar que sempre que um agente encontrar um bloqueio, ele irá recalcular a rota.
-Se existir um bloqueio enquanto ele tenta chegar as vias principais, ele irá recalcular a rota até que encontre um caminho válido.
-Se o bloqueio existir na via principal, o que ocorrerá com frequência, principalmente no início da simulação, será calculada o caminho mais curto entre onde ele se encontra até o destino, ignorando as vias principais.
-Por fim, se o agente saiu das vias principais e está tentando se deslocar até o destino, através de uma via secundária e encontrar um bloqueio, ele irá recalcular a rota para tentar chegar ao destino.
-
+Vale ressaltar que, sempre que um agente encontrar um bloqueio, ele irá recalcular a rota.
+Se existir um bloqueio enquanto ele tenta chegar às vias principais, ele irá recalcular a rota até que encontre um caminho válido.
+Se houver um bloqueio na via principal (o que ocorrerá com frequência  no início da simulação), será calculado o caminho mais curto entre seu ponto atual e o destino, ignorando as vias principais.
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Exploração}
 \label{sec:exploracao}
 
-A exploração consiste fazer com que os agentes procurem por acontecimentos, de modo que possam comunicar o ocorrido aos demais.
-Para explorar o ambiente, cada agente irá armazenar o número de vezes que passou em por determinado nó do grafo.
-Sempre que o agente chegar ao seu destino e não tiver nenhuma tarefa prioritária a ser realizada, ele irá sortear um nó aleatório, dentro do setor a qual está alocado, de modo que os nós menos visitados terão prioridade de escolha.
+A exploração consiste em fazer com que os agentes procurem por acontecimentos, de modo que possam comunicar o ocorrido aos demais.
+Para explorar o ambiente, cada agente irá armazenar o número de vezes que passou por determinado nó do grafo.
+Sempre que o agente chegar ao seu destino e não tiver tarefas prioritárias, ele deve sortear um nó aleatório (dentro do setor a qual está alocado), de modo que os nós menos visitados tenham prioridade de escolha.
 
 A rota calculada para exploração é diferente da rota calculada para o deslocamento dos agentes.
-Na exploração é importante que os agentes visitem periodicamente os nós do mapa, sendo assim, a rota calculada para exploração será sempre a rota mais curta entre a origem e o destino do agente.
+Na exploração é importante que os agentes visitem periodicamente os nós do mapa. Sendo assim, a rota calculada para exploração é sempre a mais curta entre a origem e o destino do agente.
 Vale lembrar que a rota é calculada através do algoritmo de busca em largura.
 
-Além disso, assim como no deslocamento sempre que o agente encontrar um bloqueio, ele irá refazer sua rota, considerando que determinada parte da via está bloqueada.
+Além disso, assim como no processo de deslocamento, sempre que o agente encontrar um bloqueio, ele deve refazer sua rota, considerando o bloqueio da via.
 Desse modo, espera-se que o agente desvie o bloqueio e chegue ao seu destino.
 
 %---------------------------------------------------------------------------------------------------
@@ -218,16 +217,16 @@ Desse modo, espera-se que o agente desvie o bloqueio e chegue ao seu destino.
 \subsection{Comunicação}
 \label{sec:comunicacao}
 
-O processo de comunicação é realizado de com base duas variáveis principais: o número de canais disponíveis e existência de centrais.
+O processo de comunicação é realizado com base duas variáveis principais: o número de canais disponíveis e a existência de centrais.
 
-Quando existir três ou mais canais e centrais, cada grupo de agentes irá se comunicar em um canal específico, enquanto que as centrais irão classificar e repassar as informações pertinente em cada canal.
-Caso os policiais identifiquem um foco de incêndio e civis soterrados, eles irão comunicar o que foi descoberto para a central e a central irá comunicar o incêndio no canal dos bombeiros e o civil no canal das ambulâncias.
+Quando estiverem disponíveis três ou mais canais e centrais, cada grupo de agentes irá se comunicar em um canal específico, enquanto que as centrais irão classificar e, eventualmente, repassar as informações pertinente para cada canal.
+Caso os policiais identifiquem um foco de incêndio e civis soterrados, eles devem comunicar para a central, a qual deve comunicar sobre o incêndio no canal dos bombeiros e sobre os civis no canal das ambulâncias.
 
-Contudo, em ambientes sem centrais, os agentes irão repassar as informações pertinentes a cada grupo de agentes em seu respectivo canal.
-Desse modo, se um agente bombeiro identificar um civil soterrado ele poderá repassar essa informação para o canal das ambulâncias, caso não tenha percebido nada pertinente a sua tarefa principal.
+Contudo, em ambientes sem centrais, os agentes devem repassar as informações pertinentes a cada grupo de agentes para seus respectivos canais.
+Desse modo, se um agente bombeiro identificar um civil soterrado ele pode repassar essa informação para o canal das ambulâncias.
 
-Além disso, os agentes irão repassar tudo o que for identificado por voz aos agentes em seu raio de alcance.
-Isso é realizado pois em algum dado momento, uma informação não poderá ser repassada imediatamente por rádio, mas um agente de interesse poderá ouvir e comunicar aos demais.
+Além disso, os agentes podem se comunicar por voz com outros agentes dentro do seu raio de alcance.
+Isso é realizado porque, em dados momentos, informações não podem ser repassada imediatamente por rádio. Logo, comunicação por voz serve como uma alternativa viável.
 
 %===================================================================================================
 
@@ -236,45 +235,45 @@ Isso é realizado pois em algum dado momento, uma informação não poderá ser repas
 
 Esta seção apresenta a modelagem dos agentes da equipe Epicenter.
 De modo geral, os agentes de pelotão (ambulâncias, bombeiros e policiais) são implementados com uma máquina de estados e uma fila de atividades.
-Cada agente preenche a fila com diferentes atividades e esse processo é descrito a seguir.
+Cada agente preenche a fila com diferentes atividades, este processo é descrito a seguir.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Ambulâncias}
 \label{sec:ambulancias}
 
-A função dessa classe de agentes é realizar o resgates de civis.
-Assim, a prioridade das atividades desses agentes utiliza o tipo de agente soterrado e o tempo esperado de vida do agente.
-Sempre que um civil for identificado, a informação repassada será o tipo do agente (ambulância, bombeiro, policial ou civil), a localização do agente, quão soterrado o agente está e seu tempo de vida.
+A função desta classe de agentes é realizar o resgates de civis.
+Assim, a prioridade das atividades destes agentes é definida com base no tipo de agente soterrado e o tempo esperado de vida do agente.
+Sempre que um civil for identificado, a informação repassada é o tipo do agente (ambulância, bombeiro, policial ou civil), sua localização, o quão soterrado está e seu tempo de vida.
 
-Com base nessa lista, a prioridade de resgate seguirá o critério de tipo de agente e em seguida o tempo estimado de resgate do agente.
-Prioritariamente busca-se resgatar ambulâncias, bombeiros, policiais e civis nesta ordem.
+Com base nessa lista, a prioridade de resgate segue o critério de tipo de agente e, em seguida, o tempo estimado para seu resgate.
+Prioritariamente, busca-se resgatar ambulâncias, bombeiros, policiais e civis, nesta ordem.
 Quando houver mais de um agente do mesmo tipo (situação comum no caso dos civis), o critério de desempate será o tempo estimado para o resgate do agente ($t_i$).
-A Eq. \ref{eq:resgate} mostra a função utilização para estimar o tempo de resgate do agente, onde $hp_i$ é a energia do agente, $dm_i$ é o dano sofrido pelo agente em cada passo de tempo, $resc_i$ sendo o tempo estimado para retirar o agente dos escombros e $dist_i$ é a distância, em passos de tempo, da ambulância em relação ao agente $i$ e do agente em relação ao refúgio mais próximo.
+A Eq. \ref{eq:resgate} mostra a função utilizada para estimar o tempo de resgate de um agente $i$, onde $hp_i$ é sua energia, $dm_i$ é seu dano sofrido (em cada passo de tempo), $resc_i$ é o tempo estimado para retira-lo dos escombros e $dist_i$ é a distância (em passos de tempo), da ambulância em relação ao agente $i$ e do agente em relação ao refúgio mais próximo.
 
 \begin{equation}
 \label{eq:resgate}
 t_i = \frac{hp_i}{dm_i} - (resc_i + dist_i)
 \end{equation}
 
-Essa equação irá gerar um número positivo sendo o tempo estimado de vida que o agente tem (relação de $hp_i$ e $dm_i$) menos o tempo necessário para chegar até o agente, resgatá-lo e levá-lo para o refúgio mais próximo.
+Essa equação gera um número positivo, equivalente ao tempo estimado de vida que o agente $i$ tem (relação de $hp_i$ e $dm_i$), menos o tempo necessário para a ambulância chegar até o mesmo, resgatá-lo e levá-lo para o refúgio mais próximo.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Bombeiros}
 \label{sec:bombeiros}
-Os bombeiros são agentes responsáveis por combater incêndios e possuem em sua concepção listas de tarefas ordenadas por prioridades.
-Tais listas são atualizadas através de suas percepções do ambiente e também por meio de informações recebidas dos demais agentes, seja por canais de comunicação ou voz.
+Os bombeiros são os agentes responsáveis por combater incêndios. Possuem em sua concepção listas de tarefas ordenadas por prioridades.
+Tais listas são atualizadas através de suas percepções do ambiente e também por meio de informações recebidas dos demais agentes, seja por canais de rádio ou voz.
 As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade civis na construção e intensidade do fogo.
 
 É dado prioridade máxima a incêndios com a maior quantidade de civis dentro.
-Em seguida, caso não hajam civis, são priorizados incêndios pequenos, esta medida impede que o fogo se alastre para as demais construções.
-Caso o incêndio esteja em um estágio avançado, e o bombeiro considere não ser viável apagá-lo, então, este irá controlar o fogo dos prédios vizinhos, evitando assim que o incêndio se propague.
+Em seguida, caso não hajam civis, são priorizados incêndios pequenos. Esta medida impede que o fogo se alastre para as demais construções.
+Caso o incêndio esteja em um estágio avançado e o bombeiro considere não ser viável apagá-lo, então este irá controlar o fogo dos prédios vizinhos, evitando assim que o incêndio se propague.
 A avaliação da viabilidade de apagar um incêndio ou não é dada por meio de uma rede neural artificial (RNA).
-Esta rede, recebe informações da construção em chamas como dados de entrada, e retorna o tempo necessário para a construção queimar completamente em passos de tempo.
+Esta rede recebe informações da construção em chamas como dados de entrada, retornando o tempo necessário para a construção queimar completamente.
 
 Para construir a rede, desenvolveu-se bombeiros observadores responsáveis capturar informações de construções em chamas em exercícios simulados em diferentes mapas.
-Estas informações são compostas por: \textit{Area}, \textit{Temperature} e \textit{Fieriness}, além do tempo total gasto para a construção queimar completamente.
+Estas informações são compostas por: \textit{area}, \textit{temperature} e \textit{fieriness}, além do tempo total gasto para a construção queimar completamente.
 Cerca de 1300 instâncias foram utilizadas para gerar o arquivo de treinamento da rede.
 Em seguida treinou-se uma RNA \textit{multi layer perceptron}.
 A topologia da rede pode ser observada na Figura \ref{fig:rede}.
@@ -290,43 +289,45 @@ Como pode ser observado, a rede possui três camadas.
 A entrada da rede é composta pelas três variáveis citadas anteriormente:
 
 \begin{itemize}
-\item \textit{Fieriness}: representa a intensidade do fogo: \textit{heating}, \textit{burning} e \textit{inferno}, representados respectivamente por 1, 2 e 3;
+\item \textit{Fieryness}: representa a intensidade do fogo: \textit{heating}, \textit{burning} e \textit{inferno}, representados respectivamente por 1, 2 e 3;
 \item \textit{Temperature}: refere-se ao aquecimento da construção e é representada por um número inteiro;
 \item \textit{Area}: refere-se à área total construída considerando a quantidade de andares da construção, representada por um inteiro positivo.
 \end{itemize}
 
-Por fim, a RNA produz a saída \textit{Time} que representa um valor inteiro, correspondente ao número de passos de tempo que a construção ainda irá queimar.
+Por fim, a RNA produz a saída \textit{time}, que representa um valor inteiro, correspondente ao número de passos de tempo que a construção vai levar para queimar completamente.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Policiais}
 \label{sec:policiais}
 
-A função principal dessa classe de agente é realizar a limpeza das vias obstruídas.
-Por esse motivo esses agentes são os responsáveis em garantir a disponibilidade das vias principais e secundarias, além de liberar as demais vias e atender a chamados.
-Com base nessa quantidade de demanda, os agentes foram separados em três grupos, com base nas prioridade de tarefas a serem executadas:
+A função principal desta classe de agente é realizar a limpeza das vias obstruídas.
+Por este motivo, estes agentes são os responsáveis por garantir a disponibilidade das vias principais e secundárias, além de liberar as demais vias e atender a chamados.
+Com base na demanda, os agentes foram separados em três grupos, considerando a prioridade das tarefas a serem executadas:
 \begin{itemize}
-\item Grupo 1: Responsável por limpar as vias principais: assim que as vias principais forem limpas, os agentes irão realizar outras atividades, como atender a solicitações, limpas as vias secundárias e demais vias.
-\item Grupo 2: Responsável por limpar as vias secundárias: assim que as vias secundárias forem limpas, esses agentes irão atender a chamados, limpar as demais vias e por fim, verificar o estado das vias principais e secundárias.
-\item Grupo 3: Responsável por limpar as demais vias: Esses agentes tem a função de limpar as vias que não se classificaram como primárias ou secundárias. Quando as demais vias forem limpas, eles irão atender a chamados e verificar as vias principais e secundárias.
+\item Grupo 1: responsável por limpar as vias principai. Assim que as vias principais são limpas, os agentes realizam outras atividades, como atender solicitações, limpar vias secundárias e demais.
+
+\item Grupo 2: responsável por limpar as vias secundárias. Assim que as vias secundárias forem limpas, esses agentes atendem a chamados, limpam as demais vias e, por fim, verificam o estado das vias principais e secundárias.
+
+\item Grupo 3: responsável por limpar as demais vias. Estes agentes têm a função de limpar as vias que não se classificaram como primárias ou secundárias. Quando as demais vias forem limpas, eles atendem a chamados e verificam as vias principais e secundárias.
 \end{itemize}
 
-Apesar de todos os agentes estarem alocados em setores, os agentes do Grupo 1 deverão limpar as vias principais, que ficam nos limites entre os setores.
-Enquanto realizam essa atividade, eles irão se deslocar entre todos os setores.
-Quando a tarefa principal for concluída, eles retornam ao setor que foram alocados e priorizam outras atividades.
+Apesar de todos os agentes estarem alocados em setores, os agentes do Grupo 1 devem limpar as vias principais, que ficam nos limites entre os setores.
+Enquanto realizam essa atividade, eles se deslocar entre todos os setores.
+Quando a tarefa principal é concluída, eles retornam ao setor que foram alocados e priorizam outras atividades.
 
-Por fim, os agentes do Grupo 2 e 3 irão atuar no setor que foram alocados e sairão de lá para atender algum chamado urgente ou então verificar as vias principais.
+Por fim, os agentes do Grupo 2 e 3 atuam nos setores que foram alocados. Eles podem sair de lá para atender chamados urgentes ou para verificar as vias principais.
 
 %---------------------------------------------------------------------------------------------------
 
 \subsection{Centrais}
 
-As centrais possuem diversas funções, entre elas, realizar o recálculo da importância dos setores, realocação dos agentes e comunicação.
-Conforme comentado anteriormente, as centrais irão recalcular a importância dos setores periodicamente, uma vez que a descoberta de novas ocorrências influenciam alteram os pesos previamente calculados.
-Com base no recálculo, as centrais irão realocar os agentes, de modo que elas possuem a lista de agentes em cada setor.
+As centrais possuem diversas funções: realizar o recálculo da importância dos setores, realocação dos agentes e comunicação.
+Conforme comentado anteriormente, as centrais recalculam a importância dos setores periodicamente, uma vez que a descoberta de novas ocorrências alteram os pesos previamente calculados.
+Com base no recálculo, as centrais podem realocar os agentes, uma vez que elas possuem a lista de agentes de cada setor.
 
 Além disso, outra importante função das centrais é disseminar a informação pertinente a cada classe de agentes.
-Devido a capacidade de comunicação das centrais, elas irão repassar as informações específicas para cada central, liberando essa atividade dos agentes e buscando evitar a sobrecarga de informações nos canais.
+Devido à capacidade de comunicação das centrais, elas repassam as informações específicas para cada central, liberando essa atividade dos agentes e buscando evitar a sobrecarga de informações nos canais.
 
 %===================================================================================================
 
@@ -334,10 +335,10 @@ Devido a capacidade de comunicação das centrais, elas irão repassar as informaçõ
 \label{sec:consideracoes}
 
 O presente trabalho descreveu a metodologia adotada pela equipe Epicenter para o simulador multiagente Robocup Rescue.
-O foco do trabalho está centrado em três atividades principais: Setorização e Alocação dos Agentes, Roteamento e Prioridade de Limpeza e Controle de incêndios.
+O foco do trabalho está centrado em três atividades principais: setorização e alocação dos agentes, roteamento e prioridade de limpeza e controle de incêndios.
 
 Espera-se que a setorização e alocação dos agentes permita que todo mapa seja monitorado, identificando rapidamente novos focos de incêndio e civis soterrados, permitindo que ações sejam tomadas o mais rápido possível.
-Além disso, o roteamento, juntamente com a prioridade de limpeza das vias, permitirá que exista uma rota de deslocamento sempre limpa. Isso fará com que os agentes não fiquem perdendo tempo para chegar a refúgios e hidrantes devido a vias bloqueadas.
+Além disso, o roteamento, juntamente com a prioridade de limpeza das vias, permite que exista uma rota de deslocamento sempre limpa. Isso faz com que os agentes não percam tempo para chegar a refúgios e hidrantes devido a vias bloqueadas.
 Por fim, a estratégia de combate a incêndios está baseada na classificação dos focos de incêndio, permitindo que os bombeiros controlem a expansão do incêndio em vez de tentar combater um foco que dificilmente será eliminado.
 
 %===================================================================================================
