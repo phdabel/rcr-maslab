@@ -56,9 +56,9 @@ Besides, priority queues are used for rescuing civilians, where we try to estima
 
 \selectlanguage{brazil}
 \begin{abstract}
-O presente trabalho tem o objetivo de apresentar a metologia proposta pela equipe Epicenter para o simulador multiagente Robocup Rescue.
-A metodologia está centrada em técnicas de setorização de alocação dos agentes ao setores, roteamento com base na priorização de limpeza das vias e no controle e combate a incêndios, apoiado por uma rede neural.
-Além disso, são utilizadas filas de prioridade para o resgate de civis onde busca-se estimar se o agente soterrado tem chance de sobreviver, visando aumentar o número de civis resgatados.
+O presente trabalho tem o objetivo de apresentar a metodologia proposta pela equipe Epicenter para o simulador multiagente Robocup Rescue.
+A metodologia está centrada em técnicas de setorização, de alocação dos agentes ao setores, roteamento com base na priorização de limpeza das vias e no controle e combate a incêndios, apoiado por uma rede neural.
+Além disso, são utilizadas filas de prioridade para o resgate de civis onde se busca estimar se o agente soterrado tem chance de sobreviver, visando aumentar o número de civis resgatados.
 \end{abstract}
 \keywords{}
 ]
@@ -180,7 +180,7 @@ Na setorização identifica-se os limites dos setores como sendo duas rotas (Norte
 Uma vez que elas sempre irão se encontrar em algum ponto, podem levar um agente de um setor para outro.
 As vias secundárias por suas vez, são o conjunto de rotas que conectam os refúgios e postos de combustível ao ponto mais próximo das vias principais.
 
-O objetivo do roteamento é fazer com que os agentes utilizem as vias que tenham maior probabilidade de estarem limpas, que correspondem às vias principais e secundárias (detalhes desta estapa serão descritos na seção \ref{sec:policiais}).
+O objetivo do roteamento é fazer com que os agentes utilizem as vias que tenham maior probabilidade de estarem limpas, que correspondem às vias principais e secundárias (detalhes desta etapa serão descritos na seção \ref{sec:policiais}).
 Desse modo, sempre que um agente precisar de se locomover, ele dará preferência às vias principais e secundárias.
 
 A Figura \ref{fig:roteamento} mostra o exemplo de um bombeiro que, durante o combate a um incêndio, precisa se deslocar até um refúgio para reabastecer.
@@ -219,7 +219,7 @@ Desse modo, espera-se que o agente desvie o bloqueio e chegue ao seu destino.
 
 O processo de comunicação é realizado com base duas variáveis principais: o número de canais disponíveis e a existência de centrais.
 
-Quando estiverem disponíveis três ou mais canais e centrais, cada grupo de agentes irá se comunicar em um canal específico, enquanto que as centrais irão classificar e, eventualmente, repassar as informações pertinente para cada canal.
+Quando estiverem disponíveis três ou mais canais e centrais, cada grupo de agentes irá se comunicar em um canal específico, enquanto que as centrais irão classificar e, eventualmente, repassar as informações pertinentes para cada canal.
 Caso os policiais identifiquem um foco de incêndio e civis soterrados, eles devem comunicar para a central, a qual deve comunicar sobre o incêndio no canal dos bombeiros e sobre os civis no canal das ambulâncias.
 
 Contudo, em ambientes sem centrais, os agentes devem repassar as informações pertinentes a cada grupo de agentes para seus respectivos canais.
@@ -242,7 +242,7 @@ Cada agente preenche a fila com diferentes atividades, este processo é descrito 
 \subsection{Ambulâncias}
 \label{sec:ambulancias}
 
-A função desta classe de agentes é realizar o resgates de civis.
+A função desta classe de agentes é realizar o resgate de civis.
 Assim, a prioridade das atividades destes agentes é definida com base no tipo de agente soterrado e o tempo esperado de vida do agente.
 Sempre que um civil for identificado, a informação repassada é o tipo do agente (ambulância, bombeiro, policial ou civil), sua localização, o quão soterrado está e seu tempo de vida.
 
@@ -264,9 +264,9 @@ Essa equação gera um número positivo, equivalente ao tempo estimado de vida que 
 \label{sec:bombeiros}
 Os bombeiros são os agentes responsáveis por combater incêndios. Possuem em sua concepção listas de tarefas ordenadas por prioridades.
 Tais listas são atualizadas através de suas percepções do ambiente e também por meio de informações recebidas dos demais agentes, seja por canais de rádio ou voz.
-As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade civis na construção e intensidade do fogo.
+As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade civis na construção e a intensidade do fogo.
 
-É dado prioridade máxima a incêndios com a maior quantidade de civis dentro.
+É dada prioridade máxima a incêndios com a maior quantidade de civis dentro.
 Em seguida, caso não hajam civis, são priorizados incêndios pequenos. Esta medida impede que o fogo se alastre para as demais construções.
 Caso o incêndio esteja em um estágio avançado e o bombeiro considere não ser viável apagá-lo, então este irá controlar o fogo dos prédios vizinhos, evitando assim que o incêndio se propague.
 A avaliação da viabilidade de apagar um incêndio ou não é dada por meio de uma rede neural artificial (RNA).
@@ -305,7 +305,7 @@ A função principal desta classe de agente é realizar a limpeza das vias obstruíd
 Por este motivo, estes agentes são os responsáveis por garantir a disponibilidade das vias principais e secundárias, além de liberar as demais vias e atender a chamados.
 Com base na demanda, os agentes foram separados em três grupos, considerando a prioridade das tarefas a serem executadas:
 \begin{itemize}
-\item Grupo 1: responsável por limpar as vias principai. Assim que as vias principais são limpas, os agentes realizam outras atividades, como atender solicitações, limpar vias secundárias e demais.
+\item Grupo 1: responsável por limpar as vias principais. Assim que as vias principais são limpas, os agentes realizam outras atividades, como atender solicitações, limpar vias secundárias e demais.
 
 \item Grupo 2: responsável por limpar as vias secundárias. Assim que as vias secundárias forem limpas, esses agentes atendem a chamados, limpam as demais vias e, por fim, verificam o estado das vias principais e secundárias.
 
