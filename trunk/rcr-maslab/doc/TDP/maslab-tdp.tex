@@ -176,9 +176,9 @@ Após o cálculo, as centrais notificam os agentes que devem mudar de setor para q
 
 O roteamento utilizado consiste em montar as rotas com base na divisão hierárquica das vias.
 Neste sentido, as vias principais (Norte-Sul e Leste-Oeste) podem ser utilizadas neste processo.
-Na setorização identifica-se os limites dos setores como sendo duas rotas (Norte-Sul e Leste-Oeste).
+Na setorização identificam-se os limites dos setores como sendo duas rotas (Norte-Sul e Leste-Oeste).
 Uma vez que elas sempre irão se encontrar em algum ponto, podem levar um agente de um setor para outro.
-As vias secundárias por suas vez, são o conjunto de rotas que conectam os refúgios e postos de combustível ao ponto mais próximo das vias principais.
+As vias secundárias, por sua vez, são o conjunto de rotas que conectam os refúgios e postos de combustível ao ponto mais próximo das vias principais.
 
 O objetivo do roteamento é fazer com que os agentes utilizem as vias que tenham maior probabilidade de estarem limpas, que correspondem às vias principais e secundárias (detalhes desta etapa serão descritos na seção \ref{sec:policiais}).
 Desse modo, sempre que um agente precisar de se locomover, ele dará preferência às vias principais e secundárias.
@@ -264,7 +264,7 @@ Essa equação gera um número positivo, equivalente ao tempo estimado de vida que 
 \label{sec:bombeiros}
 Os bombeiros são os agentes responsáveis por combater incêndios. Possuem em sua concepção listas de tarefas ordenadas por prioridades.
 Tais listas são atualizadas através de suas percepções do ambiente e também por meio de informações recebidas dos demais agentes, seja por canais de rádio ou voz.
-As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade civis na construção e a intensidade do fogo.
+As listas de tarefas são ordenadas de acordo com dois fatores: a quantidade de civis na construção e a intensidade do fogo.
 
 É dada prioridade máxima a incêndios com a maior quantidade de civis dentro.
 Em seguida, caso não hajam civis, são priorizados incêndios pequenos. Esta medida impede que o fogo se alastre para as demais construções.
@@ -272,7 +272,7 @@ Caso o incêndio esteja em um estágio avançado e o bombeiro considere não ser viá
 A avaliação da viabilidade de apagar um incêndio ou não é dada por meio de uma rede neural artificial (RNA).
 Esta rede recebe informações da construção em chamas como dados de entrada, retornando o tempo necessário para a construção queimar completamente.
 
-Para construir a rede, desenvolveu-se bombeiros observadores responsáveis capturar informações de construções em chamas em exercícios simulados em diferentes mapas.
+Para construir a rede, foram desenvolvidos bombeiros observadores responsáveis capturar informações de construções em chamas em exercícios simulados em diferentes mapas.
 Estas informações são compostas por: \textit{area}, \textit{temperature} e \textit{fieriness}, além do tempo total gasto para a construção queimar completamente.
 Cerca de 1300 instâncias foram utilizadas para gerar o arquivo de treinamento da rede.
 Em seguida treinou-se uma RNA \textit{multi layer perceptron}.
@@ -313,7 +313,7 @@ Com base na demanda, os agentes foram separados em três grupos, considerando a p
 \end{itemize}
 
 Apesar de todos os agentes estarem alocados em setores, os agentes do Grupo 1 devem limpar as vias principais, que ficam nos limites entre os setores.
-Enquanto realizam essa atividade, eles se deslocar entre todos os setores.
+Enquanto realizam essa atividade, eles podem se deslocar entre todos os setores.
 Quando a tarefa principal é concluída, eles retornam ao setor que foram alocados e priorizam outras atividades.
 
 Por fim, os agentes do Grupo 2 e 3 atuam nos setores que foram alocados. Eles podem sair de lá para atender chamados urgentes ou para verificar as vias principais.
