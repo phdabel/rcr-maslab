@@ -253,7 +253,9 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     		Integer index = new Random().nextInt(road.size());
     		
     		EntityID destiny = road.get(index).getID();
+    		
     		path = search.breadthFirstSearch(local, destiny);
+    		
     		//path = this.getDijkstraPath(local, destiny, this.mapTmp);
     	}else{
     		

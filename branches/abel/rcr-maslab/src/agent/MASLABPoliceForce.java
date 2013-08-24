@@ -68,6 +68,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             // Subscribe to channel 1
             sendSubscribe(time, 1);
         }
+      
         for (Command next : heard) {
             Logger.debug("Heard " + next);
         }
@@ -97,6 +98,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	stateQueue.add(new AgentState("RandomWalk"));
         	
         }
+        System.out.println(this.currentPath);
         this.printQueue();
         
         /**
@@ -104,149 +106,128 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
          * Máquina de Estados
          * Aqui começa a execução das ações na fila de ações
          */
+        
         if(!stateQueue.isEmpty())
         {
         	
         	AgentState currentAction = stateQueue.peek();
         	switch(currentAction.getState())
         	{
-        		
         		case "RandomWalk":
-        			//System.out.println("Random Walk da pilha de estados.");
-        			if(currentPath.isEmpty() && pathDefined == false)
+        			if(this.currentPath.isEmpty() && this.pathDefined == false)
         			{
-        				currentPath = this.walk(currentPath, me().getPosition());
-        				pathDefined = true;
+        				this.currentPath = this.walk(this.currentPath, me().getPosition());
+        				this.pathDefined = true;
         				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
-        				sendMove(time, currentPath);
+        				sendMove(time, this.currentPath);
         				return;
-        			}else if(currentPath.size() <= 2){
+        			}else if(this.currentPath.size() <= 2){
         				stateQueue.poll();
-        				pathDefined = false;
+        				this.pathDefined = false;
         				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
-        				sendMove(time, currentPath);
-        				currentPath.clear();
+        				sendMove(time, this.currentPath);
+        				this.currentPath.clear();
         				return;
-        			}else if(pathDefined == true){
-        				currentPath = this.walk(currentPath, me().getPosition());
+        			}else if(this.pathDefined == true){
+        				this.currentPath = this.walk(this.currentPath, me().getPosition());
         				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
-        				sendMove(time, currentPath);
+        				sendMove(time, this.currentPath);
         				return;
         			}
         			break;
-        		
-        			//procurar por bloqueio proximo do agente
         		case "LookingNearBlockade":
         			Blockade target = getTargetBlockade();
-        			if(stateQueue.peek().getState() == "LookingNearBlockade")
-        			{
-        					stateQueue.poll();
-        			}
-        			if(target != null)
-        			{
-        				this.addBeginingQueue(new AgentState("Unblock", target.getID()));
-        				this.addBeginingQueue(new AgentState("Walk", target.getPosition()));
-        			}
+    				
+            		if(stateQueue.peek().getState() == "LookingNearBlockade")
+            		{
+            				stateQueue.poll();
+            		}
+            		if(target != null)
+            		{
+            			this.addBeginingQueue(new AgentState("Unblock", target.getPosition()));
+            			this.addBeginingQueue(new AgentState("Walk", target.getPosition()));
+            		}
         			break;
         		case "Walk":
         			if(currentPath.isEmpty() && pathDefined == false){
-        				//currentPath = search.breadthFirstSearch(me().getPosition(), currentAction.getId());
-        				currentPath = search.breadthFirstSearch(me().getPosition(), currentAction.getId());
-        				pathDefined = true;
-        				lastPath = currentPath;
-        				currentPath = this.walk(currentPath, me().getPosition());
-        				if(lastPath.size() == currentPath.size())
-        				{
-        					this.addBeginingQueue(new AgentState("Unblock",me().getPosition()));
-        				}
-        				sendMove(time, currentPath);
-        				return;
-        			}else if(currentPath.size() >2 && pathDefined == true)
-        			{
-        				lastPath = currentPath;
-        				currentPath = this.walk(currentPath, me().getPosition());
-        				
-        				if(lastPath.size() == currentPath.size())
-        				{
-        					this.addBeginingQueue(new AgentState("Unblock", me().getPosition()));
-        				}
-        				sendMove(time, currentPath);
-        				return;
-        			}else if(currentPath.size() <= 2){
-        				stateQueue.poll();
-        				sendMove(time,currentPath);
-        				pathDefined = false;
-        				return;
-        			}
-        			
+            			//currentPath = search.breadthFirstSearch(me().getPosition(), currentAction.getId());
+            			pathDefined = true;
+            			lastPath = currentPath;
+            			currentPath = this.walk(currentPath, me().getPosition());
+            			/*if(lastPath.size() == currentPath.size())
+            			{
+            				this.addBeginingQueue(new AgentState("Unblock",me().getPosition()));
+            			}*/
+            			sendMove(time, currentPath);
+            			return;
+            		}else if(currentPath.size() >2 && pathDefined == true)
+            		{
+            			lastPath = currentPath;
+            			currentPath = this.walk(currentPath, me().getPosition());
+            			
+            			/*if(lastPath.size() == currentPath.size())
+            			{
+            				this.addBeginingQueue(new AgentState("Unblock", me().getPosition()));
+            			}*/
+            			sendMove(time, currentPath);
+            			return;
+            		}else if(currentPath.size() <= 2){
+            			stateQueue.poll();
+            			sendMove(time,currentPath);
+            			pathDefined = false;
+            			return;
+            		}        			
         			break;
         		
         		case "Unblock":
-        			Area newTarget = (Area)model.getEntity(currentAction.getId());
-        			if(newTarget.isBlockadesDefined())
-        			{
-        				/**
-        				 * pegar ponto mais próximo da próxima Road
-        				 */
-        				Area nextLocation = (Area)model.getEntity(this.nextVertex());
-        				List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(nextLocation.getApexList()), true);
-    					double best = Double.MAX_VALUE;
-    					Point2D bestPoint = null;
-    					Point2D origin = new Point2D(me().getX(), me().getY());
-    					for(Line2D next : lines)
-    					{
-    						Point2D closest = GeometryTools2D.getClosestPoint(next, origin);
-    						double d = GeometryTools2D.getDistance(origin, closest);
-    						if(d < best)
-    						{
-    							best = d;
-    							bestPoint = closest;
-    						}
-    					}
-    					Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-    					v = v.normalised().scale(1000000);
-    					/**
-    					 * 
-    					 */
-    					
-        				Double bestBlockadeDist = Double.MAX_VALUE;
-        				Point2D candidateBlockade = null;
-        				Vector2D v2 = null;
-        				for(EntityID b:newTarget.getBlockades())
-        				{
-        					Blockade bloqueio = (Blockade)model.getEntity(b);
-        					List<Line2D> linesBlockade = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(bloqueio.getApexes()), true);
-        					double bestBlockadeD = Double.MAX_VALUE;
-        					Point2D bestBlockadePoint = null;
-        					for(Line2D nextLine: linesBlockade)
-        					{
-        						Point2D closestBlockade = GeometryTools2D.getClosestPoint(nextLine, new Point2D(v.getX(),v.getY()));
-        						double dBlock = GeometryTools2D.getDistance(new Point2D(v.getX(), v.getY()), closestBlockade);
-        						if(dBlock < bestBlockadeD)
-        						{
-        							bestBlockadeD = dBlock;
-        							bestBlockadePoint = closestBlockade;
-        						}
-        						v2 = bestBlockadePoint.minus(new Point2D(me().getX(), me().getY()));
-            					v2 = v2.normalised().scale(1000000);
-        					}
-        					if(bestBlockadeD < bestBlockadeDist)
-        					{
-        						candidateBlockade = bestBlockadePoint;
-        						bestBlockadeDist = bestBlockadeD;
-        					}
-        				}
-        			       			
-        			sendClear(time, (int) (me().getX() + v2.getX()), (int) (me().getY() + v2.getY()));
-        			return;
-        		
-        			}else{
-        				stateQueue.poll();
-        			}
-        			
+        			Area possibleTarget = (Area)model.getEntity(me().getPosition());
+        			Blockade _target = getTargetBlockade(possibleTarget, 20000);
+                    if (_target != null) {
+                        sendSpeak(time, 1, ("Clearing " + _target).getBytes());
+                        this.stateQueue.poll();
+                        if(_target.getX() > me().getX() )
+                        sendClear(time, me().getX() + 20000, me().getY() );                    
+                        return;
+                    }
+        			break;
+        		case "UnblockRight":
+                    this.stateQueue.poll();
+                    sendClear(time, me().getX() + 20000, me().getY() );                      
+        			break;
+        		case "UnblockLeft":
+                    this.stateQueue.poll();
+                    sendClear(time, me().getX() - 20000, me().getY() );
+        			break;
+        		case "UnblockUp":
+        			this.stateQueue.poll();
+                    sendClear(time, me().getX(), me().getY() + 20000);
+        			break;
+        		case "UnblockDown":
+        			this.stateQueue.poll();
+                    sendClear(time, me().getX() - 20000, me().getY() );                    
+        			break;
+        		case "UnblockUpperLeft":
+                    this.stateQueue.poll();
+                    sendClear(time, me().getX() - 20000, me().getY() + 20000 );
+        			break;
+        		case "UnblockUpperRight":
+        			this.stateQueue.poll();
+                    sendClear(time, me().getX() + 20000, me().getY() + 20000 );                    
+                    
+        			break;
+        		case "UnblockBottomLeft":
+        			this.stateQueue.poll();
+                    sendClear(time, me().getX() - 20000, me().getY() - 20000 );                    
+                    
+        			break;
+        		case "UnblockBottomRight":
+        			this.stateQueue.poll();
+                    sendClear(time, me().getX() + 20000, me().getY() - 20000 );                    
+                    
         			break;
         	}
         }
+       
         /**
          * fim da máquina de estados
          */
@@ -293,13 +274,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             Road r = (Road) next;
             if (r.isBlockadesDefined() && !r.getBlockades().isEmpty()) {
                 result.add(r.getID());
+                
             }
         }
         return result;
     }
     
     private void cleanBlockadeAhead(int time){
-    	
+    	    	
     	Blockade newTarget = getTargetBlockade();
 		
 		if(newTarget != null && newTarget.isPositionDefined()){
