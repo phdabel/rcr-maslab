@@ -36,6 +36,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * Variaveis Sample Agent
      *
      */
+	
     private static final String DISTANCE_KEY = "clear.repair.distance";
     private int distance;
     /**
@@ -73,6 +74,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             Logger.debug("Heard " + next);
         }
         
+        //atualiza caminho do agente
+        this.lastPath = this.currentPath;
+        this.currentPath = this.walk(this.currentPath, me().getPosition());
+        
         
         /**
          * INSERÇÃO DE TAREFAS NA FILA
@@ -98,7 +103,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	stateQueue.add(new AgentState("RandomWalk"));
         	
         }
-        System.out.println(this.currentPath);
+        System.out.println("Caminho do agente: "+this.currentPath);
+        System.out.println("Posicao Atual: "+me().getPosition());
         this.printQueue();
         
         /**
@@ -118,19 +124,34 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			{
         				this.currentPath = this.walk(this.currentPath, me().getPosition());
         				this.pathDefined = true;
-        				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
+        				Blockade target = this.getTargetBlockade();
+        				if(target != null)
+        					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
         				sendMove(time, this.currentPath);
         				return;
         			}else if(this.currentPath.size() <= 2){
         				stateQueue.poll();
         				this.pathDefined = false;
-        				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
+        				Blockade target = this.getTargetBlockade();
+        				if(target != null)
+        					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
         				sendMove(time, this.currentPath);
         				this.currentPath.clear();
         				return;
         			}else if(this.pathDefined == true){
         				this.currentPath = this.walk(this.currentPath, me().getPosition());
-        				this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
+        				Blockade target = this.getTargetBlockade();
+        				if(target != null)
+        					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
+        				
         				sendMove(time, this.currentPath);
         				return;
         			}
@@ -150,25 +171,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			break;
         		case "Walk":
         			if(currentPath.isEmpty() && pathDefined == false){
-            			//currentPath = search.breadthFirstSearch(me().getPosition(), currentAction.getId());
+            			
             			pathDefined = true;
-            			lastPath = currentPath;
             			currentPath = this.walk(currentPath, me().getPosition());
-            			/*if(lastPath.size() == currentPath.size())
-            			{
-            				this.addBeginingQueue(new AgentState("Unblock",me().getPosition()));
-            			}*/
             			sendMove(time, currentPath);
             			return;
             		}else if(currentPath.size() >2 && pathDefined == true)
             		{
-            			lastPath = currentPath;
-            			currentPath = this.walk(currentPath, me().getPosition());
             			
-            			/*if(lastPath.size() == currentPath.size())
-            			{
-            				this.addBeginingQueue(new AgentState("Unblock", me().getPosition()));
-            			}*/
             			sendMove(time, currentPath);
             			return;
             		}else if(currentPath.size() <= 2){
@@ -180,51 +190,69 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			break;
         		
         		case "Unblock":
-        			Area possibleTarget = (Area)model.getEntity(me().getPosition());
-        			Blockade _target = getTargetBlockade(possibleTarget, 20000);
+        			//Area possibleTarget = (Area)model.getEntity(me().getPosition());
+        			//Blockade _target = getTargetBlockade(possibleTarget, 20000);
+        			Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
                     if (_target != null) {
                         sendSpeak(time, 1, ("Clearing " + _target).getBytes());
                         this.stateQueue.poll();
-                        if(_target.getX() > me().getX() )
-                        sendClear(time, me().getX() + 20000, me().getY() );                    
-                        return;
+                        
+                        if(!this.currentPath.isEmpty()){
+                        	Area nextNode = (Area)model.getEntity(this.currentPath.get(0));
+                        	List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(nextNode.getApexList()), true);
+                        	double best = Double.MAX_VALUE;
+                        	Point2D bestPoint = null;
+                        	Point2D origin = new Point2D(me().getX(), me().getY());
+                        	for (Line2D next : lines) {
+                        		Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+                        		double d = GeometryTools2D.getDistance(origin, closest);
+                        		if (d < best) {
+                        			best = d;
+                        			bestPoint = closest;
+                        		}
+                        	}
+                        	
+                        	if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
+                        	{
+                        		this.unblockDown(time);
+                        	}
+                        	if(me().getX() > bestPoint.getX() && me().getY() == bestPoint.getY())
+                        	{
+                        		this.unblockLeft(time);
+                        	}
+                        	if(me().getX() == bestPoint.getX() && me().getY() < bestPoint.getY())
+                        	{
+                        		this.unblockUp(time);
+                        	}
+                        	if(me().getX() < bestPoint.getX() && me().getY() == bestPoint.getY())
+                        	{
+                        		this.unblockRight(time);
+                        	}
+                        	
+                        	if(me().getX() > bestPoint.getX() && me().getY() > bestPoint.getY())
+                        	{
+                        		this.unblockBottomLeft(time);
+                        	}
+                        	if(me().getX() > bestPoint.getX() && me().getY() < bestPoint.getY())
+                        	{
+                        		this.unblockUpperLeft(time);
+                        	}
+                        	if(me().getX() < bestPoint.getX() && me().getY() < bestPoint.getY())
+                        	{
+                        		this.unblockUpperRight(time);
+                        	}
+                        	if(me().getX() < bestPoint.getX() && me().getY() > bestPoint.getY())
+                        	{
+                        		this.unblockBottomRight(time);
+                        	}
+                        	
+                        }
+                        	
+                    }else{
+                    	this.stateQueue.poll();
                     }
         			break;
-        		case "UnblockRight":
-                    this.stateQueue.poll();
-                    sendClear(time, me().getX() + 20000, me().getY() );                      
-        			break;
-        		case "UnblockLeft":
-                    this.stateQueue.poll();
-                    sendClear(time, me().getX() - 20000, me().getY() );
-        			break;
-        		case "UnblockUp":
-        			this.stateQueue.poll();
-                    sendClear(time, me().getX(), me().getY() + 20000);
-        			break;
-        		case "UnblockDown":
-        			this.stateQueue.poll();
-                    sendClear(time, me().getX() - 20000, me().getY() );                    
-        			break;
-        		case "UnblockUpperLeft":
-                    this.stateQueue.poll();
-                    sendClear(time, me().getX() - 20000, me().getY() + 20000 );
-        			break;
-        		case "UnblockUpperRight":
-        			this.stateQueue.poll();
-                    sendClear(time, me().getX() + 20000, me().getY() + 20000 );                    
-                    
-        			break;
-        		case "UnblockBottomLeft":
-        			this.stateQueue.poll();
-                    sendClear(time, me().getX() - 20000, me().getY() - 20000 );                    
-                    
-        			break;
-        		case "UnblockBottomRight":
-        			this.stateQueue.poll();
-                    sendClear(time, me().getX() + 20000, me().getY() - 20000 );                    
-                    
-        			break;
+        		
         	}
         }
        
@@ -278,6 +306,52 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             }
         }
         return result;
+    }
+    
+    public void unblockRight(int time){
+    	sendClear(time, me().getX() + 20000, me().getY() );
+    	return;
+    }
+    
+    public void unblockLeft(int time){
+    	sendClear(time, me().getX() - 20000, me().getY() );
+    	return;
+    }
+    
+    public void unblockUp(int time)
+    {
+        sendClear(time, me().getX(), me().getY() + 20000);
+        return;
+    }
+    
+    public void unblockDown(int time)
+    {
+    	sendClear(time, me().getX() - 20000, me().getY() );
+    	return;
+    }
+    
+    public void unblockUpperLeft(int time)
+    {
+    	sendClear(time, me().getX() - 20000, me().getY() + 20000 );
+    	return;
+    }
+    
+    public void unblockUpperRight(int time)
+    {
+    	sendClear(time, me().getX() + 20000, me().getY() + 20000 );
+    	return;
+    }
+
+    public void unblockBottomLeft(int time)
+    {
+    	sendClear(time, me().getX() - 20000, me().getY() - 20000 );
+    	return;
+    }
+    
+    public void unblockBottomRight(int time)
+    {
+    	sendClear(time, me().getX() + 20000, me().getY() - 20000 );
+    	return;
     }
     
     private void cleanBlockadeAhead(int time){
