@@ -203,6 +203,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
                         	double best = Double.MAX_VALUE;
                         	Point2D bestPoint = null;
                         	Point2D origin = new Point2D(me().getX(), me().getY());
+                        	//pega pontos do nó atual
+                        	Area currentNode = (Area)model.getEntity(me().getPosition());
                         	for (Line2D next : lines) {
                         		Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
                         		double d = GeometryTools2D.getDistance(origin, closest);
