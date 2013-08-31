@@ -39,6 +39,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 	
     private static final String DISTANCE_KEY = "clear.repair.distance";
     private int distance;
+    private int maxRange = 10000;
     /**
      *
      * Variaveis definidas por nós
@@ -219,43 +220,95 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
                         	
                         	ClosestPair c = new ClosestPair(origin, destiny);
                         	Point2D bestPoint = c.either();
-                        	System.out.println(c.either());
-                        	System.out.println(c.other());
+                        	if(bestPoint != null){
+                        		
                         	
-                        	if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
-                        	{
-                        		this.unblockDown(time);
+	                        	int width = currentNode.getShape().getBounds().width;
+	                        	int height = currentNode.getShape().getBounds().height;
+	                        	//no horizontal
+	                        	System.out.println(me().getX()+" - "+me().getY());
+	                        	System.out.println(bestPoint.getX()+" - "+bestPoint.getY());
+	                        	if(width > height)
+	                        	{
+	                        		if(me().getX() > bestPoint.getX())
+	                            	{
+	                            		this.unblockLeft(time);
+	                            	}
+	                        		if(me().getX() < bestPoint.getX())
+	                            	{
+	                            		this.unblockRight(time);
+	                            	}
+	                        		/*if(me().getX() > bestPoint.getX() && me().getY() == bestPoint.getY())
+	                            	{
+	                            		this.unblockLeft(time);
+	                            	}
+	                        		if(me().getX() < bestPoint.getX() && me().getY() == bestPoint.getY())
+	                            	{
+	                            		this.unblockRight(time);
+	                            	}*/
+	                        		
+	                        	}
+	                        	//nó vertical
+	                        	else if(height > width)
+	                        	{
+	                        		if(me().getY() > bestPoint.getY())
+	                            	{
+	                            		this.unblockDown(time);
+	                            	}
+	                            	
+	                            	if(me().getY() < bestPoint.getY())
+	                            	{
+	                            		this.unblockUp(time);
+	                            	}
+	                        	
+	                        		/*if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
+	                            	{
+	                            		this.unblockDown(time);
+	                            	}
+	                            	
+	                            	if(me().getX() == bestPoint.getX() && me().getY() < bestPoint.getY())
+	                            	{
+	                            		this.unblockUp(time);
+	                            	}*/
+	                        			
+	                        	}
+	                        	//nó quadrado
+	                        	else{
+	                        		if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
+	                            	{
+	                            		this.unblockDown(time);
+	                            	}
+	                            	if(me().getX() == bestPoint.getX() && me().getY() < bestPoint.getY())
+	                            	{
+	                            		this.unblockUp(time);
+	                            	}
+	                            	if(me().getX() > bestPoint.getX() && me().getY() == bestPoint.getY())
+	                            	{
+	                            		this.unblockLeft(time);
+	                            	}
+	                        		if(me().getX() < bestPoint.getX() && me().getY() == bestPoint.getY())
+	                            	{
+	                            		this.unblockRight(time);
+	                            	}
+	                        		if(me().getX() > bestPoint.getX() && me().getY() > bestPoint.getY())
+	                            	{
+	                            		this.unblockBottomLeft(time);
+	                            	}
+	                            	if(me().getX() > bestPoint.getX() && me().getY() < bestPoint.getY())
+	                            	{
+	                            		this.unblockUpperLeft(time);
+	                            	}
+	                            	if(me().getX() < bestPoint.getX() && me().getY() < bestPoint.getY())
+	                            	{
+	                            		this.unblockUpperRight(time);
+	                            	}
+	                            	if(me().getX() < bestPoint.getX() && me().getY() > bestPoint.getY())
+	                            	{
+	                            		this.unblockBottomRight(time);
+	                            	}
+	                        	}
                         	}
-                        	if(me().getX() > bestPoint.getX() && me().getY() == bestPoint.getY())
-                        	{
-                        		this.unblockLeft(time);
-                        	}
-                        	if(me().getX() == bestPoint.getX() && me().getY() < bestPoint.getY())
-                        	{
-                        		this.unblockUp(time);
-                        	}
-                        	if(me().getX() < bestPoint.getX() && me().getY() == bestPoint.getY())
-                        	{
-                        		this.unblockRight(time);
-                        	}
-                        	
-                        	if(me().getX() > bestPoint.getX() && me().getY() > bestPoint.getY())
-                        	{
-                        		this.unblockBottomLeft(time);
-                        	}
-                        	if(me().getX() > bestPoint.getX() && me().getY() < bestPoint.getY())
-                        	{
-                        		this.unblockUpperLeft(time);
-                        	}
-                        	if(me().getX() < bestPoint.getX() && me().getY() < bestPoint.getY())
-                        	{
-                        		this.unblockUpperRight(time);
-                        	}
-                        	if(me().getX() < bestPoint.getX() && me().getY() > bestPoint.getY())
-                        	{
-                        		this.unblockBottomRight(time);
-                        	}
-                        	
+                        	 	
                         }
                         	
                     }else{
@@ -319,48 +372,48 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     }
     
     public void unblockRight(int time){
-    	sendClear(time, me().getX() + 20000, me().getY() );
+    	sendClear(time, me().getX() + maxRange, me().getY() );
     	return;
     }
     
     public void unblockLeft(int time){
-    	sendClear(time, me().getX() - 20000, me().getY() );
+    	sendClear(time, me().getX() - maxRange, me().getY() );
     	return;
     }
     
     public void unblockUp(int time)
     {
-        sendClear(time, me().getX(), me().getY() + 20000);
+        sendClear(time, me().getX(), me().getY() + maxRange);
         return;
     }
     
     public void unblockDown(int time)
     {
-    	sendClear(time, me().getX() - 20000, me().getY() );
+    	sendClear(time, me().getX() - maxRange, me().getY() );
     	return;
     }
     
     public void unblockUpperLeft(int time)
     {
-    	sendClear(time, me().getX() - 20000, me().getY() + 20000 );
+    	sendClear(time, me().getX() - maxRange, me().getY() + maxRange );
     	return;
     }
     
     public void unblockUpperRight(int time)
     {
-    	sendClear(time, me().getX() + 20000, me().getY() + 20000 );
+    	sendClear(time, me().getX() + maxRange, me().getY() + maxRange );
     	return;
     }
 
     public void unblockBottomLeft(int time)
     {
-    	sendClear(time, me().getX() - 20000, me().getY() - 20000 );
+    	sendClear(time, me().getX() - maxRange, me().getY() - maxRange );
     	return;
     }
     
     public void unblockBottomRight(int time)
     {
-    	sendClear(time, me().getX() + 20000, me().getY() - 20000 );
+    	sendClear(time, me().getX() + maxRange, me().getY() - maxRange );
     	return;
     }
     
