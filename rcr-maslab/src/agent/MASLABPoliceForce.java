@@ -3,7 +3,6 @@ package agent;
 import agent.interfaces.IPoliceForce;
 import agent.worldmodel.*;
 import agent.worldmodel.Object;
-import agent.worldmodel.AgentState;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
+import util.MASLAB.ClosestPair;
 
 /**
  * A sample police force agent.
@@ -199,20 +199,28 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
                         
                         if(!this.currentPath.isEmpty()){
                         	Area nextNode = (Area)model.getEntity(this.currentPath.get(0));
-                        	List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(nextNode.getApexList()), true);
-                        	double best = Double.MAX_VALUE;
-                        	Point2D bestPoint = null;
-                        	Point2D origin = new Point2D(me().getX(), me().getY());
-                        	//pega pontos do nó atual
+                        	List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
+                        	
                         	Area currentNode = (Area)model.getEntity(me().getPosition());
-                        	for (Line2D next : lines) {
-                        		Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-                        		double d = GeometryTools2D.getDistance(origin, closest);
-                        		if (d < best) {
-                        			best = d;
-                        			bestPoint = closest;
-                        		}
+                        	List<Point2D> currentNodeInPath = GeometryTools2D.vertexArrayToPoints(currentNode.getApexList());
+                        	
+                        	Point2D[] origin = new Point2D[currentNodeInPath.size()]; 
+                        	Point2D[] destiny = new Point2D[nextNodeInPath.size()];
+                        	for(int i = 0; i < currentNodeInPath.size(); i++)
+                        	{
+                        		origin[i] = currentNodeInPath.get(i);
                         	}
+                        	
+                        	for(int i = 0; i < nextNodeInPath.size(); i++)
+                        	{
+                        		destiny[i] = nextNodeInPath.get(i);
+                        	}
+                        	
+                        	
+                        	ClosestPair c = new ClosestPair(origin, destiny);
+                        	Point2D bestPoint = c.either();
+                        	System.out.println(c.either());
+                        	System.out.println(c.other());
                         	
                         	if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
                         	{
