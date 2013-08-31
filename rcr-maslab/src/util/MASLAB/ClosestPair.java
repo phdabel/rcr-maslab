@@ -30,8 +30,7 @@ public class ClosestPair {
 		}
 		int auxN = points1.length;
 		for(int i = 0; i < points2.length; i++){
-			System.out.println("posicao "+(auxN+i));
-			System.out.println("Ponto "+points2[i]);
+			
 			
 			pointsByX[auxN+i] = new MyPoint2D(points2[i].getX(), points2[i].getY());
 			this.points2.add(pointsByX[auxN+i]);
