@@ -19,7 +19,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
 import util.DistanceSorter;
-import util.MASLABSectoringTest;
+import util.MASLABSectoring;
 import util.MASLABRouting.Setores;
 import util.MASLABSectoring;
 
@@ -42,7 +42,7 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 	private int maxDistance;
 	private int maxPower;
 	
-	private MASLABSectoringTest sectoringTest;
+	private MASLABSectoring sectoringTest;
 
 	/**
 	 * 
@@ -75,7 +75,7 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 				+ maxWater);
 		Bloqueios = new ArrayList<EntityID>();
 		MASLABSectoring sectoring = new MASLABSectoring(model);
-		sectoringTest = new MASLABSectoringTest(model);
+		sectoringTest = new MASLABSectoring(model);
 
 	}
 
