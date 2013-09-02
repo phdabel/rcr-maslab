@@ -39,7 +39,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 	
     private static final String DISTANCE_KEY = "clear.repair.distance";
     private int distance;
-    private int maxRange = 10000;
+    //largura necessária paraum gente passar
+    private static final int WIDTH_FOR_PASS_THROUGH = 2500;
+    //range maximo para o disparo do policial
+    private static final int MAX_RANGE = 10000;
     /**
      *
      * Variaveis definidas por nós
@@ -79,6 +82,24 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         this.lastPath = this.currentPath;
         this.currentPath = this.walk(this.currentPath, me().getPosition());
         
+        /**
+         * localizar bloqueio
+         */
+        Blockade target = getTargetBlockade();
+        if(target != null)
+        {
+	        Area local = (Area)model.getEntity(me().getPosition());
+	        
+	        if((local.getShape().getBounds2D().getWidth() - target.getShape().getBounds2D().getWidth()) <= this.WIDTH_FOR_PASS_THROUGH){
+	        	System.out.println("espaço livre: "+(local.getShape().getBounds2D().getWidth() - target.getShape().getBounds2D().getWidth()));
+	        	this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+	        	
+	        	System.out.println("Largura da rua: "+local.getShape().getBounds2D().getWidth());
+		        System.out.println("Altura da rua: "+local.getShape().getBounds2D().getHeight());
+		        System.out.println("Largura do bloqueio: "+target.getShape().getBounds2D().getWidth());
+		        System.out.println("Altura do bloqueio: "+target.getShape().getBounds2D().getHeight());
+	        }
+        }
         
         /**
          * INSERÇÃO DE TAREFAS NA FILA
@@ -89,14 +110,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         		stateQueue.remove(stateQueue.peek());
         	}
         	Task tmp = this.currentTask;
-        	EntityID tmpID = new EntityID(tmp.getId());
+        	EntityID tmpID = new EntityID(tmp.getPosition());
         	
         	if(me().getPosition() != tmpID)
         	{
         		stateQueue.add(new AgentState("Walk", tmpID));
-        		stateQueue.add(new AgentState("Unblock", tmpID));        		
+        		stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));        		
         	}else{
-        		stateQueue.add(new AgentState("Unblock", tmpID));
+        		stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));
         		
         	}
         		
@@ -104,9 +125,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	stateQueue.add(new AgentState("RandomWalk"));
         	
         }
+        /*
         System.out.println("Caminho do agente: "+this.currentPath);
         System.out.println("Posicao Atual: "+me().getPosition());
-        this.printQueue();
+        this.printQueue();*/
         
         /**
          * AÇÃO e CONTROLE
@@ -126,9 +148,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         				this.currentPath = this.walk(this.currentPath, me().getPosition());
         				this.pathDefined = true;
         				
+        				/*
         				Blockade target = this.getTargetBlockade();
         				if(target != null)
         					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        				*/
         				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
         				
         				sendMove(time, this.currentPath);
@@ -136,10 +160,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			}else if(this.currentPath.size() <= 2){
         				stateQueue.poll();
         				this.pathDefined = false;
-        				
+        				/*
         				Blockade target = this.getTargetBlockade();
         				if(target != null)
         					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        					*/
         				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
         				
         				sendMove(time, this.currentPath);
@@ -147,34 +172,23 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         				return;
         			}else if(this.pathDefined == true){
         				this.currentPath = this.walk(this.currentPath, me().getPosition());
-        				
+        				/*
         				Blockade target = this.getTargetBlockade();
         				if(target != null)
         					this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+        					*/
         				//this.addBeginingQueue(new AgentState("LookingNearBlockade"));
         				
         				sendMove(time, this.currentPath);
         				return;
         			}
         			break;
-        		case "LookingNearBlockade":
-        			Blockade target = getTargetBlockade();
-    				
-            		if(stateQueue.peek().getState() == "LookingNearBlockade")
-            		{
-            				stateQueue.poll();
-            		}
-            		if(target != null)
-            		{
-            			this.addBeginingQueue(new AgentState("Unblock", target.getPosition()));
-            			this.addBeginingQueue(new AgentState("Walk", target.getPosition()));
-            		}
-        			break;
         		case "Walk":
         			if(currentPath.isEmpty() && pathDefined == false){
             			
             			pathDefined = true;
-            			currentPath = this.walk(currentPath, me().getPosition());
+            			this.currentPath = search.breadthFirstSearch(me().getPosition(), new EntityID(this.currentTask.getPosition()));
+            			
             			sendMove(time, currentPath);
             			return;
             		}else if(currentPath.size() >2 && pathDefined == true)
@@ -191,8 +205,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         			break;
         		
         		case "Unblock":
-        			//Area possibleTarget = (Area)model.getEntity(me().getPosition());
-        			//Blockade _target = getTargetBlockade(possibleTarget, 20000);
+        			
         			Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
                     if (_target != null) {
                         sendSpeak(time, 1, ("Clearing " + _target).getBytes());
@@ -228,6 +241,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 	                        	//no horizontal
 	                        	System.out.println(me().getX()+" - "+me().getY());
 	                        	System.out.println(bestPoint.getX()+" - "+bestPoint.getY());
+	                        	Area shotTarget = new Area();
+	                        	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() - this.MAX_RANGE );
+	                        	
 	                        	if(width > height)
 	                        	{
 	                        		if(me().getX() > bestPoint.getX())
@@ -372,48 +388,48 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     }
     
     public void unblockRight(int time){
-    	sendClear(time, me().getX() + maxRange, me().getY() );
+    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() );
     	return;
     }
     
     public void unblockLeft(int time){
-    	sendClear(time, me().getX() - maxRange, me().getY() );
+    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() );
     	return;
     }
     
     public void unblockUp(int time)
     {
-        sendClear(time, me().getX(), me().getY() + maxRange);
+        sendClear(time, me().getX(), me().getY() + this.MAX_RANGE);
         return;
     }
     
     public void unblockDown(int time)
     {
-    	sendClear(time, me().getX() - maxRange, me().getY() );
+    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() );
     	return;
     }
     
     public void unblockUpperLeft(int time)
     {
-    	sendClear(time, me().getX() - maxRange, me().getY() + maxRange );
+    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() + this.MAX_RANGE );
     	return;
     }
     
     public void unblockUpperRight(int time)
     {
-    	sendClear(time, me().getX() + maxRange, me().getY() + maxRange );
+    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() + this.MAX_RANGE );
     	return;
     }
 
     public void unblockBottomLeft(int time)
     {
-    	sendClear(time, me().getX() - maxRange, me().getY() - maxRange );
+    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() - this.MAX_RANGE );
     	return;
     }
     
     public void unblockBottomRight(int time)
     {
-    	sendClear(time, me().getX() + maxRange, me().getY() - maxRange );
+    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() - this.MAX_RANGE );
     	return;
     }
     
