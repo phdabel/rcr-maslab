@@ -42,7 +42,23 @@ public class MASLABSectoring {
 	private static double coordinate_MinY = 0;
 	private static double coordinate_CenterX = 0;
 	private static double coordinate_CenterY = 0;
+	
+	//aliases for the sector identifiers
+	public static final int NORTH_EAST = 1;
+	public static final int SOUTH_EAST = 2;
+	public static final int SOUTH_WEST = 3;
+	public static final int NORTH_WEST = 4;
+	public static final int UNDEFINED_SECTOR = 0;
 
+	
+	//aliases for the agent types
+	public static final int AMBULANCE_TEAM = 1;
+	public static final int FIRE_BRIGADE = 2;
+	public static final int POLICE_FORCE = 3;
+	public static final int UNDEFINED_PLATOON = 0;
+
+	
+	
 	private List<EntityID> Avenue_NtoS;
 	private List<EntityID> Avenue_LtoO;
 
@@ -102,21 +118,13 @@ public class MASLABSectoring {
 		idLeste = EntMaisProximo(coordinate_MaxX, coordinate_CenterY);
 		idOeste = EntMaisProximo(coordinate_MinX, coordinate_CenterY);
 
-		System.out.println(model.getEntity(idNorte));
-		System.out.println(model.getEntity(idSul));
-		System.out.println(model.getEntity(idLeste));
-		System.out.println(model.getEntity(idOeste));
-		
 		Avenue_NtoS = search.breadthFirstSearch(idNorte,
 				new ArrayList<EntityID>(), idSul);
 		Avenue_LtoO = search.breadthFirstSearch(idLeste,
 				new ArrayList<EntityID>(), idOeste);
-		System.out.println(Avenue_NtoS);
-		System.out.println(Avenue_LtoO);
-
 		CarregaGrafoPrincipal();
 		CarregaGrafosSetores();
-		debug();
+		//debug();
 	}
 
 	/**
@@ -278,6 +286,52 @@ public class MASLABSectoring {
 				MapSetor4.put(e, searchP.get(e));
 		}
 	}
+	
+	/**
+	 * Returns the importance of a given sector_id for the given agent type
+	 * @param sectorId
+	 * @param agentType
+	 * @return
+	 */
+	public int getSectorImportance(int sectorId, int agentType){
+		//works only for ambulance so far
+		if (sectorId == 1){
+			return getSectorImportance(MapSetor1, agentType);
+		}else if (sectorId == 2){
+			return getSectorImportance(MapSetor2, agentType);
+		}else if (sectorId == 3){
+			return getSectorImportance(MapSetor3, agentType);
+		}else if (sectorId == 4){
+			return getSectorImportance(MapSetor4, agentType);
+		}
+
+		return 0;
+		
+	}
+	
+	/**
+	 * Returns the importance of a given sector for the given agent type
+	 * @param sectorId
+	 * @param agentType
+	 * @return
+	 */
+	public int getSectorImportance(Map<EntityID, Set<EntityID>> sector, int agentType){
+		if (agentType == AMBULANCE_TEAM){
+			//counts the number of buildings (pre-processing stage)
+			//TODO: implement importance calculation during the simulation
+			
+			int numbuildings = 0;
+			for (EntityID id : sector.keySet()){
+				if(model.getEntity(id) instanceof Building){
+					numbuildings++;
+				}
+			}
+			return numbuildings;
+		}
+		return 0;
+	}
+	
+	
 
 	private void addGrafoSetor(EntityID e, int setor) {
 		Map<EntityID, Set<EntityID>> g = search.getGraph();
@@ -385,15 +439,15 @@ public class MASLABSectoring {
 
 	private int getSetorPertencente(double X, double Y) {
 		if (SetorNordeste.contains(X, Y)) {
-			return 1;
+			return NORTH_EAST;
 		} else if (SetorSudeste.contains(X, Y)) {
-			return 2;
+			return SOUTH_EAST;
 		} else if (SetorSudoeste.contains(X, Y)) {
-			return 3;
+			return SOUTH_WEST;
 		} else if (SetorNoroeste.contains(X, Y)) {
-			return 4;
+			return NORTH_WEST;
 		} else
-			return 0;
+			return UNDEFINED_SECTOR;
 	}
 
 	private void DemarcarRegioes(int sector) {
@@ -401,30 +455,26 @@ public class MASLABSectoring {
 		List<EntityID> division = new ArrayList<EntityID>();
 		List<Integer> xs = new ArrayList<Integer>();
 		List<Integer> ys = new ArrayList<Integer>();
-		int auxpoint = 0;
-		int auxX = 0;
-		int auxY = 0;
+		int auxX = 0, auxY = 0;
 
 		if (sector == 1) {
-			System.out.println("Nordeste");
 			division = GetDivisionLane(1);
 			xs.add((int) coordinate_MaxX);
 			ys.add((int) coordinate_MaxY);
+			int auxpoint = 0;
 			for (EntityID next : division) {
-				StandardEntity x = model.getEntity(next); 
-				if (x instanceof Road){
+				if (model.getEntity(next) instanceof Road){
 					Road r = (Road) model.getEntity(next);
 					auxX = r.getX();
 					auxY = r.getY();
-				}else if(x instanceof Building){
+				}else{
 					Building b = (Building) model.getEntity(next);
 					auxX = b.getX();
 					auxY = b.getY();
 				}
-				
 				if (auxpoint == 0) {
 					xs.add(auxX);
-					ys.add((int)coordinate_MaxY);
+					ys.add((int) coordinate_MaxY);
 					auxpoint = 1;
 				}
 				xs.add(auxX);
@@ -434,8 +484,6 @@ public class MASLABSectoring {
 			ys.add(auxY);
 
 			SetorNordeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-			// SetorNordeste.addPoint((int)coordinate_MaxX,
-			// (int)coordinate_MaxY);
 
 		} else
 
@@ -444,14 +492,15 @@ public class MASLABSectoring {
 			division = GetDivisionLane(2);
 			xs.add((int) coordinate_MaxX);
 			ys.add((int) coordinate_MinY);
-
+			int auxpoint = 0;
+			auxX = 0;
+			auxY = 0;
 			for (EntityID next : division) {
-				StandardEntity x = model.getEntity(next); 
-				if (x instanceof Road){
+				if (model.getEntity(next) instanceof Road){
 					Road r = (Road) model.getEntity(next);
 					auxX = r.getX();
 					auxY = r.getY();
-				}else if(x instanceof Building){
+				}else{
 					Building b = (Building) model.getEntity(next);
 					auxX = b.getX();
 					auxY = b.getY();
@@ -465,44 +514,42 @@ public class MASLABSectoring {
 				ys.add(auxY);
 			}
 			xs.add(auxX);
-			ys.add((int)coordinate_MinY);
+			ys.add((int) coordinate_MinY);
 			SetorSudeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-			// SetorSudeste.addPoint((int)coordinate_MaxX,
-			// (int)coordinate_MinY);
 
 		} else
 
 		// Gera a Região S3: Sudoeste;
 		if (sector == 3) {
 			division = GetDivisionLane(3);
+			int auxpoint = 0;
+			auxX = 0;
+			auxY = 0;
 			xs.add((int) coordinate_MinX);
 			ys.add((int) coordinate_MinY);
 			for (EntityID next : division) {
-				StandardEntity x = model.getEntity(next); 
-				if (x instanceof Road){
+				if (model.getEntity(next) instanceof Road){
 					Road r = (Road) model.getEntity(next);
 					auxX = r.getX();
 					auxY = r.getY();
-				}else if(x instanceof Building){
+				}else{
 					Building b = (Building) model.getEntity(next);
 					auxX = b.getX();
 					auxY = b.getY();
 				}
 				if (auxpoint == 0) {
 					xs.add(auxX);
-					ys.add((int)coordinate_MinY);
-					SetorSudoeste.addPoint(auxX, (int)coordinate_MinY);
+					ys.add((int) coordinate_MinY);
+					SetorSudoeste.addPoint(auxX, (int) coordinate_MinY);
 					auxpoint = 1;
 				}
 				xs.add(auxX);
 				ys.add(auxY);
 			}
-			xs.add((int)coordinate_MinX);
+			xs.add((int) coordinate_MinX);
 			ys.add(auxY);
 			SetorSudoeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-			// SetorSudoeste.addPoint((int)coordinate_MinX,
-			// (int)coordinate_MinY);
-
+			
 		} else
 
 		// Gera a Região S4: Noroeste;
@@ -510,19 +557,19 @@ public class MASLABSectoring {
 			division = GetDivisionLane(4);
 			xs.add((int) coordinate_MinX);
 			ys.add((int) coordinate_MaxY);
-
+			int auxpoint = 0;
+			auxX = 0;
+			auxY = 0;
 			for (EntityID next : division) {
-				StandardEntity x = model.getEntity(next); 
-				if (x instanceof Road){
+				if (model.getEntity(next) instanceof Road){
 					Road r = (Road) model.getEntity(next);
 					auxX = r.getX();
 					auxY = r.getY();
-				}else if(x instanceof Building){
+				}else{
 					Building b = (Building) model.getEntity(next);
 					auxX = b.getX();
 					auxY = b.getY();
 				}
-
 				if (auxpoint == 0) {
 					xs.add((int) coordinate_MinX);
 					ys.add(auxY);
@@ -534,27 +581,7 @@ public class MASLABSectoring {
 			xs.add(auxX);
 			ys.add((int) coordinate_MaxY);
 			SetorNoroeste = new Polygon(toIntArray(xs), toIntArray(ys), xs.size());
-			// SetorNoroeste.addPoint((int)coordinate_MinX,
-			// (int)coordinate_MaxY);
 		}
-		/*
-		 * int[] xss = SetorNordeste.xpoints; int[] yss = SetorNordeste.ypoints;
-		 * System.out.println("Nordeste"); for(int i = 0; i < xss.length; i++){
-		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
-		 * 
-		 * xss = SetorSudeste.xpoints; yss = SetorSudeste.ypoints;
-		 * System.out.println("Sudeste"); for(int i = 0; i < xss.length; i++){
-		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
-		 * 
-		 * xss = SetorSudoeste.xpoints; yss = SetorSudoeste.ypoints;
-		 * System.out.println("Sudoeste"); for(int i = 0; i < xss.length; i++){
-		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
-		 * 
-		 * xss = SetorNoroeste.xpoints; yss = SetorNoroeste.ypoints;
-		 * System.out.println("Noroeste"); for(int i = 0; i < xss.length; i++){
-		 * System.out.println(xss[i] + " " + yss[i] + " - " + i); }
-		 */
-
 	}
 
 	/*
@@ -562,7 +589,6 @@ public class MASLABSectoring {
 	 */
 	private List<EntityID> GetDivisionLane(int sector) {
 
-		System.out.println(MapPrincipal.keySet());
 		MASLABBFSearch bfSearch = new MASLABBFSearch(MapPrincipal);
 
 		if (sector == 1) {
