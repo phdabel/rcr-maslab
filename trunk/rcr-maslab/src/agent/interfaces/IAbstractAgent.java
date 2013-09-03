@@ -4,10 +4,17 @@
  */
 package agent.interfaces;
 
+import util.MSGType;
+
 /**
  * 
  * @author rgrunitzki
  */
 public interface IAbstractAgent {
+    
+    /**
+     *
+     */
+    void sendMessage(MSGType type, boolean radio, int time, String ... params);
 
-}
+}   
