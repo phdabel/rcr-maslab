@@ -24,187 +24,219 @@ import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import util.BFSearch;
+import util.Channel;
 import util.MASLABRouting;
+import util.MSGType;
+import static util.MSGType.Type_1;
+import static util.MSGType.Type_2;
+import static util.MSGType.Type_3;
+import static util.MSGType.Type_4;
 
 /**
  * Abstract base class for sample agents.
- * 
- * @param <E>
- *            The subclass of StandardEntity this agent wants to control.
+ *
+ * @param <E> The subclass of StandardEntity this agent wants to control.
  */
-public abstract class MASLABAbstractAgent<E extends StandardEntity> extends
-		StandardAgent<E> implements IAbstractAgent {
+public abstract class MASLABAbstractAgent<E extends StandardEntity> extends StandardAgent<E> implements IAbstractAgent {
 
-	/**
-	 * 
-	 * Variaveis Sample Agent
-	 * 
-	 */
-	private static final int RANDOM_WALK_LENGTH = 50;
+    /**
+     * Variaveis Sample Agent
+     */
+    private static final int RANDOM_WALK_LENGTH = 50;
+    private static final String SAY_COMMUNICATION_MODEL = StandardCommunicationModel.class
+            .getName();
+    private static final String SPEAK_COMMUNICATION_MODEL = ChannelCommunicationModel.class
+            .getName();
+    /**
+     * The search algorithm.
+     */
+    protected BFSearch search;
+    /**
+     * Whether to use AKSpeak messages or not.
+     */
+    protected boolean useSpeak;
+    /**
+     * Cache of building IDs.
+     */
+    protected List<EntityID> buildingIDs;
+    /**
+     * Cache of road IDs.
+     */
+    protected List<EntityID> roadIDs;
+    /**
+     * Cache of refuge IDs.
+     */
+    protected List<EntityID> refugeIDs;
+    private Map<EntityID, Set<EntityID>> neighbours;
+    /**
+     *
+     * Variaveis definidas por nós
+     *
+     */
+    /**
+     * The routing algorithms.
+     */
+    protected MASLABRouting routing;
+    /**
+     * Cache of Hydrant IDs.
+     */
+    protected List<EntityID> hydrantIDs;
+    protected final String MSG_SEPARATOR = "-";
 
-	private static final String SAY_COMMUNICATION_MODEL = StandardCommunicationModel.class
-			.getName();
-	private static final String SPEAK_COMMUNICATION_MODEL = ChannelCommunicationModel.class
-			.getName();
+    /**
+     *
+     * Métodos Standard Agent
+     *
+     */
+    /**
+     * Construct an AbstractSampleAgent.
+     */
+    protected MASLABAbstractAgent() {
+    }
 
-	/**
-	 * The search algorithm.
-	 */
-	protected BFSearch search;
+    @Override
+    protected void postConnect() {
+        super.postConnect();
+        buildingIDs = new ArrayList<EntityID>();
+        roadIDs = new ArrayList<EntityID>();
+        refugeIDs = new ArrayList<EntityID>();
+        hydrantIDs = new ArrayList<EntityID>();
+        for (StandardEntity next : model) {
+            if (next instanceof Building) {
+                buildingIDs.add(next.getID());
+            }
+            if (next instanceof Road) {
+                roadIDs.add(next.getID());
+            }
+            if (next instanceof Refuge) {
+                refugeIDs.add(next.getID());
+            }
+            if (next instanceof Hydrant) {
+                hydrantIDs.add(next.getID());
+            }
+        }
+        // Criação de uma lista com hidrantes e refúgios para os bombeiros
+        List<EntityID> waterIDs = new ArrayList<EntityID>();
+        waterIDs.addAll(refugeIDs);
+        waterIDs.addAll(hydrantIDs);
+        search = new BFSearch(model);
 
-	/**
-	 * Whether to use AKSpeak messages or not.
-	 */
-	protected boolean useSpeak;
+        // TODO - Depois de ter os setores carregados, passar para o construtor
+        // do objeto routing
+        // TODO - Carregar os hashtables e principais pontos da via principal
+        // TODO - Carregar os roadIDs do principal e dos setores
+        Hashtable<EntityID, List<EntityID>> PontosPrincipais = new Hashtable<EntityID, List<EntityID>>();
 
-	/**
-	 * Cache of building IDs.
-	 */
-	protected List<EntityID> buildingIDs;
+        List<EntityID> principalIDs = new ArrayList<EntityID>();
+        principalIDs.add(new EntityID(274));
+        principalIDs.add(new EntityID(976));
 
-	/**
-	 * Cache of road IDs.
-	 */
-	protected List<EntityID> roadIDs;
+        List<EntityID> aux = new ArrayList<EntityID>();
+        aux.add(new EntityID(255));
+        PontosPrincipais.put(new EntityID(274), aux);
 
-	/**
-	 * Cache of refuge IDs.
-	 */
-	protected List<EntityID> refugeIDs;
+        routing = new MASLABRouting(search.getGraph(), search.getGraph(),
+                search.getGraph(), search.getGraph(), search.getGraph(),
+                refugeIDs, waterIDs, buildingIDs, model, PontosPrincipais);
 
-	private Map<EntityID, Set<EntityID>> neighbours;
+        neighbours = search.getGraph();
+        useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(
+                SPEAK_COMMUNICATION_MODEL);
+        Logger.debug("Communcation model: "
+                + config.getValue(Constants.COMMUNICATION_MODEL_KEY));
+        Logger.debug(useSpeak ? "Using speak model" : "Using say model");
+    }
 
-	/**
-	 * 
-	 * Variaveis definidas por nós
-	 * 
-	 */
+    /**
+     *
+     * Métodos Sample Agent
+     *
+     */
+    /**
+     * Construct a random walk starting from this agent's current location to a
+     * random building.
+     *
+     * @return A random walk.
+     */
+    protected List<EntityID> randomWalk() {
+        List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
+        Set<EntityID> seen = new HashSet<EntityID>();
+        EntityID current = ((Human) me()).getPosition();
+        for (int i = 0; i < RANDOM_WALK_LENGTH; ++i) {
+            result.add(current);
+            seen.add(current);
+            List<EntityID> possible = new ArrayList<EntityID>(
+                    neighbours.get(current));
+            Collections.shuffle(possible, random);
+            boolean found = false;
+            for (EntityID next : possible) {
+                if (seen.contains(next)) {
+                    continue;
+                }
+                current = next;
+                found = true;
+                break;
+            }
+            if (!found) {
+                // We reached a dead-end.
+                break;
+            }
+        }
+        return result;
+    }
 
-	/**
-	 * The routing algorithms.
-	 */
-	protected MASLABRouting routing;
+    /*
+     * 
+     * Métodos Definidos por nós
+     * 
+     */
+    public void debug(int time, String str) {
+        System.out.println(time + " - " + me().getID() + " - " + str);
+    }
 
-	/**
-	 * Cache of Hydrant IDs.
-	 */
-	protected List<EntityID> hydrantIDs;
+    /*
+     * 
+     * Métodos Acessores se necessário
+     * 
+     */
+    @Override
+    public void sendMessage(MSGType type, boolean radio, int time, String... params) {
 
-	/**
-	 * 
-	 * Métodos Standard Agent
-	 * 
-	 */
-
-	/**
-	 * Construct an AbstractSampleAgent.
-	 */
-	protected MASLABAbstractAgent() {
-	}
-
-	@Override
-	protected void postConnect() {
-		super.postConnect();
-		buildingIDs = new ArrayList<EntityID>();
-		roadIDs = new ArrayList<EntityID>();
-		refugeIDs = new ArrayList<EntityID>();
-		hydrantIDs = new ArrayList<EntityID>();
-		for (StandardEntity next : model) {
-			if (next instanceof Building) {
-				buildingIDs.add(next.getID());
-			}
-			if (next instanceof Road) {
-				roadIDs.add(next.getID());
-			}
-			if (next instanceof Refuge) {
-				refugeIDs.add(next.getID());
-			}
-			if (next instanceof Hydrant) {
-				hydrantIDs.add(next.getID());
-			}
-		}
-		// Criação de uma lista com hidrantes e refúgios para os bombeiros
-		List<EntityID> waterIDs = new ArrayList<EntityID>();
-		waterIDs.addAll(refugeIDs);
-		waterIDs.addAll(hydrantIDs);
-		search = new BFSearch(model);
-
-		// TODO - Depois de ter os setores carregados, passar para o construtor
-		// do objeto routing
-		// TODO - Carregar os hashtables e principais pontos da via principal
-		// TODO - Carregar os roadIDs do principal e dos setores
-		Hashtable<EntityID, List<EntityID>> PontosPrincipais = new Hashtable<EntityID, List<EntityID>>();
-
-		List<EntityID> principalIDs = new ArrayList<EntityID>();
-		principalIDs.add(new EntityID(274));
-		principalIDs.add(new EntityID(976));
-
-		List<EntityID> aux = new ArrayList<EntityID>();
-		aux.add(new EntityID(255));
-		PontosPrincipais.put(new EntityID(274), aux);
-
-		routing = new MASLABRouting(search.getGraph(), search.getGraph(),
-				search.getGraph(), search.getGraph(), search.getGraph(),
-				refugeIDs, waterIDs, buildingIDs, model, PontosPrincipais);
-
-		neighbours = search.getGraph();
-		useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(
-				SPEAK_COMMUNICATION_MODEL);
-		Logger.debug("Communcation model: "
-				+ config.getValue(Constants.COMMUNICATION_MODEL_KEY));
-		Logger.debug(useSpeak ? "Using speak model" : "Using say model");
-	}
-
-	/**
-	 * 
-	 * Métodos Sample Agent
-	 * 
-	 */
-
-	/**
-	 * Construct a random walk starting from this agent's current location to a
-	 * random building.
-	 * 
-	 * @return A random walk.
-	 */
-	protected List<EntityID> randomWalk() {
-		List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
-		Set<EntityID> seen = new HashSet<EntityID>();
-		EntityID current = ((Human) me()).getPosition();
-		for (int i = 0; i < RANDOM_WALK_LENGTH; ++i) {
-			result.add(current);
-			seen.add(current);
-			List<EntityID> possible = new ArrayList<EntityID>(
-					neighbours.get(current));
-			Collections.shuffle(possible, random);
-			boolean found = false;
-			for (EntityID next : possible) {
-				if (seen.contains(next)) {
-					continue;
-				}
-				current = next;
-				found = true;
-				break;
-			}
-			if (!found) {
-				// We reached a dead-end.
-				break;
-			}
-		}
-		return result;
-	}
-
-	/*
-	 * 
-	 * Métodos Definidos por nós
-	 */
-
-	public void debug(int time, String str) {
-		System.out.println(time + " - " + me().getID() + " - " + str);
-	}
-
-	/*
-	 * 
-	 * Métodos Acessores se necessário
-	 */
+        //inicializa variaveis
+        String msg = "";
+        Channel channel = null;
+        
+        //monta a mensagem em um string
+        for (int i = 0; i < params.length; i++) {
+            if (i < params.length - 1) {
+                msg += params[i] + MSG_SEPARATOR;
+            } else {
+                msg += params[i];
+            }
+        }
+        
+        //compacta a mensagem IMPLEMENTAR! - huffman ou zip?
+        
+        //monta a mensagem de acordo com o tipo e define o canal
+        switch (type) {
+            //Ex: Informar bloqueio
+            case Type_1: {
+                channel = Channel.POLICE_FORCE;
+                break;
+            }
+            case Type_2: {
+                break;
+            }
+            case Type_3: {
+                break;
+            }
+            case Type_4: {
+                break;
+            }
+        }
+        //envia de acordo com o meio (voz, radio)
+        if (radio) {
+            sendSpeak(time, channel.ordinal(), msg.getBytes());
+        }
+    }
 }
