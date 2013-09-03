@@ -106,6 +106,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     protected List<EntityID> lastPath = new ArrayList<EntityID>();
     
     
+    
     /**
 	   Cache of Hydrant IDs.
     */
@@ -241,19 +242,21 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      */
     protected List<EntityID> walk(List<EntityID> path, EntityID local) {
     	
-    	if(path.isEmpty()){
+    	if(path.isEmpty() && this.pathDefined == false){
     		
     		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
     		List<Road> road = new ArrayList<Road>();
+    		EntityID destiny = null;
     		for (StandardEntity next : e)
     		{
     			Road r = (Road)next;
     			road.add(r);
     		}
+    		
     		Integer index = new Random().nextInt(road.size());
-    		
-    		EntityID destiny = road.get(index).getID();
-    		
+	    		
+	    	destiny = road.get(index).getID();
+	    	
     		path = search.breadthFirstSearch(local, destiny);
     		
     		//path = this.getDijkstraPath(local, destiny, this.mapTmp);
@@ -267,16 +270,20 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     			
     			if(p != local && ct == 0)
     			{
+    				
     				tmp.add(p);
     			}else if(p == local)
     			{
     				ct = 1;
+    				
     				tmp.add(p);
     				break;
     			}
     		}
 
     		//System.out.println("Tamanho do caminho atual "+path.size());
+    		System.out.println("caminho realizado: "+tmp);
+    		System.out.println("tamanho do caminho realizado: "+tmp.size());
     		path.removeAll(tmp);
     		//System.out.println("Tamanho para remoção "+tmp.size()); */
     	}
