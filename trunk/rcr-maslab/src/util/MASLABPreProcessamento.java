@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +19,7 @@ public class MASLABPreProcessamento {
 	StandardWorldModel model;
 	
 	MASLABSectoring sectoring = new MASLABSectoring(model);
-	File arquivo = new File("teste.txt");
+	File arquivo = new File("MASLABPreProcessamento.txt");
 	
 	public MASLABPreProcessamento(StandardWorldModel world){
 		model = world;
@@ -34,7 +33,6 @@ public class MASLABPreProcessamento {
 	 * Gera os arquivos de pre processamento
 	 */
 	public void GerarArquivos(){
-		//arquivo = new File("teste2.txt");
 		//Grafos dos setores
 		GravarMapSetor(sectoring.getMapSetor(1), 1);
 		GravarMapSetor(sectoring.getMapSetor(2), 2);
@@ -43,11 +41,7 @@ public class MASLABPreProcessamento {
 		GravarMapSetor(sectoring.getMapSetor(5), 5);
 		GravarMapSetor(sectoring.getMapSetor(6), 6);
 		
-		//Ver sobre a criacao de Hashmap para gravar as vias secundarias
-		
-		
 		//Alocacao dos agentes
-		
 		
 		System.out.println("OK");
 	}

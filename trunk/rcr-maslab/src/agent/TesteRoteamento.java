@@ -19,6 +19,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
 import util.DistanceSorter;
+import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
 import util.MASLABRouting.Setores;
 import util.MASLABSectoring;
@@ -42,7 +43,7 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 	private int maxDistance;
 	private int maxPower;
 	
-	private MASLABSectoring sectoringTest;
+	private MASLABSectoring sectoring;
 
 	/**
 	 * 
@@ -74,11 +75,20 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 				+ maxDistance + ", max power = " + maxPower + ", max tank = "
 				+ maxWater);
 		Bloqueios = new ArrayList<EntityID>();
-		MASLABSectoring sectoring = new MASLABSectoring(model);
-		sectoringTest = new MASLABSectoring(model);
-
+		sectoring = new MASLABSectoring(model);
+		
+		sectoring.Setorizar();
+		MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(sectoring);
+		PreProcess.GerarArquivos();
+		//MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(model);
+		//PreProcess.CarregarArquivo();
+		//sectoring = PreProcess.getMASLABSectoring();
+		
+		System.out.println("OK");
 	}
 
+	
+	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 
@@ -95,19 +105,19 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 						Bloqueios, Setores.S1).toString());
 		
 		debug(time,"Importance of sector NE:" + 
-				sectoringTest.getSectorImportance(sectoringTest.NORTH_EAST, sectoringTest.AMBULANCE_TEAM)	
+				sectoring.getSectorImportance(sectoring.NORTH_EAST, sectoring.AMBULANCE_TEAM)	
 		);
 		
 		debug(time,"Importance of sector NW:" + 
-				sectoringTest.getSectorImportance(sectoringTest.NORTH_WEST, sectoringTest.AMBULANCE_TEAM)	
+				sectoring.getSectorImportance(sectoring.NORTH_WEST, sectoring.AMBULANCE_TEAM)	
 		);
 		
 		debug(time,"Importance of sector SE:" + 
-				sectoringTest.getSectorImportance(sectoringTest.SOUTH_EAST, sectoringTest.AMBULANCE_TEAM)	
+				sectoring.getSectorImportance(sectoring.SOUTH_EAST, sectoring.AMBULANCE_TEAM)	
 		);
 		
 		debug(time,"Importance of sector SW:" + 
-				sectoringTest.getSectorImportance(sectoringTest.SOUTH_WEST, sectoringTest.AMBULANCE_TEAM)	
+				sectoring.getSectorImportance(sectoring.SOUTH_WEST, sectoring.AMBULANCE_TEAM)	
 		);
 	}
 
