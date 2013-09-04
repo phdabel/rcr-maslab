@@ -48,25 +48,25 @@ public class MASLABSectoring {
 	public static final int SOUTH_EAST = 2;
 	public static final int SOUTH_WEST = 3;
 	public static final int NORTH_WEST = 4;
+	public static final int PRINCIPAL = 5;
+	public static final int SECUNDARIAS = 6;
 	public static final int UNDEFINED_SECTOR = 0;
-
 	
 	//aliases for the agent types
 	public static final int AMBULANCE_TEAM = 1;
 	public static final int FIRE_BRIGADE = 2;
 	public static final int POLICE_FORCE = 3;
 	public static final int UNDEFINED_PLATOON = 0;
-
-	
 	
 	private List<EntityID> Avenue_NtoS;
 	private List<EntityID> Avenue_LtoO;
 
-	Map<EntityID, Set<EntityID>> MapSetor1;
-	Map<EntityID, Set<EntityID>> MapSetor2;
-	Map<EntityID, Set<EntityID>> MapSetor3;
-	Map<EntityID, Set<EntityID>> MapSetor4;
-	Map<EntityID, Set<EntityID>> MapPrincipal;
+	public Map<EntityID, Set<EntityID>> MapSetor1 = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, Set<EntityID>> MapSetor2 = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, Set<EntityID>> MapSetor3 = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, Set<EntityID>> MapSetor4 = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, Set<EntityID>> MapPrincipal = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, Set<EntityID>> MapSecundarias = new HashMap<EntityID, Set<EntityID>>();
 
 	private static EntityID idNorte;
 	private static EntityID idSul;
@@ -81,18 +81,49 @@ public class MASLABSectoring {
 	private StandardWorldModel model;
 
 	MASLABBFSearch search;
+	
+	List<EntityID> roadIDs = new ArrayList<EntityID>();
+	List<EntityID> buildingIDs = new ArrayList<EntityID>();
+	List<EntityID> refugeIDs = new ArrayList<EntityID>();
+	List<EntityID> hydrantIDs = new ArrayList<EntityID>();
 
-	protected List<Road> roadIDs;
-
+	public MASLABSectoring(StandardWorldModel world, Map<EntityID, Set<EntityID>> Setor1, Map<EntityID, Set<EntityID>> Setor2, 
+			Map<EntityID, Set<EntityID>> Setor3, Map<EntityID, Set<EntityID>> Setor4,
+			Map<EntityID, Set<EntityID>> SetorPrincipal, Map<EntityID, Set<EntityID>> SetorSecundarias) {
+		model = world;
+		MapSetor1 = Setor1;
+		MapSetor2 = Setor2;
+		MapSetor3 = Setor3;
+		MapSetor4 = Setor4;
+		MapPrincipal = SetorPrincipal;
+		MapSecundarias = SetorSecundarias;
+		CarregaListas();
+	}
+	
 	public MASLABSectoring(StandardWorldModel world) {
 		model = world;
-
-		MapSetor1 = new HashMap<EntityID, Set<EntityID>>();
-		MapSetor2 = new HashMap<EntityID, Set<EntityID>>();
-		MapSetor3 = new HashMap<EntityID, Set<EntityID>>();
-		MapSetor4 = new HashMap<EntityID, Set<EntityID>>();
-		MapPrincipal = new HashMap<EntityID, Set<EntityID>>();
-
+		CarregaListas();
+	}
+	
+	private void CarregaListas(){
+		for (StandardEntity next : model) {
+			if (next instanceof Road) {
+				roadIDs.add(next.getID());
+			}
+			if (next instanceof Building) {
+				buildingIDs.add(next.getID());
+			}
+			if (next instanceof Refuge) {
+				refugeIDs.add(next.getID());
+			}
+			if (next instanceof Hydrant) {
+				hydrantIDs.add(next.getID());
+			}
+		}
+	}
+	
+	public void Setorizar(){
+		
 		/* Obtem especificação geral do mapa */
 		coordinate_MaxX = model.getBounds().getMaxX();
 		coordinate_MaxY = model.getBounds().getMaxY();
@@ -100,14 +131,6 @@ public class MASLABSectoring {
 		coordinate_MinY = model.getBounds().getMinY();
 		coordinate_CenterX = model.getBounds().getCenterX();
 		coordinate_CenterY = model.getBounds().getCenterY();
-
-		roadIDs = new ArrayList<Road>();
-
-		for (StandardEntity next : model) {
-			if (next instanceof Road) {
-				roadIDs.add((Road) next);
-			}
-		}
 
 		search = new MASLABBFSearch(model);
 
@@ -126,6 +149,23 @@ public class MASLABSectoring {
 		CarregaGrafosSetores();
 		//debug();
 	}
+	
+	public Map<EntityID, Set<EntityID>> getMapSetor(int Setor){
+		if (Setor == NORTH_EAST){
+			return MapSetor1;
+		}else if(Setor == SOUTH_EAST){
+			return MapSetor2;
+		}else if(Setor == SOUTH_WEST){
+			return MapSetor3;
+		}else if(Setor == NORTH_WEST){
+			return MapSetor4;
+		}else if(Setor == PRINCIPAL){
+			return MapPrincipal;
+		}else if(Setor == SECUNDARIAS){
+			return MapSecundarias;
+		}
+		return null;
+	}
 
 	/**
 	 * 
@@ -136,11 +176,12 @@ public class MASLABSectoring {
 	 * @return EntityID contendo o nó mais proximo dos pontos passados
 	 */
 	private EntityID EntMaisProximo(double Px, double Py) {
-		Road bestNode = roadIDs.get(0);
+		Road bestNode = (Road)model.getEntity(roadIDs.get(0));
 		double melhorDist = DistanciaEuclidiana(Px, Py, bestNode.getX(),
 				bestNode.getY());
 		double auxdist = 0;
-		for (Road next : roadIDs) {
+		for (EntityID e : roadIDs) {
+			Road next = (Road) model.getEntity(e);
 			next.getX();
 			auxdist = DistanciaEuclidiana(Px, Py, next.getX(), next.getY());
 			if (melhorDist > auxdist) {
@@ -213,34 +254,15 @@ public class MASLABSectoring {
 
 		Map<EntityID, Set<EntityID>> searchP = MapP.getGraph();
 
-		List<EntityID> roadIDss = new ArrayList<EntityID>();
-		List<EntityID> buildingIDs = new ArrayList<EntityID>();
-		List<EntityID> refugeIDs = new ArrayList<EntityID>();
-		List<EntityID> hydrantIDs = new ArrayList<EntityID>();
 		List<EntityID> p = new ArrayList<EntityID>();
 		List<EntityID> aux = new ArrayList<EntityID>();
-
-		for (StandardEntity next : model) {
-			if (next instanceof Road) {
-				roadIDss.add(next.getID());
-			}
-			if (next instanceof Building) {
-				buildingIDs.add(next.getID());
-			}
-			if (next instanceof Refuge) {
-				refugeIDs.add(next.getID());
-			}
-			if (next instanceof Hydrant) {
-				hydrantIDs.add(next.getID());
-			}
-		}
 
 		DemarcarRegioes(1);
 		DemarcarRegioes(2);
 		DemarcarRegioes(3);
 		DemarcarRegioes(4);
 
-		for (EntityID next : roadIDss) {
+		for (EntityID next : roadIDs) {
 			Road r = (Road) model.getEntity(next);
 			addGrafoSetor(next, getSetorPertencente(r.getX(), r.getY()));
 		}
