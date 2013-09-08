@@ -19,6 +19,7 @@ import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Refuge;
+import util.Channel;
 import util.DistanceSorter;
 
 /**
@@ -74,7 +75,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
-			sendSubscribe(time, 1);
+			sendSubscribe(time, Channel.AMBULANCE.ordinal());
 		}
 		for (Command next : heard) {
 			Logger.debug("Heard " + next);

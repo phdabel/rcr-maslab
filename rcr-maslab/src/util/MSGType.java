@@ -10,7 +10,8 @@ package util;
  */
 public enum MSGType {
 
-    Type_1("Tipo 1"),
+    //início, fim.
+    UNLOCK_MAIN_STREET("Desbloquear via principal"),
     Type_2("Tipo 2"),
     Type_3("Tipo 3"),
     Type_4("Tipo 4");

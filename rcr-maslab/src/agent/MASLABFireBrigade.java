@@ -19,6 +19,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
+import util.Channel;
 import util.DistanceSorter;
 
 /**
@@ -74,7 +75,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
-			sendSubscribe(time, 1);
+			sendSubscribe(time, Channel.FIRE_BRIGADE.ordinal());
 		}
 		for (Command next : heard) {
 			Logger.debug("Heard " + next);
