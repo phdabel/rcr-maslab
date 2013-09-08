@@ -21,6 +21,8 @@ import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
+import util.Channel;
+import util.MSGType;
 
 /**
  * A sample police force agent.
@@ -63,12 +65,18 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
-			// Subscribe to channel 1
-			sendSubscribe(time, 1);
+			// Sunbscribe to channel 1
+			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
 		}
 		for (Command next : heard) {
 			Logger.debug("Heard " + next);
 		}
+                //ouve as mensagens
+                List<String> msgsOuvidas = heardMessage(heard);
+                
+                //envia uma mensagem para outro bombeiro
+                sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
+                System.out.println("tamanho: " + msgsOuvidas.size());
 		// Am I near a blockade?
 		Blockade target = getTargetBlockade();
 		if (target != null) {

@@ -1,18 +1,22 @@
 package agent;
 
 import agent.interfaces.IAbstractAgent;
+import java.io.UnsupportedEncodingException;
 
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
 import rescuecore2.log.Logger;
+import rescuecore2.messages.Command;
 
 import rescuecore2.standard.components.StandardAgent;
 import rescuecore2.standard.entities.Hydrant;
@@ -23,14 +27,13 @@ import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
+import rescuecore2.standard.messages.AKSay;
+import rescuecore2.standard.messages.AKSpeak;
+import rescuecore2.standard.messages.AKTell;
 import util.BFSearch;
 import util.Channel;
 import util.MASLABRouting;
 import util.MSGType;
-import static util.MSGType.Type_1;
-import static util.MSGType.Type_2;
-import static util.MSGType.Type_3;
-import static util.MSGType.Type_4;
 
 /**
  * Abstract base class for sample agents.
@@ -194,10 +197,14 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         System.out.println(time + " - " + me().getID() + " - " + str);
     }
 
-    /*
-     * 
-     * Métodos Acessores se necessário
-     * 
+    /**
+     * Envia uma mensagem
+     *
+     * @param type - Tipo da mensagem (ver tipos disponíveis)
+     * @param radio - indica o meio de comunicação. true = radio e false = voz.
+     * @param time - timestep atual.
+     * @param params - parametros que compõem a mensagem. Variam de acordo com o
+     * type da mensagem.
      */
     @Override
     public void sendMessage(MSGType type, boolean radio, int time, String... params) {
@@ -205,7 +212,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         //inicializa variaveis
         String msg = "";
         Channel channel = null;
-        
+
         //monta a mensagem em um string
         for (int i = 0; i < params.length; i++) {
             if (i < params.length - 1) {
@@ -214,13 +221,12 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
                 msg += params[i];
             }
         }
-        
         //compacta a mensagem IMPLEMENTAR! - huffman ou zip?
-        
+
         //monta a mensagem de acordo com o tipo e define o canal
         switch (type) {
             //Ex: Informar bloqueio
-            case Type_1: {
+            case UNLOCK_MAIN_STREET: {
                 channel = Channel.POLICE_FORCE;
                 break;
             }
@@ -237,6 +243,44 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         //envia de acordo com o meio (voz, radio)
         if (radio) {
             sendSpeak(time, channel.ordinal(), msg.getBytes());
+        } else {
+            sendSay(time, msg.getBytes());
         }
     }
+
+    /**
+     * Faz o processamento das mensagens recebidas
+     *
+     * @param messages - Lista de mensagens recebidas do Kernel
+     */
+    @Override
+    public List<String> heardMessage(Collection<Command> messages) {
+        List<String> list = new ArrayList<>();
+        for (Command next : messages) {
+            if ((next instanceof AKSpeak) && (byteToString(((AKSpeak) next).getContent()).length() > 0)) {
+                list.add(byteToString(((AKSpeak) next).getContent()));
+                //mensagem de rádio
+            } else if ((next instanceof AKSay) && (byteToString(((AKSay) next).getContent()).length() > 0)) {
+                list.add(byteToString(((AKSay) next).getContent()));
+                //mensagem de voz
+            } else if ((next instanceof AKTell) && (byteToString(((AKTell) next).getContent()).length() > 0)) {
+                //mensagem de voz também
+                list.add(byteToString(((AKTell) next).getContent()));
+            }
+        }
+        return list;
+    }
+
+    private String byteToString(byte[] msg) {
+        try {
+            return new String(msg, "ISO-8859-1");
+        } catch (UnsupportedEncodingException ex) {
+            return "";
+        }
+    }
+    /*
+     * 
+     * Métodos Acessores se necessário
+     * 
+     */
 }
