@@ -11,7 +11,7 @@ public class ExplorationWithComunication {
 
 	@SuppressWarnings("unused")
 	/**
-	 * 
+	 * Verifica se Existe ações conflitantes
 	 * @param EntityID me - Minha Identificação
 	 * @param EntityID Agent - Identifcação do outro Agente
 	 * @param List<StandardEntity> MinhasUltimasAcoes - Ultimos N nodes visitados por mim
@@ -64,13 +64,7 @@ public class ExplorationWithComunication {
 		}
 		// Verifica se existe 60% de coincidencias
 		if (acoesidenticas / totaldeacoes > 0.6) {
-			// Verifica quem tem maior prioridade pelo ID
-			if (Integer.parseInt(me.toString()) > Integer.parseInt(Agent
-					.toString())) {
-				return false;
-			} else {
 				return true;
-			}
 		}
 		
 		// -----------------------------------------------------
