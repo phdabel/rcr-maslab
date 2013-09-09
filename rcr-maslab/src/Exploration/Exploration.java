@@ -74,7 +74,7 @@ public class Exploration {
 
 	}
 	/**
-	 * 
+	 * Recebe um hash de exploração e atualiza suas informações
 	 * @param HashMap<StandardEntity, List> mensagem - Atualiza informações de exploração
 	 */
 	public void UpdateExploracao(HashMap<StandardEntity, List> mensagem){
@@ -128,6 +128,7 @@ public class Exploration {
 				return indice;
 			}
 		}
+		
 		return value;
 	
 	}
@@ -222,10 +223,12 @@ public class Exploration {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	/**
+	 * 
 	 * Obtém uma lista das ultimas ações dos agentes
+	 * @param int Passos - Define o numero das ultimas ações 
 	 * @return List<StandardEntity> UltimosNodesVisitados - Retorna uma lista dos ultimos lugares visitados pelo agente
 	 */
-	public List<StandardEntity> GetLastAction(){
+	public List<StandardEntity> GetLastAction(int Passos){
 		
 		   List mapKeys = new ArrayList<StandardEntity>(Exploracao.keySet());
 		   List mapValues = new ArrayList(Exploracao.get(1));
@@ -255,10 +258,21 @@ public class Exploration {
 		    }
 
 		}
+		List<StandardEntity> UltimasAcoes= new ArrayList<StandardEntity>();
+		int j =0;
+		for (StandardEntity chave : (List<StandardEntity>) sortedMap) {
+			if(j>=Passos){
+				return UltimasAcoes;
+			}else{
+				UltimasAcoes.add(chave);
+			}
+			j++;
+		}
+		
 		return (List<StandardEntity>) sortedMap;
 	}
 	
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings({ "unchecked"})
 	public List<StandardEntity> GetExplorationNodes() {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
 		Explorationnodes = (List<StandardEntity>) Exploracao.keySet();
