@@ -27,12 +27,9 @@ public class Exploration {
 
 	@SuppressWarnings("unused")
 	private StandardWorldModel model;
-
 	static int TamanhoLista = 10;
-
 	@SuppressWarnings("rawtypes")
 	public HashMap<StandardEntity, List> Exploracao = new HashMap<StandardEntity, List>();
-
 	public Exploration(StandardWorldModel world) {
 		model = world;
 		// TODO Auto-generated constructor stub
@@ -247,6 +244,15 @@ public class Exploration {
 
 		}
 		return (List<StandardEntity>) sortedMap;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	public List<StandardEntity> GetExplorationNodes() {
+		List<StandardEntity> Explorationnodes = new ArrayList<>();
+		Explorationnodes = (List<StandardEntity>) Exploracao.keySet();
+	
+		return Explorationnodes;
+
 	}
 
 
