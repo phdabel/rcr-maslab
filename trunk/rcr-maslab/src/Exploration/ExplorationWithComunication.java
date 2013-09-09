@@ -14,7 +14,6 @@ public class ExplorationWithComunication {
 	 * Verifica se Existe ações conflitantes
 	 * @param EntityID me - Minha Identificação
 	 * @param EntityID Agent - Identifcação do outro Agente
-	 * @param List<StandardEntity> MinhasUltimasAcoes - Ultimos N nodes visitados por mim
 	 * @param List<StandardEntity> MeusObjetivos -  percurso a ser percorrido por mim
 	 * @param List<StandardEntity> OutrasUltimasAcoes - Ultimos N nodes visitados pelo outro agente
 	 * @param List<StandardEntity> OutrosObjetivos - percurso desejado pelo outro agente
@@ -22,7 +21,6 @@ public class ExplorationWithComunication {
 	 */
 	
 	private boolean CheckAnotherActions(EntityID me, EntityID Agent,
-			List<StandardEntity> MinhasUltimasAcoes,
 			List<StandardEntity> MeusObjetivos,
 			List<StandardEntity> OutrasUltimasAcoes,
 			List<StandardEntity> OutrosObjetivos) {
