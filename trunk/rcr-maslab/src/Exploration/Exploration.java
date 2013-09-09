@@ -273,6 +273,10 @@ public class Exploration {
 	}
 	
 	@SuppressWarnings({ "unchecked"})
+	/**
+	 * 
+	 * @return List<StandardEntity> Nodes já Explorados
+	 */
 	public List<StandardEntity> GetExplorationNodes() {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
 		Explorationnodes = (List<StandardEntity>) Exploracao.keySet();
