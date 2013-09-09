@@ -73,6 +73,18 @@ public class Exploration {
 		}
 
 	}
+	/**
+	 * 
+	 * @param HashMap<StandardEntity, List> mensagem - Atualiza informações de exploração
+	 */
+	public void UpdateExploracao(HashMap<StandardEntity, List> mensagem){
+		Set<StandardEntity> chaves = mensagem.keySet();
+		
+		for (StandardEntity chave : chaves) {
+			InsertNewInformation(Integer.parseInt(mensagem.get(chave).get(1).toString()), chave, mensagem.get(chave).get(0).toString());
+		}
+		
+	}
 	
 	/**
 	 * Estabelece uma probabilidade de exploracao com base na diferenca temporal:
