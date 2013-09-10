@@ -45,6 +45,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * 
 	 * Métodos Standard Agent
 	 */
+	public MASLABAmbulanceTeam(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Sample ambulance team";

@@ -57,7 +57,11 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 	 * 
 	 * Métodos Standard Agent
 	 */
-
+	
+	public TesteRoteamento(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Sample fire brigade";

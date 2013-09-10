@@ -3,7 +3,6 @@ package agent;
 import agent.interfaces.IAbstractAgent;
 import java.io.UnsupportedEncodingException;
 
-import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +10,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Map;
-import java.util.logging.Level;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
@@ -30,9 +28,11 @@ import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import rescuecore2.standard.messages.AKSay;
 import rescuecore2.standard.messages.AKSpeak;
 import rescuecore2.standard.messages.AKTell;
-import util.BFSearch;
 import util.Channel;
+import util.MASLABBFSearch;
+import util.MASLABPreProcessamento;
 import util.MASLABRouting;
+import util.MASLABSectoring;
 import util.MSGType;
 
 /**
@@ -53,7 +53,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     /**
      * The search algorithm.
      */
-    protected BFSearch search;
+    protected MASLABBFSearch search;
     /**
      * Whether to use AKSpeak messages or not.
      */
@@ -81,10 +81,16 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      */
     protected MASLABRouting routing;
     /**
+     * Classe de setorização, responsável por pre-processar e carregar os arquivos.
+     */
+	protected MASLABSectoring sectoring;
+    /**
      * Cache of Hydrant IDs.
      */
     protected List<EntityID> hydrantIDs;
     protected final String MSG_SEPARATOR = "-";
+	protected int PreProcessamento = 0;
+
 
     /**
      *
@@ -94,7 +100,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     /**
      * Construct an AbstractSampleAgent.
      */
-    protected MASLABAbstractAgent() {
+    protected MASLABAbstractAgent(int pp) {
+    	PreProcessamento = pp;
     }
 
     @Override
@@ -118,31 +125,27 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
                 hydrantIDs.add(next.getID());
             }
         }
+        
         // Criação de uma lista com hidrantes e refúgios para os bombeiros
         List<EntityID> waterIDs = new ArrayList<EntityID>();
         waterIDs.addAll(refugeIDs);
         waterIDs.addAll(hydrantIDs);
-        search = new BFSearch(model);
+        search = new MASLABBFSearch(model);
+		
+		//Realiza o pre-processamento
+		if(PreProcessamento > 0){
+			//Esse procedimento está descrito em cada agente pois pode ser iremos realizar diferentes processamentos em cada agente
+			
+		//Carrega os arquivos já processados
+		}else{
+			//Cria um objeto da classe de pre-processamento e carrega os arquivos já processados
+			MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(model);
+			PreProcess.CarregarArquivo();
+			
+			//Carrega o objeto de setorizacao com as informacoes do arquivo, sem necessadade de setorizar novamente
+			sectoring = PreProcess.getMASLABSectoring();
+		}
 
-        // TODO - Depois de ter os setores carregados, passar para o construtor
-        // do objeto routing
-        // TODO - Carregar os hashtables e principais pontos da via principal
-        // TODO - Carregar os roadIDs do principal e dos setores
-        Hashtable<EntityID, List<EntityID>> PontosPrincipais = new Hashtable<EntityID, List<EntityID>>();
-
-        List<EntityID> principalIDs = new ArrayList<EntityID>();
-        principalIDs.add(new EntityID(274));
-        principalIDs.add(new EntityID(976));
-
-        List<EntityID> aux = new ArrayList<EntityID>();
-        aux.add(new EntityID(255));
-        PontosPrincipais.put(new EntityID(274), aux);
-
-        routing = new MASLABRouting(search.getGraph(), search.getGraph(),
-                search.getGraph(), search.getGraph(), search.getGraph(),
-                refugeIDs, waterIDs, buildingIDs, model, PontosPrincipais);
-
-        neighbours = search.getGraph();
         useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(
                 SPEAK_COMMUNICATION_MODEL);
         Logger.debug("Communcation model: "

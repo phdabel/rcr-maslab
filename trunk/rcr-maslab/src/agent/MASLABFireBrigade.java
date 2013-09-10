@@ -21,6 +21,8 @@ import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
 import util.Channel;
 import util.DistanceSorter;
+import util.MASLABPreProcessamento;
+import util.MASLABSectoring;
 
 /**
  * A sample fire brigade agent.
@@ -52,6 +54,10 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	 * Métodos Standard Agent
 	 */
 
+	public MASLABFireBrigade(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Sample fire brigade";
@@ -68,6 +74,21 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		Logger.info("Sample fire brigade connected: max extinguish distance = "
 				+ maxDistance + ", max power = " + maxPower + ", max tank = "
 				+ maxWater);
+		
+		if(PreProcessamento > 0){
+			//Cria um novo objeto da classe de setorizacao e setoriza
+	        sectoring = new MASLABSectoring(model);
+	        sectoring.Setorizar();
+	        
+	        //Cria um novo objeto da classe de pre-processamento e gera os arquivos
+			MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(sectoring);
+			PreProcess.GerarArquivos();
+			
+		//Carrega os arquivos já processados
+		}else{
+			//Esse procedimento é genérico para todos os agentes, por isso está na classe MASLABAbstractAgent
+		}
+		
 	}
 
 	@Override

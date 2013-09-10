@@ -49,6 +49,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	 * Métodos Standard Agent
 	 */
 
+	public MASLABPoliceForce(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Sample police force";
