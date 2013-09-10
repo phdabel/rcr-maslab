@@ -124,6 +124,7 @@ public final class MASLABBFSearch {
 	 */
 	public List<EntityID> breadthFirstSearch(EntityID start,
 			List<EntityID> Bloqueios, Collection<EntityID> goals) {
+
 		List<EntityID> open = new LinkedList<EntityID>();
 		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
 		open.add(start);
@@ -204,10 +205,17 @@ public final class MASLABBFSearch {
 	private boolean isBlocked(EntityID e, Collection<EntityID> test) {
 		return test.contains(e);
 	}
-
+	
+	
+	
 	public List<EntityID> breadthFirstSearch(EntityID start, List<EntityID> Bloqueios, 
-			EntityID goal, Boolean ConsiderarBuildings) {
-		Collection<EntityID> goals = Arrays.asList(goal);
+			Boolean ConsiderarBuildings, EntityID... goals) {
+		return breadthFirstSearch(start, Bloqueios, ConsiderarBuildings, Arrays.asList(goals));
+	}
+	
+	
+	public List<EntityID> breadthFirstSearch(EntityID start, List<EntityID> Bloqueios, 
+			Boolean ConsiderarBuildings, Collection<EntityID> goals) {
 		List<EntityID> open = new LinkedList<EntityID>();
 		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
 		open.add(start);
@@ -224,17 +232,6 @@ public final class MASLABBFSearch {
 			if (!isBlocked(next, Bloqueios)) {
 				Collection<EntityID> neighbours = graph.get(next);
 				if(neighbours.isEmpty()){
-					continue;
-				}
-				if (!ConsiderarBuildings){
-					Collection<EntityID> aux = new ArrayList<EntityID>(neighbours);
-					for(EntityID neighbour : aux) {
-						if(model.getEntity(neighbour).getClass().equals(Building.class)){
-							neighbours.remove(neighbour);
-						}
-					}
-				}
-				if (neighbours.isEmpty()) {
 					continue;
 				}
 				for (EntityID neighbour : neighbours) {
@@ -277,6 +274,20 @@ public final class MASLABBFSearch {
 						"Found a node with no ancestor! Something is broken.");
 			}
 		} while (current != start);
+		
+		if (!ConsiderarBuildings){
+			int count = path.size()-1;
+			while(true){
+				if(path.get(count).getClass().equals(Building.class)){
+					path.remove(count);
+					count--;
+				}else{
+					break;
+				}
+			}
+		}
+
+		
 		return path;
 	}
 	

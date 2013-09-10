@@ -18,11 +18,12 @@ public class MASLABPreProcessamento {
 	
 	StandardWorldModel model;
 	
-	MASLABSectoring sectoring = new MASLABSectoring(model);
+	MASLABSectoring sectoring;
 	File arquivo = new File("MASLABPreProcessamento.txt");
 	
 	public MASLABPreProcessamento(StandardWorldModel world){
 		model = world;
+		sectoring = new MASLABSectoring(model);
 	}
 	
 	public MASLABPreProcessamento(MASLABSectoring sec){
@@ -43,7 +44,6 @@ public class MASLABPreProcessamento {
 		
 		//Alocacao dos agentes
 		
-		System.out.println("OK");
 	}
 	
 	private void GravarMapSetor(Map<EntityID, Set<EntityID>> MapSetor, int Setor){
@@ -131,7 +131,6 @@ public class MASLABPreProcessamento {
 					}
 					
 					MapAux.put(new EntityID(key), values);
-					System.out.println(s);
 				}
 			}
 			fr.close();

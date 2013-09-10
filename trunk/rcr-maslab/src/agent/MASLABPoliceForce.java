@@ -22,6 +22,7 @@ import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
 import util.Channel;
+import util.MASLABRouting.Setores;
 import util.MSGType;
 
 /**
@@ -80,7 +81,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
                 
                 //envia uma mensagem para outro bombeiro
                 sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
-                System.out.println("tamanho: " + msgsOuvidas.size());
 		// Am I near a blockade?
 		Blockade target = getTargetBlockade();
 		if (target != null) {
@@ -109,8 +109,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			return;
 		}
 		// Plan a path to a blocked area
-		List<EntityID> path = search.breadthFirstSearch(me().getPosition(),
-				getBlockedRoads());
+		List<EntityID> path  = routing.Mover(me().getPosition(), Setores.Qualquer, getBlockedRoads());
 		if (path != null) {
 			Logger.info("Moving to target");
 			Road r = (Road) model.getEntity(path.get(path.size() - 1));
@@ -122,7 +121,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		}
 		Logger.debug("Couldn't plan a path to a blocked road");
 		Logger.info("Moving randomly");
-		sendMove(time, randomWalk());
+		sendMove(time, routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios));
 	}
 
 	@Override
