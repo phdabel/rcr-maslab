@@ -14,6 +14,7 @@ import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
 import rescuecore2.log.Logger;
+import rescuecore2.misc.Pair;
 import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Line2D;
@@ -74,249 +75,183 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             // Subscribe to channel 1
             sendSubscribe(time, 1);
         }
-      
         for (Command next : heard) {
-            Logger.debug("Heard " + next);
+        	Logger.debug("Heard " + next);
         }
         
+        if(this.currentPath.isEmpty() && this.pathDefined == true){
+        	this.stateQueue.poll();
+        }
+
+
+        /*if(!this.currentPath.isEmpty())
+        	this.bestPoint();*/
         
-        if(!this.currentPath.isEmpty())
-        	this.bestPoint();
         
+
         /**
          * localizar bloqueio
          */
-        /*
-        Blockade target = getTargetBlockade();
         
-        if(target != null)
-        {
-	        Area local = (Area)model.getEntity(me().getPosition());
-	        
-	        if((local.getShape().getBounds2D().getWidth() - target.getShape().getBounds2D().getWidth()) <= this.WIDTH_FOR_PASS_THROUGH){
-	        	//System.out.println("espaço livre: "+(local.getShape().getBounds2D().getWidth() - target.getShape().getBounds2D().getWidth()));
-	        	this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
-	        	
-	        	
-	        	System.out.println("Largura da rua: "+local.getShape().getBounds2D().getWidth());
-		        System.out.println("Altura da rua: "+local.getShape().getBounds2D().getHeight());
-		        System.out.println("Largura do bloqueio: "+target.getShape().getBounds2D().getWidth());
-		        System.out.println("Altura do bloqueio: "+target.getShape().getBounds2D().getHeight());
-	        }
-        }*/
-        
+	     Blockade target = (Blockade)model.getEntity(this.getNearestBlockade());
+
+	     
+	     if( (target != null &&
+	    		 (((Road)model.getEntity(target.getPosition())).getShape().getBounds2D().getWidth() -
+	    		 target.getShape().getBounds2D().getWidth()) < 2000
+	    		 )  )
+	     {
+		     Area local = (Area)model.getEntity(me().getPosition());
+		     this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
+		        
+		        
+	     }
+
         /**
+         * && this.stateQueue.isEmpty()
          * INSERÇÃO DE TAREFAS NA FILA
          */
-        if(this.currentTask != null && this.stateQueue.isEmpty() && this.currentTask.getObject() == Object.BLOCKADE)
+        if(this.currentTask != null && this.currentTask.getObject() == Object.BLOCKADE)
         {
+        	
         	if(!stateQueue.isEmpty() && stateQueue.peek().getState() == "RandomWalk"){
         		stateQueue.remove(stateQueue.peek());
+        	}else if(stateQueue.isEmpty()){
+        		Task tmp = this.currentTask;
+        		EntityID tmpID = new EntityID(tmp.getPosition());
+
+        		if(me().getPosition() != tmpID)
+        		{
+        			
+        			stateQueue.add(new AgentState("Walk", tmpID));
+        			stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));        		
+        		}else{
+        			
+        			stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));
+
+        		}
         	}
-        	Task tmp = this.currentTask;
-        	EntityID tmpID = new EntityID(tmp.getPosition());
-        	
-        	if(me().getPosition() != tmpID)
-        	{
-        		stateQueue.add(new AgentState("Walk", tmpID));
-        		stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));        		
-        	}else{
-        		stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));
-        		
-        	}
-        		
+
         }else if (this.stateQueue.isEmpty()){
         	stateQueue.add(new AgentState("RandomWalk"));
-        	
+
         }
-        /*
+        
         System.out.println("Caminho do agente: "+this.currentPath);
         System.out.println("Posicao Atual: "+me().getPosition());
-        this.printQueue();*/
-        
+        this.printQueue();
+
         /**
          * AÇÃO e CONTROLE
          * Máquina de Estados
          * Aqui começa a execução das ações na fila de ações
          */
-        
+
         if(!stateQueue.isEmpty())
         {
-        	
+
         	AgentState currentAction = stateQueue.peek();
         	switch(currentAction.getState())
         	{
-        		case "RandomWalk":
-        			if(this.currentPath.isEmpty() && this.pathDefined == false)
-        			{
-        				System.out.println("cria caminho e o define");
-        				
-        				this.currentPath = this.walk(this.currentPath, me().getPosition());
-        				this.pathDefined = true;
-        				
-        				sendMove(time, this.currentPath);
-        				return;
-        			}else if(this.currentPath.size() < 2 && this.pathDefined == true){
-        				System.out.println("Termina o caminho ");
-        				stateQueue.poll();
-        				this.pathDefined = false;
-        				this.lastPath = this.currentPath;
-        				List<EntityID> tmp = this.currentPath;
-        				this.currentPath.clear();
-        				sendMove(time, tmp);
+        	case "RandomWalk":
+        		if(this.currentPath.isEmpty() && this.pathDefined == false)
+        		{
+
+        			this.currentPath = this.walk(this.currentPath, me().getPosition());
+        			this.pathDefined = true;
+
+        			sendMove(time, this.currentPath);
+        			return;
+        		}else if(this.pathDefined == true){
         			
-        				return;
-        			}else if(this.pathDefined == true){
-        				System.out.println("caminhando ");
-        				this.lastPath = this.currentPath;
-        				this.currentPath = this.walk(this.currentPath, me().getPosition());
-        				sendMove(time, this.currentPath);
-        				return;
-        			}
-        			break;
-        			
-        		case "Walk":
-        			if(currentPath.isEmpty() && pathDefined == false){
-            			
-            			pathDefined = true;
-            			this.currentPath = search.breadthFirstSearch(me().getPosition(), new EntityID(this.currentTask.getPosition()));
-            			
-            			sendMove(time, currentPath);
-            			return;
-            		}else if(currentPath.size() >2 && pathDefined == true)
-            		{
-            			
-            			sendMove(time, currentPath);
-            			return;
-            		}else if(currentPath.size() <= 2){
-            			stateQueue.poll();
-            			sendMove(time,currentPath);
-            			pathDefined = false;
-            			return;
-            		}        			
-        			break;
+        			this.lastPath = this.currentPath;
+        			this.currentPath = this.walk(this.currentPath, me().getPosition());
+        			sendMove(time, this.currentPath);
+        			return;
+        		}
+        		break;
+
+        	case "Walk":
         		
-        		case "Unblock":
+        		if(currentPath.isEmpty() && this.pathDefined == false){
+        			pathDefined = true;
+        			this.currentPath = search.breadthFirstSearch(me().getPosition(), new EntityID(this.currentTask.getPosition()));
+        			sendMove(time, currentPath);
+        			return;
+        		
+        		}else if(this.pathDefined == true){
+        			this.currentPath = this.walk(this.currentPath, me().getPosition());
+        			sendMove(time, currentPath);
+        			return;
+        		}
+
+        		break;
+
+        	case "Unblock":
+        		this.stateQueue.poll();
+
+        		/*
+        		 * Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
+        		 */
+
+        		Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
+        		if (_target != null) {
+
+        			sendSpeak(time, 1, ("Clearing " + _target).getBytes());
         			this.stateQueue.poll();
         			
-        			/*
-        			 * Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
-        			 */
-        			
-                    /*
-                     if (_target != null) {
-                     
-                        sendSpeak(time, 1, ("Clearing " + _target).getBytes());
-                        this.stateQueue.poll();
-                        
-                        if(!this.currentPath.isEmpty()){
-                        	Area nextNode = (Area)model.getEntity(this.currentPath.get(0));
-                        	List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
-                        	
-                        	Area currentNode = (Area)model.getEntity(me().getPosition());
-                        	List<Point2D> currentNodeInPath = GeometryTools2D.vertexArrayToPoints(currentNode.getApexList());
-                        	
-                        	Point2D[] origin = new Point2D[currentNodeInPath.size()]; 
-                        	Point2D[] destiny = new Point2D[nextNodeInPath.size()];
-                        	for(int i = 0; i < currentNodeInPath.size(); i++)
-                        	{
-                        		origin[i] = currentNodeInPath.get(i);
-                        	}
-                        	
-                        	for(int i = 0; i < nextNodeInPath.size(); i++)
-                        	{
-                        		destiny[i] = nextNodeInPath.get(i);
-                        	}
-                        	
-                        	
-                        	ClosestPair c = new ClosestPair(origin, destiny);
-                        	Point2D bestPoint = c.either();
-                        	if(bestPoint != null){
-                        		
-                        	
-	                        	int width = currentNode.getShape().getBounds().width;
-	                        	int height = currentNode.getShape().getBounds().height;
-	                        	//no horizontal
-	                        	//System.out.println(me().getX()+" - "+me().getY());
-	                        	//System.out.println(bestPoint.getX()+" - "+bestPoint.getY());
-	                        	
-	                        	//sendClear(time, me().getX() + this.MAX_RANGE, me().getY() - this.MAX_RANGE );
-	                        	
-	                        	if(width > height)
-	                        	{
-	                        		if(me().getX() > bestPoint.getX())
-	                            	{
-	                            		this.unblockLeft(time);
-	                            	}
-	                        		if(me().getX() < bestPoint.getX())
-	                            	{
-	                            		this.unblockRight(time);
-	                            	}
-	                        		
-	                        		
-	                        	}
-	                        	//nó vertical
-	                        	else if(height > width)
-	                        	{
-	                        		if(me().getY() > bestPoint.getY())
-	                            	{
-	                            		this.unblockDown(time);
-	                            	}
-	                            	
-	                            	if(me().getY() < bestPoint.getY())
-	                            	{
-	                            		this.unblockUp(time);
-	                            	}
-	                        	
-	                        			
-	                        	}
-	                        	//nó quadrado
-	                        	else{
-	                        		if(me().getX() == bestPoint.getX() && me().getY() > bestPoint.getY())
-	                            	{
-	                            		this.unblockDown(time);
-	                            	}
-	                            	if(me().getX() == bestPoint.getX() && me().getY() < bestPoint.getY())
-	                            	{
-	                            		this.unblockUp(time);
-	                            	}
-	                            	if(me().getX() > bestPoint.getX() && me().getY() == bestPoint.getY())
-	                            	{
-	                            		this.unblockLeft(time);
-	                            	}
-	                        		if(me().getX() < bestPoint.getX() && me().getY() == bestPoint.getY())
-	                            	{
-	                            		this.unblockRight(time);
-	                            	}
-	                        		if(me().getX() > bestPoint.getX() && me().getY() > bestPoint.getY())
-	                            	{
-	                            		this.unblockBottomLeft(time);
-	                            	}
-	                            	if(me().getX() > bestPoint.getX() && me().getY() < bestPoint.getY())
-	                            	{
-	                            		this.unblockUpperLeft(time);
-	                            	}
-	                            	if(me().getX() < bestPoint.getX() && me().getY() < bestPoint.getY())
-	                            	{
-	                            		this.unblockUpperRight(time);
-	                            	}
-	                            	if(me().getX() < bestPoint.getX() && me().getY() > bestPoint.getY())
-	                            	{
-	                            		this.unblockBottomRight(time);
-	                            	}
-	                        	}
-                        	}
-                        	 	
+        			List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(_target.getApexes()), true);
+                    double best = Double.MAX_VALUE;
+                    Point2D bestPoint = null;
+                    Point2D origin = new Point2D(me().getX(), me().getY());
+                    for (Line2D next : lines) {
+                        Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+                        double d = GeometryTools2D.getDistance(origin, closest);
+                        if (d < best) {
+                            best = d;
+                            bestPoint = closest;
                         }
-                        	
-                    }else{
-                    	this.stateQueue.poll();
-                    }*/
-        			break;
-        		
+                    }
+                    Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
+                    v = v.normalised().scale(1000000);
+                    sendClear(time, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
+                    return;        			
+        			/*
+
+        			if(!this.currentPath.isEmpty()){
+        				Area nextNode = (Area)model.getEntity(this.currentPath.get(0));
+        				List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
+
+        				Area currentNode = (Area)model.getEntity(me().getPosition());
+        				List<Point2D> currentNodeInPath = GeometryTools2D.vertexArrayToPoints(currentNode.getApexList());
+
+        				Point2D[] origin = new Point2D[currentNodeInPath.size()]; 
+        				Point2D[] destiny = new Point2D[nextNodeInPath.size()];
+        				for(int i = 0; i < currentNodeInPath.size(); i++)
+        				{
+        					origin[i] = currentNodeInPath.get(i);
+        				}
+
+        				for(int i = 0; i < nextNodeInPath.size(); i++)
+        				{
+        					destiny[i] = nextNodeInPath.get(i);
+        				}
+
+
+        				ClosestPair c = new ClosestPair(origin, destiny);
+        				Point2D bestPoint = c.either();
+        				
+
+        			}*/
+
+        		}else{
+        			this.stateQueue.poll();
+        		}
+        		break;
+
         	}
         }
-       
+
         /**
          * fim da máquina de estados
          */
@@ -349,6 +284,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     @Override
     protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
         return EnumSet.of(StandardEntityURN.POLICE_FORCE);
+        
     }
     
     private Point2D bestPoint()
@@ -379,20 +315,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 			
 			ClosestPair c = new ClosestPair(origin, destiny);
         	bestPoint = (Point2D)c.either();
-        	System.out.println("ponto do nó atual: "+c.either());
-        	System.out.println("ponto do próximo nó: "+c.other());
         	
-        	
-        	System.out.println("meu local: "+me().getPosition());
-        	System.out.println("futuro local: "+nextNode.getID());
-        	System.out.println("caminho: "+this.currentPath);
-        	System.out.println("ponto mais proximo neste nó: "+bestPoint);
-        	System.out.println("meu ponto "+me().getX()+":"+me().getY());
-        	System.out.println("distancia X (no atual - proximo no): "+(bestPoint.getX() - c.other().getX()));
-        	System.out.println("distancia Y (no atual - proximo no): "+(bestPoint.getY() - c.other().getY()));
-        	System.out.println("distancia X (no atual - meu ponto): "+(bestPoint.getX() - me().getX()));
-        	System.out.println("distancia Y (no atual - meu ponto): "+(bestPoint.getY() - me().getY()));
-			
 		}
     	return bestPoint;
     }
@@ -406,94 +329,17 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
         List<EntityID> result = new ArrayList<EntityID>();
         for (StandardEntity next : e) {
-            Road r = (Road) next;
+            Road r = (Road)next;
             if (r.isBlockadesDefined() && !r.getBlockades().isEmpty()) {
                 result.add(r.getID());
-                
             }
         }
         return result;
     }
-    
-    public void unblockRight(int time){
-    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() );
-    	return;
-    }
-    
-    public void unblockLeft(int time){
-    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() );
-    	return;
-    }
-    
-    public void unblockUp(int time)
-    {
-        sendClear(time, me().getX(), me().getY() + this.MAX_RANGE);
-        return;
-    }
-    
-    public void unblockDown(int time)
-    {
-    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() );
-    	return;
-    }
-    
-    public void unblockUpperLeft(int time)
-    {
-    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() + this.MAX_RANGE );
-    	return;
-    }
-    
-    public void unblockUpperRight(int time)
-    {
-    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() + this.MAX_RANGE );
-    	return;
-    }
-
-    public void unblockBottomLeft(int time)
-    {
-    	sendClear(time, me().getX() - this.MAX_RANGE, me().getY() - this.MAX_RANGE );
-    	return;
-    }
-    
-    public void unblockBottomRight(int time)
-    {
-    	sendClear(time, me().getX() + this.MAX_RANGE, me().getY() - this.MAX_RANGE );
-    	return;
-    }
-    
-    private void cleanBlockadeAhead(int time){
-    	    	
-    	Blockade newTarget = getTargetBlockade();
-		
-		if(newTarget != null && newTarget.isPositionDefined()){
-			Logger.info("Clearing blockade " + newTarget);
-			
-			List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(newTarget.getApexes()), true);
-            double best = Double.MAX_VALUE;
-            Point2D bestPoint = null;
-            Point2D origin = new Point2D(me().getX(), me().getY());
-            for (Line2D next : lines) {
-                Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-                double d = GeometryTools2D.getDistance(origin, closest);
-                if (d < best) {
-                    best = d;
-                    bestPoint = closest;
-                }
-            }
-            Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-            v = v.normalised().scale(1000000);
-            sendClear(time, (int) (me().getX() + v.getX()), (int) (me().getY() + v.getY()));
-			return;
-			//sendClear(time, newTarget.getID());
-		}else{
-			stateQueue.poll();
-		}
-    	
-    }
 
     private Blockade getTargetBlockade() {
         Logger.debug("Looking for target blockade");
-        Area location = (Area) location();
+        Area location = (Area)location();
         Logger.debug("Looking in current location");
         Blockade result = getTargetBlockade(location, distance);
         if (result != null) {
@@ -501,7 +347,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         }
         Logger.debug("Looking in neighbouring locations");
         for (EntityID next : location.getNeighbours()) {
-            location = (Area) model.getEntity(next);
+            location = (Area)model.getEntity(next);
             result = getTargetBlockade(location, distance);
             if (result != null) {
                 return result;
@@ -521,9 +367,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         int x = me().getX();
         int y = me().getY();
         for (EntityID next : ids) {
-            Blockade b = (Blockade) model.getEntity(next);
-            //double d = findDistanceTo(b, x, y);
-            double d = findDistanceInFront(b,x,y);
+            Blockade b = (Blockade)model.getEntity(next);
+            double d = findDistanceTo(b, x, y);
             //            Logger.debug("Distance to " + b + " = " + d);
             if (maxDistance < 0 || d < maxDistance) {
                 //                Logger.debug("In range");
@@ -533,30 +378,13 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         //        Logger.debug("No blockades in range");
         return null;
     }
-    
-    private int findDistanceInFront(Blockade b, int x, int y)
-    {
-    	double d = 0.0;
-    	
-    	Point2D origin = new Point2D(x, y);
-    	Point2D destiny = new Point2D(b.getX(), b.getY());
-    	Line2D l = new Line2D(origin, destiny);
-    	Vector2D v = l.getDirection();
-    	/*System.out.println("meu x:y "+x+":"+y);
-    	System.out.println("alvo x:y "+b.getX()+":"+b.getY());
-    	System.out.println("tamanho do vetor: "+v.getLength());
-    	System.out.println("vetor: "+v.toString());*/
-    	return (int)v.getLength();
-    }
 
     private int findDistanceTo(Blockade b, int x, int y) {
         //        Logger.debug("Finding distance to " + b + " from " + x + ", " + y);
         List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(b.getApexes()), true);
         double best = Double.MAX_VALUE;
-        
         Point2D origin = new Point2D(x, y);
         for (Line2D next : lines) {
-        	
             Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
             double d = GeometryTools2D.getDistance(origin, closest);
             //            Logger.debug("Next line: " + next + ", closest point: " + closest + ", distance: " + d);
@@ -566,7 +394,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             }
 
         }
-        return (int) best;
+        return (int)best;
     }
 
     /**
@@ -575,11 +403,12 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * @return The EntityID of the nearest blockade, or null if there are no
      * blockades in the agents current location.
      */
-    /*
+    
+    
      public EntityID getNearestBlockade() {
-     return getNearestBlockade((Area)location(), me().getX(), me().getY());
+    	 return getNearestBlockade((Area)location(), me().getX(), me().getY());
      }
-     */
+     
     /**
      * Get the blockade that is nearest a point.
      *
@@ -589,37 +418,37 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * @return The EntityID of the nearest blockade, or null if there are no
      * blockades in this area.
      */
-    /*
-     public EntityID getNearestBlockade(Area area, int x, int y) {
-     double bestDistance = 0;
-     EntityID best = null;
-     Logger.debug("Finding nearest blockade");
-     if (area.isBlockadesDefined()) {
-     for (EntityID blockadeID : area.getBlockades()) {
-     Logger.debug("Checking " + blockadeID);
-     StandardEntity entity = model.getEntity(blockadeID);
-     Logger.debug("Found " + entity);
-     if (entity == null) {
-     continue;
-     }
-     Pair<Integer, Integer> location = entity.getLocation(model);
-     Logger.debug("Location: " + location);
-     if (location == null) {
-     continue;
-     }
-     double dx = location.first() - x;
-     double dy = location.second() - y;
-     double distance = Math.hypot(dx, dy);
-     if (best == null || distance < bestDistance) {
-     bestDistance = distance;
-     best = entity.getID();
-     }
-     }
-     }
-     Logger.debug("Nearest blockade: " + best);
-     return best;
-     }
-     */
+    
+    public EntityID getNearestBlockade(Area area, int x, int y) {
+    	double bestDistance = 0;
+    	EntityID best = null;
+    	Logger.debug("Finding nearest blockade");
+    	if (area.isBlockadesDefined()) {
+    		for (EntityID blockadeID : area.getBlockades()) {
+    			Logger.debug("Checking " + blockadeID);
+    			StandardEntity entity = model.getEntity(blockadeID);
+    			Logger.debug("Found " + entity);
+    			if (entity == null) {
+    				continue;
+    			}
+    			Pair<Integer, Integer> location = entity.getLocation(model);
+    			Logger.debug("Location: " + location);
+    			if (location == null) {
+    				continue;
+    			}
+    			double dx = location.first() - x;
+    			double dy = location.second() - y;
+    			double distance = Math.hypot(dx, dy);
+    			if (best == null || distance < bestDistance) {
+    				bestDistance = distance;
+    				best = entity.getID();
+    			}
+    		}
+    	}
+    	Logger.debug("Nearest blockade: " + best);
+    	return best;
+    }
+
     /*
      *
      * Métodos Definidos por nós
