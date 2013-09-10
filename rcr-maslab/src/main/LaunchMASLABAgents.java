@@ -9,6 +9,7 @@ import agent.TesteRoteamento;
 
 import java.io.IOException;
 
+import rescuecore.objects.FireBrigade;
 import rescuecore2.components.ComponentLauncher;
 import rescuecore2.components.TCPComponentLauncher;
 import rescuecore2.components.ComponentConnectionException;
@@ -97,7 +98,7 @@ public final class LaunchMASLABAgents {
 		try {
 			while (fb-- != 0) {
 				Logger.info("Connecting fire brigade " + (i++) + "...");
-				launcher.connect(new TesteRoteamento());
+				launcher.connect(new MASLABFireBrigade(0));
 				Logger.info("success");
 			}
 		} catch (ComponentConnectionException e) {
@@ -106,7 +107,7 @@ public final class LaunchMASLABAgents {
 		try {
 			while (pf-- != 0) {
 				Logger.info("Connecting police force " + (i++) + "...");
-				launcher.connect(new MASLABPoliceForce());
+				launcher.connect(new MASLABPoliceForce(0));
 				Logger.info("success");
 			}
 		} catch (ComponentConnectionException e) {
@@ -115,7 +116,7 @@ public final class LaunchMASLABAgents {
 		try {
 			while (at-- != 0) {
 				Logger.info("Connecting ambulance team " + (i++) + "...");
-				launcher.connect(new MASLABAmbulanceTeam());
+				launcher.connect(new MASLABAmbulanceTeam(0));
 				Logger.info("success");
 			}
 		} catch (ComponentConnectionException e) {

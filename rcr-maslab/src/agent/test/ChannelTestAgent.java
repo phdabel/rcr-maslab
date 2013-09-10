@@ -21,7 +21,11 @@ import rescuecore2.log.Logger;
 public class ChannelTestAgent extends MASLABAbstractAgent<Human> {
 	private static final int CHANNEL = 4;
 	private static final int N = 100;
-
+	
+	public ChannelTestAgent(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Channel test agent";

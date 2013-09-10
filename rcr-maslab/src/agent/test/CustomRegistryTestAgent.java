@@ -22,6 +22,11 @@ import rescuecore2.log.Logger;
  * An agent for testing custom registry objects.
  */
 public class CustomRegistryTestAgent extends MASLABAbstractAgent<Human> {
+	
+	public CustomRegistryTestAgent(int pp){
+		super(pp);
+	}
+	
 	@Override
 	public String toString() {
 		return "Custom registry test agent";
