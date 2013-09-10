@@ -36,12 +36,15 @@ public final class MASLABRouting {
 	private List<EntityID> setor2IDs;
 	private List<EntityID> setor3IDs;
 	private List<EntityID> setor4IDs;
+	private List<EntityID> globalIDs;
 	private MASLABBFSearch GlobalSearch;
 	private MASLABBFSearch S1search;
 	private MASLABBFSearch S2search;
 	private MASLABBFSearch S3search;
 	private MASLABBFSearch S4search;
 	private MASLABBFSearch Psearch;
+	private StandardWorldModel model;
+	private Random r = new Random();
 
 	/**
 	 * @param s1
@@ -65,7 +68,7 @@ public final class MASLABRouting {
 			Map<EntityID, Set<EntityID>> s2, Map<EntityID, Set<EntityID>> s3,
 			Map<EntityID, Set<EntityID>> s4, Map<EntityID, Set<EntityID>> p,
 			List<EntityID> r, List<EntityID> w, List<EntityID> b,
-			StandardWorldModel world, Hashtable<EntityID, List<EntityID>> pp) {
+			StandardWorldModel world) {
 		/*
 		 * Setor1 = s1; Setor2 = s2; Setor3 = s3; Setor4 = s4; Principais = p;
 		 */
@@ -75,16 +78,18 @@ public final class MASLABRouting {
 		S4search = new MASLABBFSearch(s4);
 		Psearch = new MASLABBFSearch(p);
 		GlobalSearch = new MASLABBFSearch(world);
-
+		model = world;
+		
 		refugeIDs = r;
 		waterIDs = w;
 		buildingIDs = b;
-		PontosPrincipais = pp;
+//		PontosPrincipais = pp;
 		principalIDs = new ArrayList<EntityID>(p.keySet());
 		setor1IDs = new ArrayList<EntityID>(s1.keySet());
 		setor2IDs = new ArrayList<EntityID>(s2.keySet());
 		setor3IDs = new ArrayList<EntityID>(s3.keySet());
 		setor4IDs = new ArrayList<EntityID>(s4.keySet());
+		globalIDs = new ArrayList<EntityID>(GlobalSearch.getGraph().keySet());
 	}
 
 	/**
@@ -92,7 +97,7 @@ public final class MASLABRouting {
 	 * Noroeste.
 	 */
 	public enum Setores {
-		S1, S2, S3, S4;
+		S1, S2, S3, S4, Qualquer;
 	}
 
 	/**
@@ -163,15 +168,13 @@ public final class MASLABRouting {
 
 		// Obtem o grafo de busca conforme o setor atual
 		search = getSearch(Setor);
-
+		
 		// Obtem os roadIDs do setor
 		List<EntityID> roadIDs = getRoadIDs(Setor);
-
+		EntityID dest = roadIDs.get(r.nextInt(roadIDs.size() - 1));
+		
 		// Obtem o caminho de onde estou até um ponto aleatório dentro do setor
-		Random r = new Random();
-		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios,
-				roadIDs.get(r.nextInt(roadIDs.size() - 1)));
-
+		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios, true, dest);
 		return path;
 	}
 
@@ -195,10 +198,17 @@ public final class MASLABRouting {
 	 *            agente deseja ir
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
-	public List<EntityID> Limpar(EntityID Origem, Setores Setor, Tipos Tipo,
-			Setores... Setores) {
+	public List<EntityID> Mover(EntityID Origem, Setores Setor, Collection<EntityID> Destino) {
+		
+		// Transforma os parametros recebidos em um Array
+		MASLABBFSearch search;
 
-		return new ArrayList<EntityID>();
+		// Obtem o grafo de busca conforme o setor atual
+		search = getSearch(Setor);
+		
+		// Obtem o caminho de onde estou até um ponto aleatório dentro do setor
+		List<EntityID> path = search.breadthFirstSearch(Origem, new ArrayList<EntityID>(), false, Destino);
+		return path;
 	}
 
 	/**
@@ -263,8 +273,10 @@ public final class MASLABRouting {
 			return setor2IDs;
 		} else if (Setor == Setores.S3) {
 			return setor3IDs;
-		} else {
+		} else if (Setor == Setores.S4){
 			return setor4IDs;
+		}else{
+			return globalIDs;
 		}
 	}
 

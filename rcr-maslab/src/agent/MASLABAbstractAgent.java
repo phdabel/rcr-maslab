@@ -6,9 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
 import java.util.Map;
 
 import rescuecore2.worldmodel.EntityID;
@@ -22,7 +21,6 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.Road;
-import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import rescuecore2.standard.messages.AKSay;
@@ -88,9 +86,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Cache of Hydrant IDs.
      */
     protected List<EntityID> hydrantIDs;
+    protected List<EntityID> roadIDsSetor1;
+    protected List<EntityID> roadIDsSetor2;
+    protected List<EntityID> roadIDsSetor3;
+    protected List<EntityID> roadIDsSetor4;
+    protected List<EntityID> roadIDsPrincipal;
+    protected List<EntityID> Bloqueios;
     protected final String MSG_SEPARATOR = "-";
 	protected int PreProcessamento = 0;
-
+	Random rand = new Random();
 
     /**
      *
@@ -111,6 +115,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         roadIDs = new ArrayList<EntityID>();
         refugeIDs = new ArrayList<EntityID>();
         hydrantIDs = new ArrayList<EntityID>();
+        Bloqueios = new ArrayList<EntityID>();
         for (StandardEntity next : model) {
             if (next instanceof Building) {
                 buildingIDs.add(next.getID());
@@ -130,7 +135,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         List<EntityID> waterIDs = new ArrayList<EntityID>();
         waterIDs.addAll(refugeIDs);
         waterIDs.addAll(hydrantIDs);
-        search = new MASLABBFSearch(model);
+        sectoring = new MASLABSectoring(model);
 		
 		//Realiza o pre-processamento
 		if(PreProcessamento > 0){
@@ -144,53 +149,32 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
 			
 			//Carrega o objeto de setorizacao com as informacoes do arquivo, sem necessadade de setorizar novamente
 			sectoring = PreProcess.getMASLABSectoring();
-		}
 
+			//Carrega um list dos roads de cada setor para fazer o random walk
+			roadIDsSetor1 = new ArrayList<EntityID>(sectoring.getMapSetor(1).keySet()); 
+			roadIDsSetor2 = new ArrayList<EntityID>(sectoring.getMapSetor(2).keySet()); 
+			roadIDsSetor3 = new ArrayList<EntityID>(sectoring.getMapSetor(3).keySet()); 
+			roadIDsSetor4 = new ArrayList<EntityID>(sectoring.getMapSetor(4).keySet()); 
+			roadIDsPrincipal = new ArrayList<EntityID>(sectoring.getMapSetor(5).keySet()); 
+			
+		}
+		
+		routing = new MASLABRouting(sectoring.getMapSetor(1),
+				sectoring.getMapSetor(2),
+				sectoring.getMapSetor(3),
+				sectoring.getMapSetor(4),
+				sectoring.getMapSetor(5),
+				roadIDs,
+				waterIDs,
+				buildingIDs,
+				model);
+		
         useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(
                 SPEAK_COMMUNICATION_MODEL);
         Logger.debug("Communcation model: "
                 + config.getValue(Constants.COMMUNICATION_MODEL_KEY));
         Logger.debug(useSpeak ? "Using speak model" : "Using say model");
     }
-
-    /**
-     *
-     * Métodos Sample Agent
-     *
-     */
-    /**
-     * Construct a random walk starting from this agent's current location to a
-     * random building.
-     *
-     * @return A random walk.
-     */
-    protected List<EntityID> randomWalk() {
-        List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
-        Set<EntityID> seen = new HashSet<EntityID>();
-        EntityID current = ((Human) me()).getPosition();
-        for (int i = 0; i < RANDOM_WALK_LENGTH; ++i) {
-            result.add(current);
-            seen.add(current);
-            List<EntityID> possible = new ArrayList<EntityID>(
-                    neighbours.get(current));
-            Collections.shuffle(possible, random);
-            boolean found = false;
-            for (EntityID next : possible) {
-                if (seen.contains(next)) {
-                    continue;
-                }
-                current = next;
-                found = true;
-                break;
-            }
-            if (!found) {
-                // We reached a dead-end.
-                break;
-            }
-        }
-        return result;
-    }
-
     /*
      * 
      * Métodos Definidos por nós
