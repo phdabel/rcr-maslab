@@ -242,7 +242,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      */
     protected List<EntityID> walk(List<EntityID> path, EntityID local) {
     	
-    	if(path.isEmpty() && this.pathDefined == false){
+    	if(path.isEmpty() || this.pathDefined == false){
     		
     		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
     		List<Road> road = new ArrayList<Road>();
@@ -260,7 +260,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     		path = search.breadthFirstSearch(local, destiny);
     		
     		//path = this.getDijkstraPath(local, destiny, this.mapTmp);
-    	}else{
+    	}else if(!this.currentPath.isEmpty()){
     		
     		//path = search.breadthFirstSearch(location().getID(), path.get((path.size() - 1)));
     		List<EntityID> tmp = new ArrayList<EntityID>();
