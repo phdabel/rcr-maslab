@@ -112,8 +112,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		// Are we out of water?
 		if (me.isWaterDefined() && me.getWater() == 0) {
 			// Head for a refuge
-			List<EntityID> path = search.breadthFirstSearch(me().getPosition(),
-					refugeIDs);
+			List<EntityID> path = routing.Abastecer(me().getPosition(), Bloqueios); 
 			if (path != null) {
 				Logger.info("Moving to refuge");
 				sendMove(time, path);
@@ -187,8 +186,8 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		if (targets.isEmpty()) {
 			return null;
 		}
-		return search.breadthFirstSearch(me().getPosition(),
-				objectsToIDs(targets));
+		//TODO - Definir o alvo do combate
+		return routing.Combater(me().getPosition(), new ArrayList<EntityID>(objectsToIDs(targets)).get(0), Bloqueios);
 	}
 	/*
 	 * 
