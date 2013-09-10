@@ -96,8 +96,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				return;
 			} else {
 				// Move to a refuge
-				List<EntityID> path = search.breadthFirstSearch(me()
-						.getPosition(), refugeIDs);
+				List<EntityID> path = routing.Resgatar(me().getPosition(), Bloqueios); 
 				if (path != null) {
 					Logger.info("Moving to refuge");
 					sendMove(time, path);
@@ -128,8 +127,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				}
 			} else {
 				// Try to move to the target
-				List<EntityID> path = search.breadthFirstSearch(me()
-						.getPosition(), next.getPosition());
+				List<EntityID> path = routing.Resgatar(me().getPosition(), next.getPosition(), Bloqueios); 
 				if (path != null) {
 					Logger.info("Moving to target");
 					sendMove(time, path);
