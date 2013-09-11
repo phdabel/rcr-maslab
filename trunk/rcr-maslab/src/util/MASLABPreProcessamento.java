@@ -6,8 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,11 +41,50 @@ public class MASLABPreProcessamento {
 		GravarMapSetor(sectoring.getMapSetor(2), 2);
 		GravarMapSetor(sectoring.getMapSetor(3), 3);
 		GravarMapSetor(sectoring.getMapSetor(4), 4);
+		
+		//Vias principais
 		GravarMapSetor(sectoring.getMapSetor(5), 5);
-		GravarMapSetor(sectoring.getMapSetor(6), 6);
+
+		//Vias secundárias
+		GravarMapSetor(sectoring.getMapSetorSecundarias());
+		
 		
 		//Alocacao dos agentes
 		
+	}
+	
+	private void GravarMapSetor(Map<EntityID, List<EntityID>> MapSetor){
+		/*
+		 * MAPSETOR [Numero do Setor]
+		 * CHAVE VIZINHOS
+		 * CHAVE VIZINHOS
+		 * ...
+		 * FIMMAPSETOR
+		 */
+		try{
+			FileWriter fw = new FileWriter(arquivo, true);
+			fw.write("MAPSETOR 6\n");
+			String values;
+			//Para cada chave gera uma linha
+			for(EntityID key: MapSetor.keySet()){
+				values = "";
+				//Pega todos os vizinhos da chave antes de gravar
+				for(EntityID v : MapSetor.get(key)){
+					if (values.equals("")){
+						values = String.valueOf(v.getValue());
+					}else{
+						values = values + ";" + v.getValue();
+					}
+				}
+				//Grava a linha inteira com a chave e os vizinhos
+				fw.write(String.valueOf(key.getValue()) + "-" + values + "\n");
+			}
+			fw.write("FIMMAPSETOR\n");
+	    	fw.flush();
+	    	fw.close();
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
 	}
 	
 	private void GravarMapSetor(Map<EntityID, Set<EntityID>> MapSetor, int Setor){
@@ -89,13 +130,14 @@ public class MASLABPreProcessamento {
 			BufferedReader br = new BufferedReader(fr);
 			
 			Map<EntityID, Set<EntityID>> MapAux = new HashMap<EntityID, Set<EntityID>>();
+			Map<EntityID, List<EntityID>> MapAuxSecondario = new HashMap<EntityID, List<EntityID>>();
 			
 			int Setor = 0;
 			String s;
 			int key;
 			String[] aux;
 			String[] vizinhos;
-			Set<EntityID> values = new HashSet<EntityID>();
+			List<EntityID> values = new ArrayList<EntityID>();
 			
 			while((s = br.readLine()) != null) {
 				//Novo Setor
@@ -115,7 +157,7 @@ public class MASLABPreProcessamento {
 					}else if(Setor == 5){
 						sectoring.MapPrincipal = MapAux;
 					}else if(Setor == 6){
-						sectoring.MapSecundarias = MapAux;
+						sectoring.MapSecundarias = MapAuxSecondario;
 					}
 				//Continuacao do Setor
 				}else{
@@ -125,12 +167,16 @@ public class MASLABPreProcessamento {
 					key = Integer.parseInt(aux[0]);
 					//A segunda posicao sera um array separado por ;
 					vizinhos = aux[1].split(";");
-					values = new HashSet<EntityID>();
+					values = new ArrayList<EntityID>();
 					for(String v : vizinhos){
 						values.add(new EntityID(Integer.parseInt(v)));
 					}
-					
-					MapAux.put(new EntityID(key), values);
+
+					if (Setor == 6){
+						MapAuxSecondario.put(new EntityID(key), values);
+					}else{
+						MapAux.put(new EntityID(key), new HashSet<EntityID>(values));
+					}
 				}
 			}
 			fr.close();
