@@ -102,7 +102,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      *  variavel booleana que informa se ha um caminho definido
      */
     protected Boolean pathDefined = false;
-    protected List<EntityID> currentPath = new ArrayList<EntityID>();
+    //protected List<EntityID> currentPath = new ArrayList<EntityID>();
+    protected EntityID destiny = null;
     protected List<EntityID> lastPath = new ArrayList<EntityID>();
     
     
@@ -228,19 +229,60 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     	System.out.println(time + " - " + me().getID() + " - " + str);
     }
     
+    
+
     /*
      * 
      * Métodos Acessores se necessário
      * 
      * 
-     */
+     */    
+    protected List<EntityID> walk(EntityID origin){
+    	
+    	List<EntityID> path = new ArrayList<EntityID>();
+    	
+    	if(this.pathDefined == false){
+    		
+    		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
+    		List<Road> road = new ArrayList<Road>();
+    		EntityID destiny = null;
+    		for (StandardEntity next : e)
+    		{
+    			Road r = (Road)next;
+    			road.add(r);
+    		}
+    		
+    		Integer index = new Random().nextInt(road.size());
+	    		
+	    	destiny = road.get(index).getID();
+	    	this.destiny = destiny;
+	    	
+    		path = search.breadthFirstSearch(origin, destiny);
+    		
+    		//path = this.getDijkstraPath(local, destiny, this.mapTmp);
+    	}else{
+    		path = this.walk(origin, this.destiny);
+    	}
+    	
+    	return path;
+    	
+    }
+    
+    protected List<EntityID> walk(EntityID local, EntityID destiny)
+    {
+    	List<EntityID> path = new ArrayList<EntityID>();
+    	path = search.breadthFirstSearch(local, destiny);
+    	return path;
+    }
+    
+    
     /**
      * método walk
      * @param path - currentPath do agente
      * @param local - local de destino
      * @return
      */
-    protected List<EntityID> walk(List<EntityID> path, EntityID local) {
+    /*protected List<EntityID> walk(List<EntityID> path, EntityID local) {
     	
     	if(path.isEmpty() || this.pathDefined == false){
     		
@@ -285,15 +327,16 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     		System.out.println("caminho realizado: "+tmp);
     		System.out.println("tamanho do caminho realizado: "+tmp.size());
     		path.removeAll(tmp);
-    		//System.out.println("Tamanho para remoção "+tmp.size()); */
+    		//System.out.println("Tamanho para remoção "+tmp.size());
     	}
     	return path;
     }
+    */
     
     /**
      * retorna proxima EntityID do caminho
      */
-    protected EntityID nextVertex()
+    /*protected EntityID nextVertex()
     {
     	int ct = 0;
     	for(EntityID next:currentPath)
@@ -308,7 +351,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     	}
 		return null;
     	
-    }
+    }/*
     
     /**
      * adiciona um novo estado ao início da fila

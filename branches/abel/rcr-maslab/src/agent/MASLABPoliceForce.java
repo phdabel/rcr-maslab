@@ -85,34 +85,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	Logger.debug("Heard " + next);
         }
         
-        if(this.currentPath.isEmpty() && this.pathDefined == true){
-        	this.stateQueue.poll();
-        }
-
-
-        /*if(!this.currentPath.isEmpty())
-        	this.bestPoint();*/
-        //Boolean target = getClosestBlockade();
-        /*if(target)
-        {
-        	double _px, _py;
-        	Rectangle2D p = this.policeAim(this.bestPoint());
-        	if(p.getMaxX() != me().getX())
-        	{
-        		_px = p.getMaxX();
-        	}else{
-        		_px = p.getMinX();
-        	}
-        	
-        	if(p.getMaxY() != me().getY())
-        	{
-        		_py = p.getMaxY();
-        	}else{
-        		_py = p.getMinY();
-        	}
-        	sendClear(time, (int)_px, (int)_py);
-        	return;
-        }*/
 
         /**
          * localizar bloqueio
@@ -162,7 +134,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 
         }
         
-        System.out.println("Caminho do agente: "+this.currentPath);
         System.out.println("Posicao Atual: "+me().getPosition());
         this.printQueue();
 
@@ -179,39 +150,13 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	switch(currentAction.getState())
         	{
         	case "RandomWalk":
-        		if(this.currentPath.isEmpty() && this.pathDefined == false)
-        		{
-
-        			this.currentPath = this.walk(this.currentPath, me().getPosition());
-        			this.pathDefined = true;
-
-        			sendMove(time, this.currentPath);
-        			return;
-        		}else if(this.pathDefined == true){
-        			
-        			this.lastPath = this.currentPath;
-        			this.currentPath = this.walk(this.currentPath, me().getPosition());
-        			sendMove(time, this.currentPath);
-        			return;
-        		}
-        		break;
-
+        		List<EntityID> path = this.walk(me().getPosition());
+        		sendMove(time, path);
+        		return;
         	case "Walk":
-        		
-        		if(currentPath.isEmpty() && this.pathDefined == false){
-        			pathDefined = true;
-        			this.currentPath = search.breadthFirstSearch(me().getPosition(), new EntityID(this.currentTask.getPosition()));
-        			sendMove(time, currentPath);
-        			return;
-        		
-        		}else if(this.pathDefined == true){
-        			this.currentPath = this.walk(this.currentPath, me().getPosition());
-        			sendMove(time, currentPath);
-        			return;
-        		}
-
-        		break;
-
+        		List<EntityID> pathWalk = this.walk(me().getPosition(), this.destiny);
+        		sendMove(time, pathWalk);
+        		return;
         	case "Unblock":
         		this.stateQueue.poll();
         		this.shot(time);
@@ -314,23 +259,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     }
     
     public void shot(int timestep){
-    	double _px, _py;
+    	
     	if(this.bestPoint() != null){
-	    	Rectangle2D p = this.policeAim(this.bestPoint());
-	    	if(p.getMaxX() != me().getX())
-	    	{
-	    		_px = p.getMaxX();
-	    	}else{
-	    		_px = p.getMinX();
-	    	}
+	    	Pair<Rectangle2D, Pair<Integer, Integer>> p = this.policeAim(this.bestPoint());
 	    	
-	    	if(p.getMaxY() != me().getY())
-	    	{
-	    		_py = p.getMaxY();
-	    	}else{
-	    		_py = p.getMinY();
-	    	}
-	    	sendClear(timestep, (int)(me().getX()+_px), (int)(me().getY()+_py));
+	    	sendClear(timestep, (int)(me().getX()+p.second().first()), (int)(me().getY()+p.second().second()));
 	    	return;
     	}
     }
@@ -357,18 +290,32 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     	
     }
     
-    private Rectangle2D policeAim(Point2D target)
+    private Pair<Rectangle2D, Pair<Integer, Integer>> policeAim(Point2D target)
+    {
+    	Polygon mira = new Polygon();
+    	mira.addPoint(me().getX(), me().getY());
+    	int x = this.policeAimPoint(target).first();
+    	int y = this.policeAimPoint(target).second();
+    	mira.addPoint(x, y);
+    	Pair<Integer, Integer> pointTarget = new Pair<Integer, Integer>(x, y);
+    	Pair<Rectangle2D, Pair<Integer, Integer>> result = new 
+    			Pair<Rectangle2D, Pair<Integer, Integer>>((Rectangle2D)mira.getBounds2D(),pointTarget);
+    	return result;
+    }
+    
+    private Pair<Integer, Integer> policeAimPoint(Point2D target)
     {
     	if(target != null){
-	    	Polygon mira = new Polygon();
-	    	double divX = target.getX() / 10000;
-	    	double divY = target.getY() / 10000;
-	    	double newX = target.getX() / Math.abs(divX);
-	    	double newY = target.getY() / Math.abs(divY);
-	    	mira.addPoint(me().getX(), me().getY());
-	    	mira.addPoint((int)newX, (int)newY);
+    		
+	    	double deltaX = (target.getX() - me().getX());
+	    	double deltaY = (target.getY() - me().getY());
+	    	double alfaX = deltaX / this.MAX_RANGE;
+	    	double alfaY = deltaY / this.MAX_RANGE;
+	    	double newX = deltaX / Math.abs(alfaX);
+	    	double newY = deltaY / Math.abs(alfaY);
 	    	
-	    	return mira.getBounds2D();
+	    	return new Pair<Integer, Integer>((int)newX, (int)newY);
+	    	
     	}else{
     		return null;
     	}
@@ -401,11 +348,12 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     private Point2D bestPoint()
     {
     	Point2D bestPoint = null;
-    	
-    	if(!this.currentPath.isEmpty())
+    	List<EntityID> path = new ArrayList<EntityID>();
+    	path = this.walk(me().getPosition());
+    	if(!path.isEmpty())
 		{
     		//proximo nó
-			Area nextNode = (Area) model.getEntity(this.currentPath.get(0));
+			Area nextNode = (Area) model.getEntity(path.get(1));
 			List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
 			Point2D[] destiny = new Point2D[nextNodeInPath.size()];
 			
@@ -503,7 +451,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     		for(Point2D p : pointsOfBlockade)
     		{
     			
-    			if(this.bestPoint() != null && this.policeAim(this.bestPoint()).contains(p.getX(), p.getY()))
+    			if(this.bestPoint() != null && this.policeAim(this.bestPoint()).first().contains(p.getX(), p.getY()))
     			{
     				return true;
     			}
