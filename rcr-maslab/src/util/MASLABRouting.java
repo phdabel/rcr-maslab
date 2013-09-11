@@ -27,7 +27,7 @@ public final class MASLABRouting {
 	 * private Map<EntityID, Set<EntityID>> Setor4; private Map<EntityID,
 	 * Set<EntityID>> Principais;
 	 */
-	private Hashtable<EntityID, List<EntityID>> PontosPrincipais;
+	private Map<EntityID, List<EntityID>> PontosPrincipais;
 	private List<EntityID> refugeIDs;
 	private List<EntityID> waterIDs;
 	private List<EntityID> buildingIDs;
@@ -68,7 +68,7 @@ public final class MASLABRouting {
 			Map<EntityID, Set<EntityID>> s2, Map<EntityID, Set<EntityID>> s3,
 			Map<EntityID, Set<EntityID>> s4, Map<EntityID, Set<EntityID>> p,
 			List<EntityID> r, List<EntityID> w, List<EntityID> b,
-			StandardWorldModel world) {
+			StandardWorldModel world, Map<EntityID, List<EntityID>> pp) {
 		/*
 		 * Setor1 = s1; Setor2 = s2; Setor3 = s3; Setor4 = s4; Principais = p;
 		 */
@@ -83,12 +83,15 @@ public final class MASLABRouting {
 		refugeIDs = r;
 		waterIDs = w;
 		buildingIDs = b;
-//		PontosPrincipais = pp;
+		PontosPrincipais = new HashMap<EntityID, List<EntityID>>();
+		PontosPrincipais = pp;
+
 		principalIDs = new ArrayList<EntityID>(p.keySet());
 		setor1IDs = new ArrayList<EntityID>(s1.keySet());
 		setor2IDs = new ArrayList<EntityID>(s2.keySet());
 		setor3IDs = new ArrayList<EntityID>(s3.keySet());
 		setor4IDs = new ArrayList<EntityID>(s4.keySet());
+		
 		globalIDs = new ArrayList<EntityID>(GlobalSearch.getGraph().keySet());
 	}
 
@@ -299,7 +302,7 @@ public final class MASLABRouting {
 		// Calcula o caminho mais curto do agente até a via principal
 		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios,
 				principalIDs);
-
+		
 		// Remove a última posição do caminho para não duplicar e armazena para
 		// realizar o roteamento
 		EntityID paux = path.get(path.size() - 1);

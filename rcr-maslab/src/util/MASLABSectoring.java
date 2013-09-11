@@ -3,6 +3,7 @@ package util;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +67,7 @@ public class MASLABSectoring {
 	public Map<EntityID, Set<EntityID>> MapSetor3 = new HashMap<EntityID, Set<EntityID>>();
 	public Map<EntityID, Set<EntityID>> MapSetor4 = new HashMap<EntityID, Set<EntityID>>();
 	public Map<EntityID, Set<EntityID>> MapPrincipal = new HashMap<EntityID, Set<EntityID>>();
-	public Map<EntityID, Set<EntityID>> MapSecundarias = new HashMap<EntityID, Set<EntityID>>();
+	public Map<EntityID, List<EntityID>> MapSecundarias = new HashMap<EntityID, List<EntityID>>();
 
 	private static EntityID idNorte;
 	private static EntityID idSul;
@@ -89,7 +90,7 @@ public class MASLABSectoring {
 
 	public MASLABSectoring(StandardWorldModel world, Map<EntityID, Set<EntityID>> Setor1, Map<EntityID, Set<EntityID>> Setor2, 
 			Map<EntityID, Set<EntityID>> Setor3, Map<EntityID, Set<EntityID>> Setor4,
-			Map<EntityID, Set<EntityID>> SetorPrincipal, Map<EntityID, Set<EntityID>> SetorSecundarias) {
+			Map<EntityID, Set<EntityID>> SetorPrincipal, Map<EntityID, List<EntityID>> SetorSecundarias) {
 		model = world;
 		MapSetor1 = Setor1;
 		MapSetor2 = Setor2;
@@ -147,6 +148,7 @@ public class MASLABSectoring {
 				new ArrayList<EntityID>(), idOeste);
 		CarregaGrafoPrincipal();
 		CarregaGrafosSetores();
+		CarregaGrafoSecundarias();
 		//debug();
 	}
 	
@@ -161,12 +163,14 @@ public class MASLABSectoring {
 			return MapSetor4;
 		}else if(Setor == PRINCIPAL){
 			return MapPrincipal;
-		}else if(Setor == SECUNDARIAS){
-			return MapSecundarias;
 		}
 		return null;
 	}
-
+	
+	public Map<EntityID, List<EntityID>> getMapSetorSecundarias(){
+		return MapSecundarias;
+	}
+	
 	/**
 	 * 
 	 * @param Px
@@ -306,6 +310,20 @@ public class MASLABSectoring {
 		for (EntityID e : p) {
 			if (!aux.contains(e))
 				MapSetor4.put(e, searchP.get(e));
+		}
+	}
+	
+	public void	CarregaGrafoSecundarias(){
+		List<EntityID> rota = new ArrayList<EntityID>();
+		for(EntityID e: refugeIDs){
+			rota = search.breadthFirstSearch(e, MapPrincipal.keySet());
+			Collections.reverse(rota);
+			MapSecundarias.put(rota.get(0), rota);
+		}
+		for(EntityID e: hydrantIDs){
+			rota = search.breadthFirstSearch(e, MapPrincipal.keySet());
+			Collections.reverse(rota);
+			MapSecundarias.put(rota.get(0), rota);
 		}
 	}
 	
