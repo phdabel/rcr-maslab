@@ -1,4 +1,5 @@
 package Exploration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,7 +14,7 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardWorldModel;
 
 /*Exploração armazena o mapeamento conhecido em um Hash da forma:
- *  	- StandardEntity ID : {String Problem, int TimeStep}
+ *  	- StandardEntity ID : {String Problem, int TimeStep, Tempo de Vida Restante do Civil, Gravidade do Incendio}
  * O problema é definido da seguinte forma: abc { a- civis, b- fogo, c- bloqueio}, onde:
  * 		- 0 : ausencia de problema
  * 		- 1 : problema conhecido
@@ -30,197 +31,235 @@ public class Exploration {
 	static int TamanhoLista = 10;
 	@SuppressWarnings("rawtypes")
 	public HashMap<StandardEntity, List> Exploracao = new HashMap<StandardEntity, List>();
+
 	public Exploration(StandardWorldModel world) {
 		model = world;
 		// TODO Auto-generated constructor stub
 	}
 
-
 	/**
 	 * Armazena nova informação do mapa
+	 * 
 	 * @param int time- Step {Quando o problema foi vizualizado}
 	 * @param StandardEntity ID - Local do incidente
 	 * @param String Problem - Problema visualizado
+	 * @param int remainingLifeTime - tempo restante de vida do civil
+	 * @param int gravidadeIncendio - Situação do incendio
 	 */
-	public void InsertNewInformation(int time, StandardEntity ID, String Problem) {
+	public void InsertNewInformation(int time, StandardEntity ID,
+			String Problem, int remainingLifeTime, int gravidadeIncendio) {
 		// Caso o problema seja conhecido será atualizado o conhecimento
 		if (Exploracao.containsKey(ID)) {
-			UpdateInformation(time, ID, Problem);
+			UpdateInformation(time, ID, Problem, remainingLifeTime,
+					gravidadeIncendio);
 			// Caso Contrario é inserio um novo conhecimento
 		} else {
-			Exploracao.put(ID, Arrays.asList(Problem, time));
+			Exploracao.put(ID, Arrays.asList(Problem, time, remainingLifeTime,
+					gravidadeIncendio));
 		}
 
 	}
 
 	/**
 	 * Atualiza informações conhecidas do mapa
+	 * 
 	 * @param int timeAtual- Idade da informação
-	 * @param StandardEntity ID - Localização
-	 * @param String Problem- Problema
+	 * @param StandardEntity
+	 *            ID - Localização
+	 * @param String
+	 *            Problem- Problema
+	 * @param int remainingLifeTime - tempo restante de vida do civil
+	 * @param int gravidadeIncendio - Situação do incendio
 	 */
 	public void UpdateInformation(int timeAtual, StandardEntity ID,
-			String Problem) {
-		int timeAntigo;
-		timeAntigo = Integer.parseInt(Exploracao.get(ID).get(1).toString());
-
+			String Problem, int remainingLifeTime, int gravidadeIncendio) {
+		int timeAntigo = Integer.parseInt(Exploracao.get(ID).get(0).toString());
 		// Atualiza caso o tempo da informação seja mais importante
 		if (timeAtual > timeAntigo) {
 			Exploracao.remove(ID);
-			Exploracao.put(ID, Arrays.asList(Problem, timeAtual));
+			Exploracao.put(ID, Arrays.asList(Problem, timeAtual,
+					remainingLifeTime, gravidadeIncendio));
 		} else {
 			// Não atualiza
 		}
 
 	}
+
 	/**
 	 * Recebe um hash de exploração e atualiza suas informações
-	 * @param HashMap<StandardEntity, List> mensagem - Atualiza informações de exploração
+	 * 
+	 * @param HashMap
+	 *            <StandardEntity, List> mensagem - Atualiza informações de
+	 *            exploração
 	 */
-	public void UpdateExploracao(HashMap<StandardEntity, List> mensagem){
+	public void UpdateExploracao(HashMap<StandardEntity, List> mensagem) {
 		Set<StandardEntity> chaves = mensagem.keySet();
-		
+
 		for (StandardEntity chave : chaves) {
-			InsertNewInformation(Integer.parseInt(mensagem.get(chave).get(1).toString()), chave, mensagem.get(chave).get(0).toString());
+			//	(time, ID, Problem, remainingLifeTime,gravidadeIncendio);
+			InsertNewInformation(
+					Integer.parseInt(mensagem.get(chave).get(0).toString()), // time
+					chave,  // ID
+					mensagem.get(chave).get(2).toString(), // Problem
+					Integer.parseInt(mensagem.get(chave).get(3).toString()), //remainingLifeTime
+					Integer.parseInt(mensagem.get(chave).get(4).toString())); //gravidadeIncendio
 		}
-		
+
 	}
-	
+
 	/**
-	 * Estabelece uma probabilidade de exploracao com base na diferenca temporal:
-	 *  100*(1-(0.999^(TAtual - Tvisitado))) {normaliza os valores num intervalo de 0 à 100}
-	 * Assim sorteia (roleta) um node para exploracao;
+	 * Estabelece uma probabilidade de exploracao com base na diferenca
+	 * temporal: 100*(1-(0.999^(TAtual - Tvisitado))) {normaliza os valores num
+	 * intervalo de 0 à 100} Assim sorteia (roleta) um node para exploracao;
+	 * 
 	 * @param int timeAtual - Tempo atual da simulação
 	 * @return StandardEntity node - node à visitar
 	 */
 	public StandardEntity GetNewExplorationNode(int timeAtual) {
-		double limite=0;
+		double limite = 0;
 		double auxlimear;
 		HashMap<StandardEntity, Double> Roleta = new HashMap<StandardEntity, Double>();
 		Set<StandardEntity> chaves = Exploracao.keySet();
-		
+
 		int auxTime = 0;
 		StandardEntity value = null;
-		
+
 		for (StandardEntity chave : chaves) {
-			// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual - Tempo de Visita)))
-			int time = timeAtual - Integer.parseInt(Exploracao.get(chave).get(1).toString());
-			auxlimear = 100*(1-(Math.pow(0.9999,time)));
+			// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual - Tempo de
+			// Visita)))
+			int time = timeAtual
+					- Integer.parseInt(Exploracao.get(chave).get(0).toString());
+			auxlimear = 100 * (1 - (Math.pow(0.9999, time)));
 			// Gera uma Roleta
 			limite = limite + auxlimear;
 			Roleta.put(chave, limite);
 
 			// Guarda o valor com mais tempo sem acessar
-			if(auxTime <= time){
+			if (auxTime <= time) {
 				auxTime = time;
-				value =chave;
+				value = chave;
 			}
 
 		}
-		
-		/*   Sorteio de um limear para exploção     */
+
+		/* Sorteio de um limear para exploção */
 		Random rand = new Random();
-		double numerodasorte = (int)(rand.nextDouble()*limite);		
+		double numerodasorte = (int) (rand.nextDouble() * limite);
 		/* Seleção do node */
 		Set<StandardEntity> indices = Roleta.keySet();
 		for (StandardEntity indice : indices) {
-			if(numerodasorte <= Roleta.get(indice).doubleValue()){
+			if (numerodasorte <= Roleta.get(indice).doubleValue()) {
 				return indice;
 			}
 		}
-		
+
 		return value;
-	
+
 	}
-	
-	
+
 	/**
 	 * Obtém a lista de edificios em chamas identificados
-	 * @return List<StandardEntity> Edificios - Lista de Prédios em chamas conhecidos
+	 * 
+	 * @return List<StandardEntity> Edificios - Lista de Prédios em chamas
+	 *         conhecidos
 	 */
-	public List<StandardEntity> GetBurningBuilds(){
+	public List<StandardEntity> GetBurningBuilds() {
 		Set<StandardEntity> chaves = Exploracao.keySet();
-		List<StandardEntity> Predios =  new ArrayList<>();
-		
+		List<StandardEntity> Predios = new ArrayList<>();
+
 		for (StandardEntity chave : chaves) {
-			if(Exploracao.get(chave).get(0).toString().substring(1,2).equals("1")){
+			if (Exploracao.get(chave).get(2).toString().substring(1, 2)
+					.equals("1")) {
 				Predios.add(chave);
 			}
 		}
 		return Predios;
 	}
-	
+
 	/**
 	 * Obtém a lista de civis feridos identificados
-	 * @return List<StandardEntity> Civis - Lista de civis identificado em estado de perigo
+	 * 
+	 * @return List<StandardEntity> Civis - Lista de civis identificado em
+	 *         estado de perigo
 	 */
-	public List<StandardEntity> GetInjuredCivilians(){
+	public List<StandardEntity> GetInjuredCivilians() {
 		Set<StandardEntity> chaves = Exploracao.keySet();
 		List<StandardEntity> civis = new ArrayList<>();
-		
+
 		for (StandardEntity chave : chaves) {
-			if(Exploracao.get(chave).get(0).toString().substring(0,1).equals("1")){
+			if (Exploracao.get(chave).get(2).toString().substring(0, 1)
+					.equals("1")) {
 				civis.add(chave);
 			}
 		}
 		return civis;
 	}
-	
+
 	/**
 	 * Obtém a lista de Bloqueios identificados
+	 * 
 	 * @return List<StandardEntity> Bloqueio - Lista de bloqueios identificados
 	 */
-	public List<StandardEntity> GetBlockRoads(){
+	public List<StandardEntity> GetBlockRoads() {
 		Set<StandardEntity> chaves = Exploracao.keySet();
-		List<StandardEntity> bloqueios =  new ArrayList<>();
-		
+		List<StandardEntity> bloqueios = new ArrayList<>();
+
 		for (StandardEntity chave : chaves) {
-			if(Exploracao.get(chave).get(0).toString().substring(2,3).equals("1")){
+			if (Exploracao.get(chave).get(2).toString().substring(2, 3)
+					.equals("1")) {
 				bloqueios.add(chave);
 			}
 		}
 		return bloqueios;
 	}
-	
+
 	/**
 	 * Limpa as informações da exploração do agente
-	 * @param List<StandardEntity> informacoes - Lista de problemas a ser limpo
-	 * @param int problema - 0- civis, 1- incendio, 2- bloqueio 
+	 * 
+	 * @param List
+	 *            <StandardEntity> informacoes - Lista de problemas a ser limpo
+	 * @param int problema - 0- civis, 1- incendio, 2- bloqueio
 	 */
-	public void clear(List<StandardEntity> informacoes , int problema){
+	public void clear(List<StandardEntity> informacoes, int problema) {
 		// Civis
-		if (problema == 0){
+		if (problema == 0) {
 			for (StandardEntity chave : informacoes) {
-				String aux = Exploracao.get(chave).get(0).toString();
-				int time = Integer.parseInt(Exploracao.get(chave).get(1).toString());
+				String aux = Exploracao.get(chave).get(2).toString();
+				int time = Integer.parseInt(Exploracao.get(chave).get(0)
+						.toString());
 				Exploracao.remove(chave);
-				String Problem = "0"+aux.substring(1,2)+aux.substring(2,3);
+				String Problem = "0" + aux.substring(1, 2)
+						+ aux.substring(2, 3);
 				Exploracao.put(chave, Arrays.asList(Problem, time));
 			}
 		}
 		// Incendios
-		if (problema == 1){
+		if (problema == 1) {
 			for (StandardEntity chave : informacoes) {
-				String aux = Exploracao.get(chave).get(0).toString();
-				int time = Integer.parseInt(Exploracao.get(chave).get(1).toString());
+				String aux = Exploracao.get(chave).get(2).toString();
+				int time = Integer.parseInt(Exploracao.get(chave).get(0)
+						.toString());
 				Exploracao.remove(chave);
-				String Problem = aux.substring(0,1)+"0"+aux.substring(2,3);
+				String Problem = aux.substring(0, 1) + "0"
+						+ aux.substring(2, 3);
 				Exploracao.put(chave, Arrays.asList(Problem, time));
 			}
 		}
 		// Bloqueios
-		if (problema == 2){
+		if (problema == 2) {
 			for (StandardEntity chave : informacoes) {
-				String aux = Exploracao.get(chave).get(0).toString();
-				int time = Integer.parseInt(Exploracao.get(chave).get(1).toString());
+				String aux = Exploracao.get(chave).get(2).toString();
+				int time = Integer.parseInt(Exploracao.get(chave).get(0)
+						.toString());
 				Exploracao.remove(chave);
-				String Problem = aux.substring(0,1)+aux.substring(1,2)+"0";
+				String Problem = aux.substring(0, 1) + aux.substring(1, 2)
+						+ "0";
 				Exploracao.put(chave, Arrays.asList(Problem, time));
 			}
 		}
-		
+
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	/**
 	 * 
@@ -228,51 +267,51 @@ public class Exploration {
 	 * @param int Passos - Define o numero das ultimas ações 
 	 * @return List<StandardEntity> UltimosNodesVisitados - Retorna uma lista dos ultimos lugares visitados pelo agente
 	 */
-	public List<StandardEntity> GetLastAction(int Passos){
-		
-		   List mapKeys = new ArrayList<StandardEntity>(Exploracao.keySet());
-		   List mapValues = new ArrayList(Exploracao.get(1));
-		   
-		   Collections.sort(mapValues);
-		   Collections.sort(mapKeys);
+	public List<StandardEntity> GetLastAction(int Passos) {
 
-		   LinkedHashMap sortedMap = new LinkedHashMap();
+		List mapKeys = new ArrayList<StandardEntity>(Exploracao.keySet());
+		List mapValues = new ArrayList(Exploracao.get(0));
 
-		   Iterator valueIt = mapValues.iterator();
-		   while (valueIt.hasNext()) {
-		       Object val = valueIt.next();
-		    Iterator keyIt = mapKeys.iterator();
+		Collections.sort(mapValues);
+		Collections.sort(mapKeys);
 
-		    while (keyIt.hasNext()) {
-		        Object key = keyIt.next();
-		        String comp1 = Exploracao.get(key).toString();
-		        String comp2 = val.toString();
+		LinkedHashMap sortedMap = new LinkedHashMap();
 
-		        if (comp1.equals(comp2)){
-		        	Exploracao.remove(key);
-		            mapKeys.remove(key);
-		            sortedMap.put((String)key, (Double)val);
-		            break;
-		        }
+		Iterator valueIt = mapValues.iterator();
+		while (valueIt.hasNext()) {
+			Object val = valueIt.next();
+			Iterator keyIt = mapKeys.iterator();
 
-		    }
+			while (keyIt.hasNext()) {
+				Object key = keyIt.next();
+				String comp1 = Exploracao.get(key).toString();
+				String comp2 = val.toString();
+
+				if (comp1.equals(comp2)) {
+					Exploracao.remove(key);
+					mapKeys.remove(key);
+					sortedMap.put((String) key, (Double) val);
+					break;
+				}
+
+			}
 
 		}
-		List<StandardEntity> UltimasAcoes= new ArrayList<StandardEntity>();
-		int j =0;
+		List<StandardEntity> UltimasAcoes = new ArrayList<StandardEntity>();
+		int j = 0;
 		for (StandardEntity chave : (List<StandardEntity>) sortedMap) {
-			if(j>=Passos){
+			if (j >= Passos) {
 				return UltimasAcoes;
-			}else{
+			} else {
 				UltimasAcoes.add(chave);
 			}
 			j++;
 		}
-		
+
 		return (List<StandardEntity>) sortedMap;
 	}
-	
-	@SuppressWarnings({ "unchecked"})
+
+	@SuppressWarnings({ "unchecked" })
 	/**
 	 * 
 	 * @return List<StandardEntity> Nodes já Explorados
@@ -280,10 +319,9 @@ public class Exploration {
 	public List<StandardEntity> GetExplorationNodes() {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
 		Explorationnodes = (List<StandardEntity>) Exploracao.keySet();
-	
+
 		return Explorationnodes;
 
 	}
-
 
 }

@@ -39,7 +39,7 @@ public class ExplorationWithComunication {
 		// Verifica se existe 60% de coincidencias
 		if (acoesidenticas / totaldeacoes > 0.6) {
 			// Verifica quem tem maior prioridade pelo ID
-			if (Integer.parseInt(me.toString()) > Integer.parseInt(Agent
+			if (Integer.parseInt(me.toString()) < Integer.parseInt(Agent
 					.toString())) {
 				return false;
 			} else {
