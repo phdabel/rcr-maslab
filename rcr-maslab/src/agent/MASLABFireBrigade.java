@@ -23,7 +23,7 @@ import util.Channel;
 import util.DistanceSorter;
 import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
-import util.MASLABRouting.Setores;
+import util.Setores;
 
 /**
  * A sample fire brigade agent.
@@ -119,7 +119,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				return;
 			} else {
 				Logger.debug("Couldn't plan a path to a refuge.");
-				path = routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios);
+				path = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 				Logger.info("Moving randomly");
 				sendMove(time, path);
 				return;
@@ -147,7 +147,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		List<EntityID> path = null;
 		Logger.debug("Couldn't plan a path to a fire.");
-		path = routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios);
+		path = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 		Logger.info("Moving randomly");
 		sendMove(time, path);
 	}

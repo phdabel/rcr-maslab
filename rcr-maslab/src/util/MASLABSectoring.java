@@ -44,15 +44,6 @@ public class MASLABSectoring {
 	private static double coordinate_CenterX = 0;
 	private static double coordinate_CenterY = 0;
 	
-	//aliases for the sector identifiers
-	public static final int NORTH_EAST = 1;
-	public static final int SOUTH_EAST = 2;
-	public static final int SOUTH_WEST = 3;
-	public static final int NORTH_WEST = 4;
-	public static final int PRINCIPAL = 5;
-	public static final int SECUNDARIAS = 6;
-	public static final int UNDEFINED_SECTOR = 0;
-	
 	//aliases for the agent types
 	public static final int AMBULANCE_TEAM = 1;
 	public static final int FIRE_BRIGADE = 2;
@@ -153,15 +144,15 @@ public class MASLABSectoring {
 	}
 	
 	public Map<EntityID, Set<EntityID>> getMapSetor(int Setor){
-		if (Setor == NORTH_EAST){
+		if (Setor == Setores.S1){
 			return MapSetor1;
-		}else if(Setor == SOUTH_EAST){
+		}else if(Setor == Setores.S2){
 			return MapSetor2;
-		}else if(Setor == SOUTH_WEST){
+		}else if(Setor == Setores.S3){
 			return MapSetor3;
-		}else if(Setor == NORTH_WEST){
+		}else if(Setor == Setores.S4){
 			return MapSetor4;
-		}else if(Setor == PRINCIPAL){
+		}else if(Setor == Setores.PRINCIPAL){
 			return MapPrincipal;
 		}
 		return null;
@@ -477,17 +468,17 @@ public class MASLABSectoring {
 		}
 	}
 
-	private int getSetorPertencente(double X, double Y) {
+	public int getSetorPertencente(double X, double Y) {
 		if (SetorNordeste.contains(X, Y)) {
-			return NORTH_EAST;
+			return Setores.S1;
 		} else if (SetorSudeste.contains(X, Y)) {
-			return SOUTH_EAST;
+			return Setores.S2;
 		} else if (SetorSudoeste.contains(X, Y)) {
-			return SOUTH_WEST;
+			return Setores.S3;
 		} else if (SetorNoroeste.contains(X, Y)) {
-			return NORTH_WEST;
-		} else
-			return UNDEFINED_SECTOR;
+			return Setores.S4;
+		} else 
+			return Setores.UNDEFINED_SECTOR;
 	}
 
 	private void DemarcarRegioes(int sector) {

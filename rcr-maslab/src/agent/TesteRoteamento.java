@@ -13,16 +13,17 @@ import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
 import rescuecore2.log.Logger;
+import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
+import util.Channel;
 import util.DistanceSorter;
 import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
-import util.MASLABRouting.Setores;
-import util.MASLABSectoring;
+import util.Setores;
 
 /**
  * A sample fire brigade agent.
@@ -95,34 +96,59 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 	
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
+			// Sunbscribe to channel 1
+			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
+		}
+		for (Command next : heard) {
+			Logger.debug("Heard " + next);
+		}
+		
+		int teste = rand.nextInt(100);
+		int x=0, y=0;
+		StandardEntity se = model.getEntity(me().getPosition()); 
+		if(se instanceof Road){
+			Road r = (Road)se;
+			x = r.getX();
+			y = r.getY();
+		}else if(se instanceof Building){
+			Building b = (Building)se;
+			x = b.getX();
+			y = b.getY();
+		}
 
-		debug(time, routing
-				.Abastecer(me().getPosition(), Bloqueios, Setores.S1)
-				.toString());
-		debug(time,
-				routing.Combater(me().getPosition(), new EntityID(958),
-						Bloqueios, Setores.S1, Setores.S2).toString());
-		debug(time, routing.Resgatar(me().getPosition(), Bloqueios, Setores.S1)
-				.toString());
-		debug(time,
-				routing.Resgatar(me().getPosition(), new EntityID(958),
-						Bloqueios, Setores.S1).toString());
+		int s1 = sectoring.getSetorPertencente(x,y);
 		
-		debug(time,"Importance of sector NE:" + 
-				sectoring.getSectorImportance(sectoring.NORTH_EAST, sectoring.AMBULANCE_TEAM)	
-		);
+		List<EntityID> path = new ArrayList<EntityID>();
 		
-		debug(time,"Importance of sector NW:" + 
-				sectoring.getSectorImportance(sectoring.NORTH_WEST, sectoring.AMBULANCE_TEAM)	
-		);
+		if(teste <= 20){
+
+			System.out.println(me().getID().getValue() + "Explorar no mesmo setor: " + s1);
+			path = routing.Explorar(me().getPosition(), s1 , new ArrayList<EntityID>());
+			
+		}else if(teste <= 40){
+			int s2 = rand.nextInt(4); 
+			while(s2 == 0 || s2 == 1){
+				s2 = rand.nextInt(4);
+			}
+			
+			System.out.println(me().getID().getValue() + "Explorar em outro setor. De: " + s1 + " para " + s2);
+			path = routing.Explorar(me().getPosition(), s2 , new ArrayList<EntityID>());
+
+		}else if(teste <= 60){
+			System.out.println(me().getID().getValue() + "Refugio a partir de: " + me().getPosition().getValue());
+			path = routing.Resgatar(me().getPosition(), new ArrayList<EntityID>(), s1);
+
+		}else if(teste <= 80){
+			EntityID r = buildingIDs.get(rand.nextInt(buildingIDs.size() - 1));
+			System.out.println(me().getID().getValue() + "Resgatar a partir de: " + me().getPosition().getValue() + " ate " + r.getValue());
+			Building b = (Building)model.getEntity(r);
+			int s2 = sectoring.getSetorPertencente(b.getX(), b.getY());
+			path = routing.Resgatar(me().getPosition(), r, new ArrayList<EntityID>(), s1, s2);
+			
+		}
 		
-		debug(time,"Importance of sector SE:" + 
-				sectoring.getSectorImportance(sectoring.SOUTH_EAST, sectoring.AMBULANCE_TEAM)	
-		);
-		
-		debug(time,"Importance of sector SW:" + 
-				sectoring.getSectorImportance(sectoring.SOUTH_WEST, sectoring.AMBULANCE_TEAM)	
-		);
+		System.out.println(me().getID().getValue() + "Caminho: " + path);
 	}
 
 	/**
