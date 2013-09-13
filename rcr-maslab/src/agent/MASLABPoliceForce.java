@@ -6,6 +6,7 @@ import agent.worldmodel.Object;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
@@ -90,19 +91,44 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
          * localizar bloqueio
          */
         
-	     Blockade target = (Blockade)model.getEntity(this.getNearestBlockade());
-
-	     
-	     if( (target != null &&
-	    		 (((Road)model.getEntity(target.getPosition())).getShape().getBounds2D().getWidth() -
-	    		 target.getShape().getBounds2D().getWidth()) < 2000
-	    		 )  )
-	     {
-		     Area local = (Area)model.getEntity(me().getPosition());
-		     this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, target.getPosition().getValue());
-		        
-		        
-	     }
+	    
+	    if(this.pathDefined && this.destiny != null)
+	    {
+	    	List<EntityID> currentPath = this.walk(me().getPosition());
+	    	
+	    	Point2D mePos = new Point2D(me().getX(), me().getY());
+	    	Point2D p = this.bestPoint(mePos, (Area)model.getEntity(currentPath.get(0)));
+	    	if(p!=null)
+	    	{
+	    		Pair<Rectangle2D, Pair<Integer, Integer>> targetCoor = this.policeAim(p);
+	    		Collection<StandardEntity> obj = model.getObjectsInRectangle(me().getX(), me().getY(), targetCoor.second().first(), targetCoor.second().second());
+	    		System.out.println("qtd objetos "+obj.size());
+	    		if(!obj.isEmpty())
+	    		{
+		    		for(StandardEntity o : obj)
+		    		{
+		    			System.out.println(o.getStandardURN());
+		    			if(o.getStandardURN() == StandardEntityURN.ROAD)
+		    			{
+		    				if(((Road)o).isBlockadesDefined()){
+		    					this.currentTask = new Task(o.getID().getValue(), Object.BLOCKADE, targetCoor.second().first(), targetCoor.second().second());
+		    				}
+		    			}
+		    		}
+	    		}
+	    		
+	    		/*
+	    		List<Point2D> pTarget = GeometryTools2D.vertexArrayToPoints(target.getApexes());
+	    		for(Point2D pT : pTarget)
+	    		{
+	    			if(targetCoor.first().getBounds2D().contains(pT.getX(), pT.getY()))
+	    			{
+	    				System.out.println("retangulo contem bloqueio");
+	    				this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, targetCoor.second().first(), targetCoor.second().second());
+	    			}
+	    		}*/
+	    	}
+	    }
 
         /**
          * && this.stateQueue.isEmpty()
@@ -114,19 +140,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	if(!stateQueue.isEmpty() && stateQueue.peek().getState() == "RandomWalk"){
         		stateQueue.remove(stateQueue.peek());
         	}else if(stateQueue.isEmpty()){
-        		Task tmp = this.currentTask;
-        		EntityID tmpID = new EntityID(tmp.getPosition());
-
-        		if(me().getPosition() != tmpID)
-        		{
-        			
-        			stateQueue.add(new AgentState("Walk", tmpID));
-        			stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));        		
-        		}else{
-        			
-        			stateQueue.add(new AgentState("Unblock", new EntityID(tmp.getId())));
-
-        		}
+        		stateQueue.add(new AgentState("Unblock", this.currentTask.getX(), this.currentTask.getY()));
         	}
 
         }else if (this.stateQueue.isEmpty()){
@@ -134,8 +148,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
 
         }
         
-        System.out.println("Posicao Atual: "+me().getPosition());
-        this.printQueue();
+        //this.printQueue();
 
         /**
          * AÇÃO e CONTROLE
@@ -159,65 +172,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         		return;
         	case "Unblock":
         		this.stateQueue.poll();
-        		this.shot(time);
-        		/*
-        		 * Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
-        		 */
+        		this.currentTask = null;
+        		Point2D alvo = new Point2D(currentAction.getX(), currentAction.getY());
+        		this.shot(time, alvo);
         		
-        		
-        		/*Blockade _target = (Blockade)model.getEntity(new EntityID(this.currentTask.getId()));
-        		if (_target != null) {
-
-        			sendSpeak(time, 1, ("Clearing " + _target).getBytes());
-        			this.stateQueue.poll();
-        			
-        			List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(_target.getApexes()), true);
-                    double best = Double.MAX_VALUE;
-                    Point2D bestPoint = null;
-                    Point2D origin = new Point2D(me().getX(), me().getY());
-                    for (Line2D next : lines) {
-                        Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-                        double d = GeometryTools2D.getDistance(origin, closest);
-                        if (d < best) {
-                            best = d;
-                            bestPoint = closest;
-                        }
-                    }
-                    Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-                    v = v.normalised().scale(1000000);
-                    sendClear(time, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
-                    return;*/   			
-        			/*
-
-        			if(!this.currentPath.isEmpty()){
-        				Area nextNode = (Area)model.getEntity(this.currentPath.get(0));
-        				List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
-
-        				Area currentNode = (Area)model.getEntity(me().getPosition());
-        				List<Point2D> currentNodeInPath = GeometryTools2D.vertexArrayToPoints(currentNode.getApexList());
-
-        				Point2D[] origin = new Point2D[currentNodeInPath.size()]; 
-        				Point2D[] destiny = new Point2D[nextNodeInPath.size()];
-        				for(int i = 0; i < currentNodeInPath.size(); i++)
-        				{
-        					origin[i] = currentNodeInPath.get(i);
-        				}
-
-        				for(int i = 0; i < nextNodeInPath.size(); i++)
-        				{
-        					destiny[i] = nextNodeInPath.get(i);
-        				}
-
-
-        				ClosestPair c = new ClosestPair(origin, destiny);
-        				Point2D bestPoint = c.either();
-        				
-
-        			}*/
-
-        		//}else{
-        		//	this.stateQueue.poll();
-        		//}
         		break;
 
         	}
@@ -226,30 +184,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         /**
          * fim da máquina de estados
          */
-        /*
-        // Am I near a blockade?
-        Blockade target = getTargetBlockade();
-        if (target != null) {
-            
-            sendSpeak(time, 1, ("Clearing " + target).getBytes());
-//            sendClear(time, target.getX(), target.getY());
-            
-            return;
-        }
-        // Plan a path to a blocked area
-        List<EntityID> path = search.breadthFirstSearch(me().getPosition(), getBlockedRoads());
-        if (path != null) {
-            Logger.info("Moving to target");
-            Road r = (Road) model.getEntity(path.get(path.size() - 1));
-            Blockade b = getTargetBlockade(r, -1);
-            sendMove(time, path, b.getX(), b.getY());
-            Logger.debug("Path: " + path);
-            Logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
-            return;
-        }
-        Logger.debug("Couldn't plan a path to a blocked road");
-        Logger.info("Moving randomly");
-        sendMove(time, randomWalk());*/
+        
+        
     }
 
     @Override
@@ -258,14 +194,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         
     }
     
-    public void shot(int timestep){
+    public void shot(int timestep, Point2D target){
     	
-    	if(this.bestPoint() != null){
-	    	Pair<Rectangle2D, Pair<Integer, Integer>> p = this.policeAim(this.bestPoint());
-	    	
-	    	sendClear(timestep, (int)(me().getX()+p.second().first()), (int)(me().getY()+p.second().second()));
-	    	return;
-    	}
+    	Pair<Rectangle2D, Pair<Integer, Integer>> p = this.policeAim(target);
+	    sendClear(timestep, (int)(me().getX()+p.second().first()), (int)(me().getY()+p.second().second()));
+	    return;
     }
     
     private Rectangle2D humanBlockade(Human h, int range)
@@ -290,19 +223,37 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     	
     }
     
+    /**
+     * 
+     * @param target
+     * @return
+     */
     private Pair<Rectangle2D, Pair<Integer, Integer>> policeAim(Point2D target)
     {
     	Polygon mira = new Polygon();
     	mira.addPoint(me().getX(), me().getY());
     	int x = this.policeAimPoint(target).first();
     	int y = this.policeAimPoint(target).second();
+    	int width = 100;
     	mira.addPoint(x, y);
+    	/*
+    	mira.addPoint(x+width, y+width);
+    	mira.addPoint(x-width, y-width);
+    	mira.addPoint(me().getX()+width, me().getY()+width);
+    	mira.addPoint(me().getX()-width, me().getY()-width);*/
+    	
+    	
     	Pair<Integer, Integer> pointTarget = new Pair<Integer, Integer>(x, y);
     	Pair<Rectangle2D, Pair<Integer, Integer>> result = new 
     			Pair<Rectangle2D, Pair<Integer, Integer>>((Rectangle2D)mira.getBounds2D(),pointTarget);
     	return result;
     }
     
+    /**
+     * função que retorna coordenadas X e Y do ponto de disparo de acordo com o MAX_RANGE (10000)
+     * @param target
+     * @return
+     */
     private Pair<Integer, Integer> policeAimPoint(Point2D target)
     {
     	if(target != null){
@@ -344,38 +295,81 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         Collections.sort(targets, new DistanceSorter(location(), model));
         return targets;
     }
+        
     
-    private Point2D bestPoint()
+    private Point2D bestPoint(Area origin, Point2D destiny)
+    {
+    	Point2D[] destinyPoints = new Point2D[1];
+    	destinyPoints[0] = destiny;
+    	
+    	List<Point2D> originAreaPoints = GeometryTools2D.vertexArrayToPoints(origin.getApexList());
+    	Point2D[] originPoints = new Point2D[originAreaPoints.size()];
+    	for(int i = 0; i < originAreaPoints.size(); i++)
+    	{
+    		destinyPoints[i] = originAreaPoints.get(i);
+    	}
+			
+    	return this.bestPoint(originPoints, destinyPoints);
+    }
+    
+    private Point2D bestPoint(Point2D origin, Area destiny)
+    {
+    	Point2D[] originPoints = new Point2D[1];
+    	originPoints[0] = origin;
+    	
+    	List<Point2D> destinyAreaPoints = GeometryTools2D.vertexArrayToPoints(destiny.getApexList());
+    	Point2D[] destinyPoints = new Point2D[destinyAreaPoints.size()];
+    	for(int i = 0; i < destinyAreaPoints.size(); i++)
+    	{
+    		destinyPoints[i] = destinyAreaPoints.get(i);
+    	}
+			
+    	return this.bestPoint(originPoints, destinyPoints);
+    }
+    
+    /**
+     * Função genérica para retornar o ponto mais próximo do próximo nó no caminho.
+     * 
+     * 
+     * @param origin Area de origem ou nó atual do agente.
+     * @param destiny Area de destino ou próximo nó no caminho..
+     * @return Point2D ponto do nó atual que é mais próximo do próximo nó no caminho.
+     */
+    private Point2D bestPoint(Area origin, Area destiny)
+    {
+    	//proximo nó
+    	List<Point2D> destinyAreaPoints = GeometryTools2D.vertexArrayToPoints(destiny.getApexList());
+    	Point2D[] destinyPoints = new Point2D[destinyAreaPoints.size()];
+    	for(int i = 0; i < destinyAreaPoints.size(); i++)
+    	{
+    		destinyPoints[i] = destinyAreaPoints.get(i);
+    	}
+    	
+    	//nó atual
+    	List<Point2D> originAreaPoints = GeometryTools2D.vertexArrayToPoints(origin.getApexList());
+    	Point2D[] originPoints = new Point2D[originAreaPoints.size()];
+    	for(int i = 0; i < originAreaPoints.size(); i++)
+    	{
+    		originPoints[i] = originAreaPoints.get(i);
+    	}
+    	
+    	return this.bestPoint(originPoints, destinyPoints);
+    }
+    
+    /**
+     * Função bestPoint para listas de pontos de origem e destino
+     * 
+     * @param origin
+     * @param destiny
+     * @return
+     */
+    private Point2D bestPoint(Point2D[] origin, Point2D[] destiny)
     {
     	Point2D bestPoint = null;
-    	List<EntityID> path = new ArrayList<EntityID>();
-    	path = this.walk(me().getPosition());
-    	if(!path.isEmpty())
-		{
-    		//proximo nó
-			Area nextNode = (Area) model.getEntity(path.get(1));
-			List<Point2D> nextNodeInPath = GeometryTools2D.vertexArrayToPoints(nextNode.getApexList());
-			Point2D[] destiny = new Point2D[nextNodeInPath.size()];
-			
-			//nó atual
-			Area currentNode = (Area) model.getEntity(me().getPosition());
-			List<Point2D> currentNodeInPath = GeometryTools2D.vertexArrayToPoints(currentNode.getApexList());
-			Point2D[] origin = new Point2D[currentNodeInPath.size()];
-			
-			for(int i = 0; i < currentNodeInPath.size(); i++)
-			{
-				origin[i] = currentNodeInPath.get(i);
-			}
-			
-			for(int i = 0; i < nextNodeInPath.size(); i++)
-			{
-				destiny[i] = nextNodeInPath.get(i); 
-			}
-			
-			ClosestPair c = new ClosestPair(origin, destiny);
-        	bestPoint = (Point2D)c.either();
-        	
-		}
+    	    	
+    	ClosestPair c = new ClosestPair(origin, destiny);
+    	bestPoint = (Point2D)c.either();
+    	
     	return bestPoint;
     }
 
@@ -413,51 +407,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
             }
         }
         return null;
-    }
-    
-    private Boolean getClosestBlockade(){
-
-    	Logger.debug("Looking for target blockade");
-        Area location = (Area)location();
-        Logger.debug("Looking in current location");
-        Boolean result = getClosestBlockade(location, distance);
-        if (result != false) {
-            return true;
-        }
-        Logger.debug("Looking in neighbouring locations");
-        for (EntityID next : location.getNeighbours()) {
-            location = (Area)model.getEntity(next);
-            result = getClosestBlockade(location, distance);
-            if (result != false) {
-                return true;
-            }
-        }
-        return false;
-    	
-    }
-    
-    private Boolean getClosestBlockade(Area area, int maxDistance)
-    {
-    	if(area == null || !area.isBlockadesDefined())
-    	{
-    		return false;
-    	}
-    	List<EntityID> ids = area.getBlockades();
-    	int x = me().getX();
-    	int y = me().getY();
-    	for(EntityID next : ids){
-    		Blockade b = (Blockade)model.getEntity(next);
-    		List<Point2D> pointsOfBlockade = GeometryTools2D.vertexArrayToPoints(b.getApexes());
-    		for(Point2D p : pointsOfBlockade)
-    		{
-    			
-    			if(this.bestPoint() != null && this.policeAim(this.bestPoint()).first().contains(p.getX(), p.getY()))
-    			{
-    				return true;
-    			}
-    		}
-    	}
-    	return false;
     }
 
     private Blockade getTargetBlockade(Area area, int maxDistance) {
@@ -508,8 +457,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * blockades in the agents current location.
      */
     
+    public Blockade getNearestBlockade(){
+    	EntityID nearest = this.getNearestBlockadeID();
+    	
+    	return (Blockade)model.getEntity(nearest);
+    }
     
-     public EntityID getNearestBlockade() {
+    
+     public EntityID getNearestBlockadeID() {
     	 return getNearestBlockade((Area)location(), me().getX(), me().getY());
      }
      
@@ -527,28 +482,29 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     	double bestDistance = 0;
     	EntityID best = null;
     	Logger.debug("Finding nearest blockade");
-    	if (area.isBlockadesDefined()) {
-    		for (EntityID blockadeID : area.getBlockades()) {
-    			Logger.debug("Checking " + blockadeID);
-    			StandardEntity entity = model.getEntity(blockadeID);
-    			Logger.debug("Found " + entity);
-    			if (entity == null) {
-    				continue;
-    			}
-    			Pair<Integer, Integer> location = entity.getLocation(model);
-    			Logger.debug("Location: " + location);
-    			if (location == null) {
-    				continue;
-    			}
-    			double dx = location.first() - x;
-    			double dy = location.second() - y;
-    			double distance = Math.hypot(dx, dy);
-    			if (best == null || distance < bestDistance) {
-    				bestDistance = distance;
-    				best = entity.getID();
-    			}
-    		}
+    	if(area.isBlockadesDefined()){
+			for (EntityID blockadeID : area.getBlockades()) {
+				Logger.debug("Checking " + blockadeID);
+				StandardEntity entity = model.getEntity(blockadeID);
+				Logger.debug("Found " + entity);
+				if (entity == null) {
+					continue;
+				}
+				Pair<Integer, Integer> location = entity.getLocation(model);
+				Logger.debug("Location: " + location);
+				if (location == null) {
+					continue;
+				}
+				double dx = location.first() - x;
+				double dy = location.second() - y;
+				double distance = Math.hypot(dx, dy);
+				if (best == null || distance < bestDistance) {
+					bestDistance = distance;
+					best = entity.getID();
+				}
+			}
     	}
+    	
     	Logger.debug("Nearest blockade: " + best);
     	return best;
     }

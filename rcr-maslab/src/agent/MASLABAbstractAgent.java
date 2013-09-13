@@ -241,7 +241,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     	
     	List<EntityID> path = new ArrayList<EntityID>();
     	
-    	if(this.pathDefined == false){
+    	if(this.pathDefined == false || this.destiny == location().getID()){
     		
     		Collection<StandardEntity> e = model.getEntitiesOfType(StandardEntityURN.ROAD);
     		List<Road> road = new ArrayList<Road>();
@@ -263,7 +263,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     	}else{
     		path = this.walk(origin, this.destiny);
     	}
-    	
+    	this.pathDefined = true;
     	return path;
     	
     }
