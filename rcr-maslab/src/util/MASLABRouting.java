@@ -213,6 +213,11 @@ public final class MASLABRouting {
 		List<EntityID> path = search.breadthFirstSearch(Origem, new ArrayList<EntityID>(), false, Destino);
 		return path;
 	}
+	
+	public List<EntityID> Mover(EntityID Origem, Setores Setor, EntityID Destino) {
+		return Mover(Origem, Setor, Arrays.asList(Destino));
+	}
+
 
 	/**
 	 * Calcula a rota até o refúgio mais próximo
