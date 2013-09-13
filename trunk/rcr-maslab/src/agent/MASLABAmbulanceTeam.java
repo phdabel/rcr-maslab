@@ -21,7 +21,7 @@ import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Refuge;
 import util.Channel;
 import util.DistanceSorter;
-import util.MASLABRouting.Setores;
+import util.Setores;
 
 /**
  * A sample ambulance team agent.
@@ -136,7 +136,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			}
 		}
 		// Nothing to do
-		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios);
+		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 //		List<EntityID> path = search.breadthFirstSearch(me().getPosition(),unexploredBuildings);
 		if (path != null) {
 			Logger.info("Searching buildings");
@@ -144,7 +144,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			return;
 		}
 		Logger.info("Moving randomly");
-		sendMove(time, routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios));
+		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
 	}
 
 	@Override

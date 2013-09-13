@@ -22,8 +22,8 @@ import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
 import util.Channel;
-import util.MASLABRouting.Setores;
 import util.MSGType;
+import util.Setores;
 
 /**
  * A sample police force agent.
@@ -109,7 +109,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			return;
 		}
 		// Plan a path to a blocked area
-		List<EntityID> path  = routing.Mover(me().getPosition(), Setores.Qualquer, getBlockedRoads());
+		List<EntityID> path  = routing.Mover(me().getPosition(), Setores.UNDEFINED_SECTOR, getBlockedRoads());
 		if (path != null) {
 			Logger.info("Moving to target");
 			Road r = (Road) model.getEntity(path.get(path.size() - 1));
@@ -121,7 +121,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		}
 		Logger.debug("Couldn't plan a path to a blocked road");
 		Logger.info("Moving randomly");
-		sendMove(time, routing.Explorar(me().getPosition(), Setores.Qualquer, Bloqueios));
+		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
 	}
 
 	@Override
