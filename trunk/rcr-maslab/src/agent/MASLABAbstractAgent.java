@@ -168,7 +168,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
 				waterIDs,
 				buildingIDs,
 				model,
-				sectoring.getMapSetorSecundarias());
+				sectoring.getMapSetorSecundarias(),
+				sectoring);
 		
         useSpeak = config.getValue(Constants.COMMUNICATION_MODEL_KEY).equals(
                 SPEAK_COMMUNICATION_MODEL);

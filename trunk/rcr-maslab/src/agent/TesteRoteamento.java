@@ -83,13 +83,11 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 		sectoring = new MASLABSectoring(model);
 		
 		sectoring.Setorizar();
-		MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(sectoring);
-		PreProcess.GerarArquivos();
-		//MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(model);
-		//PreProcess.CarregarArquivo();
+//		MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(sectoring);
+//		PreProcess.GerarArquivos();
+		MASLABPreProcessamento PreProcess = new MASLABPreProcessamento(model);
+		PreProcess.CarregarArquivo();
 		//sectoring = PreProcess.getMASLABSectoring();
-		
-		System.out.println("OK");
 	}
 
 	
@@ -120,22 +118,23 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 		int s1 = sectoring.getSetorPertencente(x,y);
 		
 		List<EntityID> path = new ArrayList<EntityID>();
+		System.out.println(me().getID().getValue() + " Posicao: " + me().getPosition().getValue());
 		
-		if(teste <= 20){
+		if(teste <= 50){
 
-			System.out.println(me().getID().getValue() + "Explorar no mesmo setor: " + s1);
+			System.out.println(me().getID().getValue() + " Explorar no mesmo setor: " + s1);
 			path = routing.Explorar(me().getPosition(), s1 , new ArrayList<EntityID>());
 			
-		}else if(teste <= 40){
+		}else if(teste <= 100){
 			int s2 = rand.nextInt(4); 
 			while(s2 == 0 || s2 == 1){
 				s2 = rand.nextInt(4);
 			}
 			
-			System.out.println(me().getID().getValue() + "Explorar em outro setor. De: " + s1 + " para " + s2);
+			System.out.println(me().getID().getValue() + " Explorar em outro setor. De: " + s1 + " para " + s2);
 			path = routing.Explorar(me().getPosition(), s2 , new ArrayList<EntityID>());
 
-		}else if(teste <= 60){
+		}/*else if(teste <= 60){
 			System.out.println(me().getID().getValue() + "Refugio a partir de: " + me().getPosition().getValue());
 			path = routing.Resgatar(me().getPosition(), new ArrayList<EntityID>(), s1);
 
@@ -146,7 +145,7 @@ public class TesteRoteamento extends MASLABAbstractAgent<FireBrigade> implements
 			int s2 = sectoring.getSetorPertencente(b.getX(), b.getY());
 			path = routing.Resgatar(me().getPosition(), r, new ArrayList<EntityID>(), s1, s2);
 			
-		}
+		}*/
 		
 		System.out.println(me().getID().getValue() + "Caminho: " + path);
 	}
