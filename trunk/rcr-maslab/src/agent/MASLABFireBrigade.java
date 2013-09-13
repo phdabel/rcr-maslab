@@ -61,7 +61,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	
 	@Override
 	public String toString() {
-		return "Sample fire brigade";
+		return "MASLAB fire brigade";
 	}
 
 	@Override
