@@ -52,7 +52,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	
 	@Override
 	public String toString() {
-		return "Sample ambulance team";
+		return "MASLAB ambulance team";
 	}
 
 	/**

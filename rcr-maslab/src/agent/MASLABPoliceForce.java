@@ -56,7 +56,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	
 	@Override
 	public String toString() {
-		return "Sample police force";
+		return "MASLAB police force";
 	}
 
 	@Override
