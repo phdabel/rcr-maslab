@@ -359,6 +359,19 @@ public class MASLABSectoring {
 			}
 			return numbuildings;
 		}
+		
+		else if (agentType == POLICE_FORCE){
+			//counts the number of buildings (pre-processing stage)
+			//TODO: implement importance calculation during the simulation
+			
+			int numbuildings = 0;
+			for (EntityID id : sector.keySet()){
+				if(model.getEntity(id) instanceof Building){
+					numbuildings++;
+				}
+			}
+			return numbuildings;
+		}
 		return 0;
 	}
 	

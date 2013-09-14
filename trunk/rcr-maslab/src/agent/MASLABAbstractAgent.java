@@ -1,8 +1,8 @@
 package agent;
 
 import agent.interfaces.IAbstractAgent;
-import java.io.UnsupportedEncodingException;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,15 +12,16 @@ import java.util.Map;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
+import rescuecore2.config.Config;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
-
 import rescuecore2.standard.components.StandardAgent;
 import rescuecore2.standard.entities.Hydrant;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.Road;
+import rescuecore2.standard.entities.StandardWorldModel;
 import rescuecore2.standard.kernel.comms.ChannelCommunicationModel;
 import rescuecore2.standard.kernel.comms.StandardCommunicationModel;
 import rescuecore2.standard.messages.AKSay;
@@ -82,6 +83,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Classe de setorização, responsável por pre-processar e carregar os arquivos.
      */
 	protected MASLABSectoring sectoring;
+	
+	
     /**
      * Cache of Hydrant IDs.
      */
@@ -272,4 +275,23 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Métodos Acessores se necessário
      * 
      */
+    
+    /**
+     * @return StandardWorldModel
+     */
+    public StandardWorldModel getWorldModel(){
+    	return model;
+    }
+    
+    /**
+     * Returns the object that stores the sectors information
+     * @return
+     */
+    public MASLABSectoring getSectoringInfo(){
+    	return sectoring;
+    }
+    
+    public Config getConfig(){
+    	return config;
+    }
 }
