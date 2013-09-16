@@ -3,6 +3,7 @@ package agent;
 import agent.interfaces.IFireBrigade;
 import static rescuecore2.misc.Handy.objectsToIDs;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +53,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	 * Variaveis definidas por nós
 	 * 
 	 */
-
+	
 	/*
 	 * 
 	 * Métodos Standard Agent
@@ -69,6 +70,53 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 	@Override
 	protected void postConnect() {
+		
+		
+		/*
+		 Bombeiros
+			- Apagarão os prédios mais relevantes e ignorarão os demais (para controlar incêndio):
+			Usar a Rede Neural pra ver qual incêndio vale a pena apagar.
+			
+			getIncendio(Lista com todos os incêndios conhecidos):
+				Retorna o incêndio que deve ser combatido;
+			
+			
+			
+			Comunicação Específica
+				Cada vez que um incêndio for descoberto, informa via rádio:
+					MSGType.Type.getOrdinal MSG_SEPARATOR ID MSG_SEPARATOR TempoAtual MSG_SEPARATOR TempoEstimado
+					OBS.: Fazer na classe de bombeiros e depois que estiver OK, passar para abstractAgent.
+				
+			Comunicação Geral
+				Solicitar desbloqueio
+					MSGType.Type.getOrdinal MSG_SEPARATOR ID
+				
+				Solicitar resgate
+					MSGType.Type.getOrdinal MSG_SEPARATOR ID
+				
+			
+			Como decidir se ignora a atividade atual e apaga o incêndio visto agora????
+				
+			
+			CAMINHAR???
+			
+			- Haverá agentes patrulhando a área e não necessariamente combatendo um incêndio????
+			Lider do setor:
+				Definir quem vai patrulhar o setor;
+				
+			Coordenação entre as duplas:
+			  - No pre-processamento os agentes serão alocados em pares e onde se encontrar;
+			  - O agente de menor ID irá definir para onde irão (comunicação por voz quando se encontrarem);
+			  
+			  
+		 */
+		
+		
+		
+		
+		
+		
+		
 		super.postConnect();
 		model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE,
 				StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION);
