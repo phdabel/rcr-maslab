@@ -30,21 +30,21 @@ public class ClosestPair {
 		}
 		int auxN = points1.length;
 		for(int i = 0; i < points2.length; i++){
-			
-			
-			pointsByX[auxN+i] = new MyPoint2D(points2[i].getX(), points2[i].getY());
+			pointsByX[(auxN+i)] = new MyPoint2D(points2[i].getX(), points2[i].getY());
 			this.points2.add(pointsByX[auxN+i]);
 		}
 		
 		Arrays.sort(pointsByX, new Point2DXSorter());
 		
 		for(int i = 0; i < N-1; i++){
+			
 			if(pointsByX[i].equals(pointsByX[i+1]) && this.pointsOnSameSegment(pointsByX[i], pointsByX[i+1]) == false ){
 				bestDistance = 0.0;
 				best1 = pointsByX[i];
 				best2 = pointsByX[i+1];
 				return;
 			}
+			
 		}
 		
 		MyPoint2D[] pointsByY = new MyPoint2D[N];
@@ -138,5 +138,6 @@ public class ClosestPair {
 			return false;
 		}
 	}
+
 	
 }
