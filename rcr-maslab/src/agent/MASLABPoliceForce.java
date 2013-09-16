@@ -92,42 +92,76 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
          */
         
 	    
-	    if(this.pathDefined && this.destiny != null)
+	    if(this.pathDefined == true && this.destiny != null)
 	    {
 	    	List<EntityID> currentPath = this.walk(me().getPosition());
 	    	
-	    	Point2D mePos = new Point2D(me().getX(), me().getY());
-	    	Point2D p = this.bestPoint(mePos, (Area)model.getEntity(currentPath.get(0)));
-	    	if(p!=null)
+	    	//posicao atual do agente
+	    	Area myRoad = (Area)model.getEntity(me().getPosition());
+	    	System.out.println("me position "+myRoad);
+	    	System.out.println(("destiny "+currentPath.get(0)));
+	    	Road nextRoad = (Road)model.getEntity(currentPath.get(0));
+	    	if(myRoad.getStandardURN() == StandardEntityURN.ROAD && nextRoad.getStandardURN() == StandardEntityURN.ROAD)
 	    	{
-	    		Pair<Rectangle2D, Pair<Integer, Integer>> targetCoor = this.policeAim(p);
-	    		Collection<StandardEntity> obj = model.getObjectsInRectangle(me().getX(), me().getY(), targetCoor.second().first(), targetCoor.second().second());
-	    		System.out.println("qtd objetos "+obj.size());
-	    		if(!obj.isEmpty())
-	    		{
-		    		for(StandardEntity o : obj)
+		    	ClosestPair cp = this.bestPoint(myRoad, nextRoad);
+		    	Point2D p = cp.either();
+		    	Pair<Rectangle2D, Pair<Integer, Integer>> targetCoor = this.policeAim(p);
+		    	
+		    	if( (myRoad.getBlockades() != null || myRoad.getBlockades().isEmpty() == false)
+		    			||
+		    		(nextRoad.getBlockades() != null || nextRoad.getBlockades().isEmpty() == false)
+		    	
+		    			)
+		    	{
+		    		double width = 0.0;
+		    		double height = 0.0;
+		    		double widthRua = myRoad.getShape().getBounds2D().getWidth();
+		    		double heightRua = myRoad.getShape().getBounds2D().getHeight();
+		    		int ct = 0;
+		    		for(EntityID i : myRoad.getBlockades())
 		    		{
-		    			System.out.println(o.getStandardURN());
-		    			if(o.getStandardURN() == StandardEntityURN.ROAD)
+		    			Blockade bloqueio = (Blockade)model.getEntity(i);
+		    			width = bloqueio.getShape().getBounds2D().getWidth();
+		    			height = bloqueio.getShape().getBounds2D().getHeight();
+		    			if((width / widthRua) > 0.5 || (height / heightRua) > 0.5)
 		    			{
-		    				if(((Road)o).isBlockadesDefined()){
-		    					this.currentTask = new Task(o.getID().getValue(), Object.BLOCKADE, targetCoor.second().first(), targetCoor.second().second());
-		    				}
+		    				ct++;
 		    			}
+		    			
 		    		}
-	    		}
-	    		
-	    		/*
-	    		List<Point2D> pTarget = GeometryTools2D.vertexArrayToPoints(target.getApexes());
-	    		for(Point2D pT : pTarget)
-	    		{
-	    			if(targetCoor.first().getBounds2D().contains(pT.getX(), pT.getY()))
-	    			{
-	    				System.out.println("retangulo contem bloqueio");
-	    				this.currentTask = new Task(target.getID().getValue(), Object.BLOCKADE, targetCoor.second().first(), targetCoor.second().second());
-	    			}
-	    		}*/
+		    		if(ct > 0){
+			    		EntityID id = this.getNearestBlockade((Area)myRoad, targetCoor.second().first(), targetCoor.second().second());
+			    		if(id != null){
+			    			Blockade b = (Blockade)model.getEntity(id);
+			    			this.currentTask = new Task(b.getID().getValue(), Object.BLOCKADE, b.getID().getValue());
+			    		}else
+			    		{
+			    			double widthNextRoad = 0.0;
+			    			double heightNextRoad = 0.0;
+			    			int ctNext = 0;
+			    			for(EntityID i: nextRoad.getBlockades())
+			    			{
+			    				Blockade bloqueio = (Blockade)model.getEntity(i);
+			    				width = bloqueio.getShape().getBounds2D().getWidth();
+			    				height = bloqueio.getShape().getBounds2D().getHeight();
+			    				if((width / widthNextRoad) > 0.5 || (height / heightNextRoad) > 0.5)
+			    				{
+			    					ctNext++;
+			    				}
+			    			}
+			    			if(ctNext > 0){
+			    				EntityID nextRoadID = this.getNearestBlockade(nextRoad, me().getX(), me().getY());
+				    			if(nextRoadID != null)
+				    			{
+				    				Blockade b = (Blockade)model.getEntity(nextRoadID);
+				    				this.currentTask = new Task(b.getID().getValue(), Object.BLOCKADE, b.getID().getValue());
+				    			}
+			    			}
+			    		}
+		    		}
+		    	}
 	    	}
+	    	
 	    }
 
         /**
@@ -140,7 +174,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	if(!stateQueue.isEmpty() && stateQueue.peek().getState() == "RandomWalk"){
         		stateQueue.remove(stateQueue.peek());
         	}else if(stateQueue.isEmpty()){
-        		stateQueue.add(new AgentState("Unblock", this.currentTask.getX(), this.currentTask.getY()));
+        		stateQueue.add(new AgentState("Unblock", new EntityID(this.currentTask.getId())));
         	}
 
         }else if (this.stateQueue.isEmpty()){
@@ -173,7 +207,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         	case "Unblock":
         		this.stateQueue.poll();
         		this.currentTask = null;
-        		Point2D alvo = new Point2D(currentAction.getX(), currentAction.getY());
+        		//Point2D alvo = new Point2D(currentAction.getX(), currentAction.getY());
+        		Blockade alvo = (Blockade)model.getEntity(currentAction.getId());
         		this.shot(time, alvo);
         		
         		break;
@@ -194,33 +229,25 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
         
     }
     
-    public void shot(int timestep, Point2D target){
+    public void shot(int timestep, Blockade target){
     	
-    	Pair<Rectangle2D, Pair<Integer, Integer>> p = this.policeAim(target);
-	    sendClear(timestep, (int)(me().getX()+p.second().first()), (int)(me().getY()+p.second().second()));
+    	List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(target.getApexes()), true);
+        double best = Double.MAX_VALUE;
+        Point2D bestPoint = null;
+        Point2D origin = new Point2D(me().getX(), me().getY());
+        for (Line2D next : lines) {
+            Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+            double d = GeometryTools2D.getDistance(origin, closest);
+            if (d < best) {
+                best = d;
+                bestPoint = closest;
+            }
+        }
+        Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
+        v = v.normalised().scale(1000000);
+        sendClear(timestep, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
+    	//sendClear(timestep, (int)target.getX(), (int)target.getY());
 	    return;
-    }
-    
-    private Rectangle2D humanBlockade(Human h, int range)
-    {
-    	return this.pointBlockade(h.getX(), h.getY(), range);
-    }
-    
-    private Rectangle2D pointBlockade(int x, int y, int range){
-    	
-    	Polygon poly = new Polygon();
-    	
-    	poly.addPoint(x+range, y);
-    	poly.addPoint(x+range, y-range);
-    	poly.addPoint(x, y-range);
-    	poly.addPoint(x-range, y-range);
-    	poly.addPoint(x-range, y);
-    	poly.addPoint(x-range, y+range);
-    	poly.addPoint(x, y+range);
-    	poly.addPoint(x+range, y+range);
-    	
-    	return poly.getBounds2D();
-    	
     }
     
     /**
@@ -232,15 +259,12 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     {
     	Polygon mira = new Polygon();
     	mira.addPoint(me().getX(), me().getY());
-    	int x = this.policeAimPoint(target).first();
-    	int y = this.policeAimPoint(target).second();
-    	int width = 100;
+    	
+    	int x = me().getX() + this.policeAimPoint(target).first();
+    	int y = me().getY() + this.policeAimPoint(target).second();
+    	
     	mira.addPoint(x, y);
-    	/*
-    	mira.addPoint(x+width, y+width);
-    	mira.addPoint(x-width, y-width);
-    	mira.addPoint(me().getX()+width, me().getY()+width);
-    	mira.addPoint(me().getX()-width, me().getY()-width);*/
+    	
     	
     	
     	Pair<Integer, Integer> pointTarget = new Pair<Integer, Integer>(x, y);
@@ -260,8 +284,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     		
 	    	double deltaX = (target.getX() - me().getX());
 	    	double deltaY = (target.getY() - me().getY());
-	    	double alfaX = deltaX / this.MAX_RANGE;
-	    	double alfaY = deltaY / this.MAX_RANGE;
+	    	double alfaX = deltaX / this.distance;
+	    	double alfaY = deltaY / this.distance;
 	    	double newX = deltaX / Math.abs(alfaX);
 	    	double newY = deltaY / Math.abs(alfaY);
 	    	
@@ -297,7 +321,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     }
         
     
-    private Point2D bestPoint(Area origin, Point2D destiny)
+    private ClosestPair bestPoint(Area origin, Point2D destiny)
     {
     	Point2D[] destinyPoints = new Point2D[1];
     	destinyPoints[0] = destiny;
@@ -312,15 +336,41 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
     	return this.bestPoint(originPoints, destinyPoints);
     }
     
-    private Point2D bestPoint(Point2D origin, Area destiny)
+    private ClosestPair bestDifferentPoint(Point2D origin, Area destiny)
+    {
+    	Point2D[] originPoints = new Point2D[1];
+    	originPoints[0] = origin;
+    	
+    	List<Point2D> destinyAreaPoints = GeometryTools2D.vertexArrayToPoints(destiny.getApexList());
+    	Point2D[] destinyPoints = new Point2D[destinyAreaPoints.size() - 1];
+    	int ct = 0;
+    	for(int i = 0; i < destinyAreaPoints.size(); i++)
+    	{
+    		
+    		if(
+    				(origin.getX() != destinyAreaPoints.get(i).getX())
+    				||
+    				(origin.getY() != destinyAreaPoints.get(i).getY())
+    				){
+    			
+    			destinyPoints[ct] = destinyAreaPoints.get(i);
+    			ct++;
+    		}
+    	}
+			
+    	return this.bestPoint(originPoints, destinyPoints);
+    }
+    
+    private ClosestPair bestPoint(Point2D origin, Area destiny)
     {
     	Point2D[] originPoints = new Point2D[1];
     	originPoints[0] = origin;
     	
     	List<Point2D> destinyAreaPoints = GeometryTools2D.vertexArrayToPoints(destiny.getApexList());
     	Point2D[] destinyPoints = new Point2D[destinyAreaPoints.size()];
+    	
     	for(int i = 0; i < destinyAreaPoints.size(); i++)
-    	{
+    	{    		
     		destinyPoints[i] = destinyAreaPoints.get(i);
     	}
 			
@@ -335,14 +385,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * @param destiny Area de destino ou próximo nó no caminho..
      * @return Point2D ponto do nó atual que é mais próximo do próximo nó no caminho.
      */
-    private Point2D bestPoint(Area origin, Area destiny)
+    private ClosestPair bestPoint(Area origin, Area destiny)
     {
     	//proximo nó
     	List<Point2D> destinyAreaPoints = GeometryTools2D.vertexArrayToPoints(destiny.getApexList());
     	Point2D[] destinyPoints = new Point2D[destinyAreaPoints.size()];
     	for(int i = 0; i < destinyAreaPoints.size(); i++)
     	{
-    		destinyPoints[i] = destinyAreaPoints.get(i);
+    		destinyPoints[i] = destinyAreaPoints.get(i);    		
     	}
     	
     	//nó atual
@@ -363,15 +413,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce> implemen
      * @param destiny
      * @return
      */
-    private Point2D bestPoint(Point2D[] origin, Point2D[] destiny)
+    private ClosestPair bestPoint(Point2D[] origin, Point2D[] destiny)
     {
-    	Point2D bestPoint = null;
     	    	
     	ClosestPair c = new ClosestPair(origin, destiny);
-    	bestPoint = (Point2D)c.either();
     	
-    	return bestPoint;
+    	return c;
     }
+    
 
     /**
      *
