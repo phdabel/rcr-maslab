@@ -10,6 +10,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 
+import model.Mensagem;
+
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
 import rescuecore2.config.Config;
@@ -95,7 +97,6 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     protected List<EntityID> roadIDsSetor4;
     protected List<EntityID> roadIDsPrincipal;
     protected List<EntityID> Bloqueios;
-    protected final String MSG_SEPARATOR = "-";
 	protected int PreProcessamento = 0;
 	Random rand = new Random();
 
@@ -199,19 +200,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * type da mensagem.
      */
     @Override
-    public void sendMessage(MSGType type, boolean radio, int time, String... params) {
+    public void sendMessage(MSGType type, boolean radio, int time, Mensagem... mensagens) {
 
         //inicializa variaveis
         String msg = "";
         Channel channel = null;
 
         //monta a mensagem em um string
-        for (int i = 0; i < params.length; i++) {
-            if (i < params.length - 1) {
-                msg += params[i] + MSG_SEPARATOR;
-            } else {
-                msg += params[i];
-            }
+        for (int i = 0; i < mensagens.length; i++) {
+            msg += mensagens[i].getMSG();
         }
         //compacta a mensagem IMPLEMENTAR! - huffman ou zip?
 

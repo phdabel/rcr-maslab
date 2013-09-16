@@ -77,10 +77,11 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			Logger.debug("Heard " + next);
 		}
                 //ouve as mensagens
-                List<String> msgsOuvidas = heardMessage(heard);
+//                List<String> msgsOuvidas = heardMessage(heard);
                 
                 //envia uma mensagem para outro bombeiro
-                sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
+//                sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
+		
 		// Am I near a blockade?
 		Blockade target = getTargetBlockade();
 		if (target != null) {
