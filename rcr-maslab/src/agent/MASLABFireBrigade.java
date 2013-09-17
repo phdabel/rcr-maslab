@@ -54,6 +54,16 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	 * 
 	 */
 	
+	private enum Estados {
+		Abastecendo, BuscandoRefugio, Explorando, Combatendo;
+	}
+	private Estados estado;
+	private EntityID destino = null;
+	
+	private List<EntityID> path = new LinkedList<EntityID>();
+	
+	private int setorAtual;
+	
 	/*
 	 * 
 	 * Métodos Standard Agent
@@ -61,6 +71,8 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 	public MASLABFireBrigade(int pp){
 		super(pp);
+		setorAtual = (1 + rand.nextInt(4));
+		System.out.println(setorAtual);
 	}
 	
 	@Override
@@ -96,7 +108,9 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				
 			
 			Como decidir se ignora a atividade atual e apaga o incêndio visto agora????
-				
+						
+		
+
 			
 			CAMINHAR???
 			
@@ -123,7 +137,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		maxWater = config.getIntValue(MAX_WATER_KEY);
 		maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
 		maxPower = config.getIntValue(MAX_POWER_KEY);
-		gasStationRange = config.getIntValue(GAS_STATION_RANGE);
+		//gasStationRange = config.getIntValue(GAS_STATION_RANGE);
 		
 		Logger.info("Sample fire brigade connected: max extinguish distance = "
 				+ maxDistance + ", max power = " + maxPower + ", max tank = "
@@ -151,58 +165,104 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			// Subscribe to channel 1
 			sendSubscribe(time, Channel.FIRE_BRIGADE.ordinal());
 		}
-		for (Command next : heard) {
-			Logger.debug("Heard " + next);
-		}
+
 		FireBrigade me = me();
-		// Are we currently filling with water?
+		
+		//TODO - Receber Mensagens
+		
+		
+		
+		
+		//TODO - Perceber o ambiente
+		//Percenbendo onde está
+		if(destino != null){
+			if(me.getPosition().getValue() == destino.getValue()){
+				destino = null;
+			}
+		}
+		//Percenebendo incendios
+		Collection<EntityID> all = getBurningBuildings();
+		//Perceber os bloqueios no caminho para desviar
+		//Bloqueios = PERCEBERBLOQUEIOS();
+		
+		
+		
+		//TODO - Enviar Mensagens
+		
+		
+		//Avaliando estados
+		
+		//Estou no refúgio abastecendo
 		if (me.isWaterDefined() && me.getWater() < maxWater
 				&& location() instanceof Refuge) {
-			Logger.info("Filling with water at " + location());
+			estado = Estados.Abastecendo;
+		//Estou sem água
+		}else if (me.isWaterDefined() && me.getWater() == 0) {
+			estado = Estados.BuscandoRefugio;
+		//Vi algum incendio
+		}else if(all.size() > 0){
+			estado = Estados.Combatendo;
+		//Tô no vácuo...
+		}else{
+			estado = Estados.Explorando;
+		}
+		
+		//Abastecendo, só espera até concluir
+		if(estado.equals(Estados.Abastecendo)){
 			sendRest(time);
 			return;
-		}
-		// Are we out of water?
-		if (me.isWaterDefined() && me.getWater() == 0) {
-			// Head for a refuge
-			List<EntityID> path = routing.Abastecer(me().getPosition(), Bloqueios); 
-			if (path != null) {
-				Logger.info("Moving to refuge");
+
+		//Sem água, indo até o refúgio
+		}else if (estado.equals(Estados.BuscandoRefugio)){
+			//Tenta encontrar um caminho até o refúgio
+			path = routing.Abastecer(me.getPosition(), Bloqueios);
+
+			//Se encontrar o refúgio, move-se até ele
+			if(path != null){
 				sendMove(time, path);
 				return;
+			/*
+			 * Caso não tenha encontrado o caminho,
+			 * tenta explorar e traçar a rota novamente no próximo passo de tempo
+			 */
 			} else {
-				Logger.debug("Couldn't plan a path to a refuge.");
-				path = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
-				Logger.info("Moving randomly");
+				path = routing.Explorar(me().getPosition(), setorAtual, Bloqueios);
 				sendMove(time, path);
 				return;
 			}
-		}
-		// Find all buildings that are on fire
-		Collection<EntityID> all = getBurningBuildings();
-		// Can we extinguish any right now?
-		for (EntityID next : all) {
-			if (model.getDistance(getID(), next) <= maxDistance) {
-				Logger.info("Extinguishing " + next);
-				sendExtinguish(time, next, maxPower);
-				sendSpeak(time, 1, ("Extinguishing " + next).getBytes());
-				return;
+			
+		//Combatendo - Não "afrouxemo" nem nos "lançante" pois "semo" loco de dá com um pau
+		} else if (estado.equals(Estados.Combatendo)){
+			
+			//Verifica se algum prédio pode ser combatido
+			for (EntityID next : all) {
+				if (model.getDistance(getID(), next) <= maxDistance) {
+					sendExtinguish(time, next, maxPower);
+					return;
+				}
 			}
-		}
-		// Plan a path to a fire
-		for (EntityID next : all) {
-			List<EntityID> path = planPathToFire(next);
-			if (path != null) {
-				Logger.info("Moving to target");
-				sendMove(time, path);
-				return;
+			
+			//Caso nenhum prédio possa ser combatido, move-se até um prédio
+			for (EntityID next : all) {
+				path = planPathToFire(next);
+				if (path != null) {
+					sendMove(time, path);
+					return;
+				}
 			}
+		
+		//Explorando
+		}else{
+			//Guarda o destino para não ficar locão...
+			if(destino == null){
+				path = routing.Explorar(me().getPosition(), setorAtual, Bloqueios);
+				destino = path.get(path.size()-1); 
+			}else{
+				path = routing.Explorar(me.getPosition(), setorAtual, Bloqueios, destino);
+			}
+			sendMove(time, path);
+			return;
 		}
-		List<EntityID> path = null;
-		Logger.debug("Couldn't plan a path to a fire.");
-		path = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
-		Logger.info("Moving randomly");
-		sendMove(time, path);
 	}
 
 	/**
@@ -242,10 +302,12 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		//TODO - Definir o alvo do combate
 		return routing.Combater(me().getPosition(), new ArrayList<EntityID>(objectsToIDs(targets)).get(0), Bloqueios);
 	}
+	
 	/*
 	 * 
 	 * Métodos Definidos por nós
 	 */
+	
 	/*
 	 * 
 	 * Métodos Acessores se necessário
