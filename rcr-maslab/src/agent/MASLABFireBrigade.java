@@ -15,6 +15,7 @@ import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
 import rescuecore2.log.Logger;
 
+import rescuecore2.standard.entities.Hydrant;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.Building;
@@ -72,7 +73,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	public MASLABFireBrigade(int pp){
 		super(pp);
 		setorAtual = (1 + rand.nextInt(4));
-		System.out.println(setorAtual);
 	}
 	
 	@Override
@@ -194,7 +194,8 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		
 		//Estou no refúgio abastecendo
 		if (me.isWaterDefined() && me.getWater() < maxWater
-				&& location() instanceof Refuge) {
+				&& (location() instanceof Refuge 
+						|| location() instanceof Hydrant)) {
 			estado = Estados.Abastecendo;
 		//Estou sem água
 		}else if (me.isWaterDefined() && me.getWater() == 0) {
@@ -214,9 +215,28 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 		//Sem água, indo até o refúgio
 		}else if (estado.equals(Estados.BuscandoRefugio)){
-			//Tenta encontrar um caminho até o refúgio
-			path = routing.Abastecer(me.getPosition(), Bloqueios);
-
+			if(refugeIDs.contains(destino) || hydrantIDs.contains(destino)){
+				List<EntityID> p = new ArrayList<EntityID>(path);
+				
+				System.out.println("ROTA ANTES: " + path);
+				
+				for(EntityID e: p){
+					if(e.getValue() == me.getPosition().getValue()){
+						break;
+					}else{
+						path.remove(e);
+					}
+				}
+				
+				System.out.println("ROTA DEPOIS: " + path);
+				
+			}else{
+				//Tenta encontrar um caminho até o refúgio
+				path = routing.Abastecer(me.getPosition(), Bloqueios);
+				//Armazena o destino para não ficar em loop
+				destino = path.get(path.size()-1);
+			}
+			
 			//Se encontrar o refúgio, move-se até ele
 			if(path != null){
 				sendMove(time, path);
@@ -227,6 +247,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			 */
 			} else {
 				path = routing.Explorar(me().getPosition(), setorAtual, Bloqueios);
+				destino = path.get(path.size()-1);
 				sendMove(time, path);
 				return;
 			}
@@ -259,6 +280,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				destino = path.get(path.size()-1); 
 			}else{
 				path = routing.Explorar(me.getPosition(), setorAtual, Bloqueios, destino);
+				destino = path.get(path.size()-1);
 			}
 			sendMove(time, path);
 			return;
