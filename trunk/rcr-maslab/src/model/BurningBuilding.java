@@ -1,9 +1,9 @@
 package model;
 
 public class BurningBuilding {
-	int ID;
-	int tempoAtual;
-	int tempoEstimado;
+	private int ID;
+	private int tempoAtual;
+	private int tempoEstimado;
 	
 	public BurningBuilding(int iD, int tA, int tE){
 		ID = iD;
