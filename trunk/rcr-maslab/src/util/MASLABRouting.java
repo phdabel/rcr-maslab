@@ -91,7 +91,7 @@ public final class MASLABRouting {
 		buildingIDs = b;
 		PontosPrincipais = new HashMap<EntityID, List<EntityID>>();
 		PontosPrincipais = pp;
-
+		
 		principalIDs = new ArrayList<EntityID>(p.keySet());
 		setor1IDs = new ArrayList<EntityID>(s1.keySet());
 		setor2IDs = new ArrayList<EntityID>(s2.keySet());
@@ -203,7 +203,7 @@ public final class MASLABRouting {
 
 			// Obtem o caminho de onde estou até um ponto aleatório dentro do setor
 			path = search.breadthFirstSearch(Origem, Bloqueios, true, dest);
-			System.out.println("Setor Origem: " + setorOrigem + " Setor Destino: " + Setor + " Destino: " + dest.getValue() + " path: " + path);
+//			System.out.println("ID: " + ID + " Setor Origem: " + setorOrigem + " Setor Destino: " + Setor + " Destino: " + dest.getValue() + " path: " + path);
 
 		}else{
 			// Transforma os parametros recebidos em um Array
@@ -215,10 +215,6 @@ public final class MASLABRouting {
 			searchDestino = getSearch(Setor);
 			
 			path = searchOrigem.breadthFirstSearch(Origem, Bloqueios, true, principalIDs);
-			System.out.println("Setor Origem: " + setorOrigem 
-					+ " Setor Destino: " + Setor 
-					+ " Destino: " + dest.getValue() 
-					+ " Origem -> Principal: " + path);
 			
 			// Remove a última posição do caminho para não duplicar e armazena para
 			// realizar o roteamento
@@ -232,13 +228,15 @@ public final class MASLABRouting {
 
 			// Calcula o caminho mais curto da via principal até o ponto da via
 			// principal onde tem um refúgio mais perto e adiciona ao path
-			System.out.println("Setor Origem: " + setorOrigem 
+/*			System.out.println("ID: " + ID + " Setor Origem: " + setorOrigem 
 					+ " Setor Destino: " + Setor 
+					+ " Origem: " + Origem.getValue()
 					+ " Destino: " + dest.getValue() 
 					+ " Origem -> Principal: " + path
 					+ " Principal -> Principal: " + Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest)
-					+ " Principal -> Destino: " + DestPath);
-
+					+ " Principal -> Destino: " + DestPath
+					+ " Path Completo: " + path);
+*/
 			
 			path.addAll(Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest));
 			path.addAll(DestPath);
@@ -380,12 +378,24 @@ public final class MASLABRouting {
 
 		// Calcula o caminho mais curto da via principal até o ponto da via
 		// principal onde tem um refúgio mais perto e adiciona ao path
+		List<EntityID> aux = Psearch.breadthFirstSearch(paux, Bloqueios,
+				PontosPrincipais.keySet());
 		path.addAll(Psearch.breadthFirstSearch(paux, Bloqueios,
 				PontosPrincipais.keySet()));
+
+		List<EntityID> aux2 = PontosPrincipais.get(path.get(path.size() - 1));
 
 		// Adiciona o caminho mais curto do refúgio a via principal no path
 		path.addAll(PontosPrincipais.get(path.get(path.size() - 1)));
 
+		
+/*		System.out.println("*REFUGIO* ID: " + ID  
+				+ " Origem: " + Origem.getValue()
+				+ " Origem -> Principal: " + search.breadthFirstSearch(Origem, Bloqueios, principalIDs)
+				+ " Principal -> Principal: " + aux
+				+ " Principal -> Destino: " + aux2
+				+ " Path Completo: " + path);
+*/		
 		return path;
 	}
 
