@@ -3,8 +3,8 @@ package model;
 public class Mensagem {
 
 	private String MSG;
-    protected final String MSG_SEPARATOR = "-";
-    protected final String MSG_FIM = ".";
+	private final String MSG_SEPARATOR = "-";
+	private final String MSG_FIM = ".";
 	
 	public Mensagem (String...strings){
         //monta a mensagem em um string
@@ -20,5 +20,13 @@ public class Mensagem {
 	
 	public String getMSG(){
 		return MSG;
+	}
+	
+	public String getMSG_SEPARATOR(){
+		return MSG_SEPARATOR;
+	}
+
+	public String getMSG_FIM(){
+		return MSG_FIM;
 	}
 }

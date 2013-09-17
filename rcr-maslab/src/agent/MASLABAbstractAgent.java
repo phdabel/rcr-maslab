@@ -215,17 +215,16 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         //monta a mensagem de acordo com o tipo e define o canal
         switch (type) {
             //Ex: Informar bloqueio
-            case UNLOCK_MAIN_STREET: {
+            case BURNING_BUILDING: {
+                channel = Channel.FIRE_BRIGADE;
+                break;
+            }
+            case UNBLOCK_ME: {
                 channel = Channel.POLICE_FORCE;
                 break;
             }
-            case Type_2: {
-                break;
-            }
-            case Type_3: {
-                break;
-            }
-            case Type_4: {
+            case SAVE_ME: {
+                channel = Channel.AMBULANCE;
                 break;
             }
         }

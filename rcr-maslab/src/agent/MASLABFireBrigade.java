@@ -3,12 +3,16 @@ package agent;
 import agent.interfaces.IFireBrigade;
 import static rescuecore2.misc.Handy.objectsToIDs;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+
+import model.BurningBuilding;
+import model.Mensagem;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -25,7 +29,9 @@ import util.Channel;
 import util.DistanceSorter;
 import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
+import util.MSGType;
 import util.Setores;
+import model.Mensagem;
 
 /**
  * A sample fire brigade agent.
@@ -65,6 +71,11 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	
 	private int setorAtual;
 	
+    private String MSG_SEPARATOR = "-";
+    private String MSG_FIM = ".";
+    
+    private List<BurningBuilding> Alvos = new LinkedList<BurningBuilding>();
+	
 	/*
 	 * 
 	 * Métodos Standard Agent
@@ -73,6 +84,9 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	public MASLABFireBrigade(int pp){
 		super(pp);
 		setorAtual = (1 + rand.nextInt(4));
+		Mensagem m = new Mensagem();
+		MSG_SEPARATOR = m.getMSG_SEPARATOR();
+		MSG_FIM = m.getMSG_FIM();
 	}
 	
 	@Override
@@ -168,10 +182,23 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 		FireBrigade me = me();
 		
-		//TODO - Receber Mensagens
+		//Receber Mensagens
+		List<String> msgs = heardMessage(heard);
 		
+		//Separa todas as mensagens recebidas pois podem vir agrupadas de um único agente
+		List<String> mensagens = new ArrayList<String>();
+		for(String s: msgs){
+			//Separa as mensagens recebidas
+			mensagens = Arrays.asList(s.split(MSG_FIM));
+		}
 		
-		
+		//Armazena as informações recebidas
+		for(String s: mensagens){
+			List<String> msg = Arrays.asList(s.split(MSG_SEPARATOR));
+			if(Integer.parseInt(msg.get(0)) == MSGType.BURNING_BUILDING.ordinal()){
+				Alvos.add(new BurningBuilding(Integer.parseInt(msg.get(1)), Integer.parseInt(msg.get(2)), Integer.parseInt(msg.get(3))));				
+			}
+		}
 		
 		//TODO - Perceber o ambiente
 		//Percenbendo onde está
@@ -215,11 +242,9 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 		//Sem água, indo até o refúgio
 		}else if (estado.equals(Estados.BuscandoRefugio)){
+			//Caso já esteja indo para um refúgio/hidrante, continua a rota e não recalcula
 			if(refugeIDs.contains(destino) || hydrantIDs.contains(destino)){
 				List<EntityID> p = new ArrayList<EntityID>(path);
-				
-				System.out.println("ROTA ANTES: " + path);
-				
 				for(EntityID e: p){
 					if(e.getValue() == me.getPosition().getValue()){
 						break;
@@ -227,8 +252,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 						path.remove(e);
 					}
 				}
-				
-				System.out.println("ROTA DEPOIS: " + path);
 				
 			}else{
 				//Tenta encontrar um caminho até o refúgio
