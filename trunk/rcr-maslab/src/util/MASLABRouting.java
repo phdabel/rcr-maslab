@@ -146,6 +146,11 @@ public final class MASLABRouting {
 			List<EntityID> Bloqueios, int... Setores) {
 		return gotoDestino(Origem, Destino, Bloqueios, false, Setores);
 	}
+	
+	public List<EntityID> Explorar(EntityID Origem, int Setor,
+			List<EntityID> Bloqueios) {
+		return Explorar(Origem, Setor, Bloqueios, null);
+	}
 
 	/**
 	 * Define a rota de exploração aleatória - DESCREVER FUNÇÃO DO ALGORITMO
@@ -160,10 +165,12 @@ public final class MASLABRouting {
 	 * @param Setores
 	 *            Setor onde o agente se encontra e (se conhecido) setor onde o
 	 *            agente deseja ir
+	 * @param dest
+	 * 			  Informar nulo se o destino não é conhecido
 	 * @return Caminho a ser percorrido ou nulo caso o agente estiver preso
 	 */
 	public List<EntityID> Explorar(EntityID Origem, int Setor,
-			List<EntityID> Bloqueios) {
+			List<EntityID> Bloqueios, EntityID dest) {
 		
 		StandardEntity se = model.getEntity(Origem);
 		int x=0,y=0;
@@ -177,11 +184,14 @@ public final class MASLABRouting {
 		}
 		
 		int setorOrigem = sectoring.getSetorPertencente(x, y);
-		
+
 		// Obtem os roadIDs do setor
 		List<EntityID> roadIDs = getRoadIDs(Setor);
-		EntityID dest = roadIDs.get(r.nextInt(roadIDs.size() - 1));
 		
+		if(dest == null){
+			dest = roadIDs.get(r.nextInt(roadIDs.size() - 1));			
+		}
+
 		List<EntityID> path = new ArrayList<EntityID>(); 
 		//Se for no mesmo setor, utiliza uma busca simples
 		if(setorOrigem == Setor){
@@ -193,6 +203,8 @@ public final class MASLABRouting {
 
 			// Obtem o caminho de onde estou até um ponto aleatório dentro do setor
 			path = search.breadthFirstSearch(Origem, Bloqueios, true, dest);
+			System.out.println("Setor Origem: " + setorOrigem + " Setor Destino: " + Setor + " Destino: " + dest.getValue() + " path: " + path);
+
 		}else{
 			// Transforma os parametros recebidos em um Array
 			MASLABBFSearch searchOrigem;
@@ -203,33 +215,33 @@ public final class MASLABRouting {
 			searchDestino = getSearch(Setor);
 			
 			path = searchOrigem.breadthFirstSearch(Origem, Bloqueios, true, principalIDs);
-			System.out.println("Origem -> Principal: " + path);
+			System.out.println("Setor Origem: " + setorOrigem 
+					+ " Setor Destino: " + Setor 
+					+ " Destino: " + dest.getValue() 
+					+ " Origem -> Principal: " + path);
 			
 			// Remove a última posição do caminho para não duplicar e armazena para
 			// realizar o roteamento
 			EntityID PrincipalOrigem = path.get(path.size() - 1);
-			System.out.println("Principal Origem: " + PrincipalOrigem);
 
 			// Adiciona o caminho mais curto do destino até a via principal
 			List<EntityID> DestPath = searchDestino.breadthFirstSearch(dest, Bloqueios, true, principalIDs);
-			System.out.println("Destino -> Principal: " + DestPath);
 			Collections.reverse(DestPath);
-			System.out.println("Principal -> Destino: " + DestPath);
 			EntityID PrincipalDest = DestPath.get(0);
-			System.out.println("Principal Destino: " + PrincipalDest);
-
 			DestPath.remove(0);
-			System.out.println("Principal -> Destino: " + DestPath);
 
-			
 			// Calcula o caminho mais curto da via principal até o ponto da via
 			// principal onde tem um refúgio mais perto e adiciona ao path
-			System.out.println("Principal -> Principal: " + Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest));
-			path.addAll(Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest));
-			path.addAll(DestPath);
-			System.out.println("Origem -> Destino: " + path);
+			System.out.println("Setor Origem: " + setorOrigem 
+					+ " Setor Destino: " + Setor 
+					+ " Destino: " + dest.getValue() 
+					+ " Origem -> Principal: " + path
+					+ " Principal -> Principal: " + Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest)
+					+ " Principal -> Destino: " + DestPath);
 
 			
+			path.addAll(Psearch.breadthFirstSearch(PrincipalOrigem, Bloqueios, true, PrincipalDest));
+			path.addAll(DestPath);
 		}
 		return path;
 	}
