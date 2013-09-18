@@ -3,6 +3,7 @@ package agent;
 import agent.interfaces.IAbstractAgent;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 
-import model.Mensagem;
+import model.BurningMensagem;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
@@ -190,6 +191,11 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         System.out.println(time + " - " + me().getID() + " - " + str);
     }
 
+    @Override
+    public void sendMessage(MSGType type, boolean radio, int time, BurningMensagem mensagens) {
+    	sendMessage(type, radio, time, Arrays.asList(mensagens));
+    }
+
     /**
      * Envia uma mensagem
      *
@@ -200,15 +206,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * type da mensagem.
      */
     @Override
-    public void sendMessage(MSGType type, boolean radio, int time, Mensagem... mensagens) {
+    public void sendMessage(MSGType type, boolean radio, int time, List<BurningMensagem> mensagens) {
 
         //inicializa variaveis
         String msg = "";
         Channel channel = null;
 
         //monta a mensagem em um string
-        for (int i = 0; i < mensagens.length; i++) {
-            msg += mensagens[i].getMSG();
+        for (BurningMensagem m: mensagens) {
+            msg += m.getMSG();
         }
         //compacta a mensagem IMPLEMENTAR! - huffman ou zip?
 
@@ -228,6 +234,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
                 break;
             }
         }
+        
+        System.out.println("ID: " + me().getID() + " MSG: " + msg);
         //envia de acordo com o meio (voz, radio)
         if (radio) {
             sendSpeak(time, channel.ordinal(), msg.getBytes());

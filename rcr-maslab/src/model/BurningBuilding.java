@@ -10,6 +10,16 @@ public class BurningBuilding {
 		tempoAtual = tA;
 		tempoEstimado = tE;
 	}
-	
-	
+	public int getTempoRestante(int time){
+		return (tempoEstimado - (time - tempoAtual));
+	}
+	public int getID(){
+		return ID;
+	}
+	public int getTempoEstimado(){
+		return tempoEstimado;
+	}
+	public int getTempoAtual(){
+		return tempoAtual;
+	}
 }

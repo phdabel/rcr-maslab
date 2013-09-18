@@ -11,10 +11,9 @@ package util;
 public enum MSGType {
 
     //início, fim.
-    UNLOCK_MAIN_STREET("Desbloquear via principal"),
-    Type_2("Tipo 2"),
-    Type_3("Tipo 3"),
-    Type_4("Tipo 4");
+    BURNING_BUILDING("Edificio em chamas"),
+    UNBLOCK_ME("Me desbloqueie"),
+    SAVE_ME("Me salvem");
     private String name;
 
     private MSGType(String name) {

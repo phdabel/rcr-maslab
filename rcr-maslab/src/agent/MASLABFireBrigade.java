@@ -8,11 +8,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 
 import model.BurningBuilding;
-import model.Mensagem;
+import model.BurningMensagem;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -26,12 +25,9 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.FireBrigade;
 import util.Channel;
-import util.DistanceSorter;
 import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
 import util.MSGType;
-import util.Setores;
-import model.Mensagem;
 
 /**
  * A sample fire brigade agent.
@@ -66,15 +62,17 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	}
 	private Estados estado;
 	private EntityID destino = null;
+	private EntityID alvo = null;
 	
 	private List<EntityID> path = new LinkedList<EntityID>();
 	
 	private int setorAtual;
 	
     private String MSG_SEPARATOR = "-";
-    private String MSG_FIM = ".";
+    private String MSG_FIM = ",";
     
     private List<BurningBuilding> Alvos = new LinkedList<BurningBuilding>();
+    private List<BurningBuilding> AlvosComunicar = new LinkedList<BurningBuilding>();
 	
 	/*
 	 * 
@@ -84,7 +82,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	public MASLABFireBrigade(int pp){
 		super(pp);
 		setorAtual = (1 + rand.nextInt(4));
-		Mensagem m = new Mensagem();
+		BurningMensagem m = new BurningMensagem();
 		MSG_SEPARATOR = m.getMSG_SEPARATOR();
 		MSG_FIM = m.getMSG_FIM();
 	}
@@ -96,7 +94,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 	@Override
 	protected void postConnect() {
-		
 		
 		/*
 		 Bombeiros
@@ -138,12 +135,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			  
 			  
 		 */
-		
-		
-		
-		
-		
-		
 		
 		super.postConnect();
 		model.indexClass(StandardEntityURN.BUILDING, StandardEntityURN.REFUGE,
@@ -188,16 +179,37 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		//Separa todas as mensagens recebidas pois podem vir agrupadas de um único agente
 		List<String> mensagens = new ArrayList<String>();
 		for(String s: msgs){
-			//Separa as mensagens recebidas
-			mensagens = Arrays.asList(s.split(MSG_FIM));
+			String x[] = s.split(MSG_FIM);
+			mensagens.addAll(Arrays.asList(s.split(MSG_FIM)));
 		}
 		
 		//Armazena as informações recebidas
 		for(String s: mensagens){
+			//Separa as partes da mensagem
 			List<String> msg = Arrays.asList(s.split(MSG_SEPARATOR));
-			if(Integer.parseInt(msg.get(0)) == MSGType.BURNING_BUILDING.ordinal()){
-				Alvos.add(new BurningBuilding(Integer.parseInt(msg.get(1)), Integer.parseInt(msg.get(2)), Integer.parseInt(msg.get(3))));				
+			
+			//Tamanho da mensagem de prédios em chamas
+			//TODO - Ver uma forma eficiente de tratar as mensagens pois pode ser que recebamos um texto
+			try{
+				if(msg.size() == 4){
+					System.out.println("ID: " + me.getID().getValue() + " Recebido: " + s);
+					//Se for um prédio em chamas
+					if(Integer.parseInt(msg.get(0)) == MSGType.BURNING_BUILDING.ordinal()){
+						BurningBuilding alvoAux = new BurningBuilding(Integer.parseInt(msg.get(1)), Integer.parseInt(msg.get(2)), Integer.parseInt(msg.get(3))); 
+						if(!Alvos.contains(alvoAux)){
+							Alvos.add(alvoAux);
+						}
+					}
+				}
+			}catch(Exception e){
+				System.out.println(s);
 			}
+			
+		}
+		
+		String aux = "";
+		for(BurningBuilding b: Alvos){
+			aux += b.getID() + " - ";
 		}
 		
 		//TODO - Perceber o ambiente
@@ -207,15 +219,39 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				destino = null;
 			}
 		}
-		//Percenebendo incendios
-		Collection<EntityID> all = getBurningBuildings();
+
+		/*
+		 * Atualizar lista de incêndios:
+		 * - Adicionar novos incêndios
+		 * - Remover incêndios que já foram combatidos
+		 */
+		AtualizarIncendios(time);
+		
+		aux = "";
+		for(BurningBuilding b: Alvos){
+			aux += b.getID() + " - ";
+		}
+		System.out.println("TODOS MEUS ALVOS ID: " + me.getID().getValue() + " Alvos: " + aux);
+		
+		
+		alvo = getIncendio(time, Alvos);
+		if(alvo != null)
+			System.out.println("ID: " + me.getID().getValue() + " Alvo: " + alvo.getValue());
+		
 		//Perceber os bloqueios no caminho para desviar
 		//Bloqueios = PERCEBERBLOQUEIOS();
 		
 		
-		
 		//TODO - Enviar Mensagens
-		
+		List<BurningMensagem> m = new ArrayList<BurningMensagem>();
+		for(BurningBuilding bb: AlvosComunicar){
+			m.add(new BurningMensagem(String.valueOf(MSGType.BURNING_BUILDING.ordinal()), String.valueOf(bb.getID()), String.valueOf(bb.getTempoAtual()), String.valueOf(bb.getTempoEstimado())));
+		}
+		if(time > 4)
+			AlvosComunicar.clear();
+		if(m.size()>0){
+			sendMessage(MSGType.BURNING_BUILDING, true, time, m);
+		}
 		
 		//Avaliando estados
 		
@@ -228,7 +264,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}else if (me.isWaterDefined() && me.getWater() == 0) {
 			estado = Estados.BuscandoRefugio;
 		//Vi algum incendio
-		}else if(all.size() > 0){
+		}else if(alvo != null){
 			estado = Estados.Combatendo;
 		//Tô no vácuo...
 		}else{
@@ -279,20 +315,33 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		} else if (estado.equals(Estados.Combatendo)){
 			
 			//Verifica se algum prédio pode ser combatido
-			for (EntityID next : all) {
-				if (model.getDistance(getID(), next) <= maxDistance) {
-					sendExtinguish(time, next, maxPower);
-					return;
-				}
+			if (model.getDistance(getID(), alvo) <= maxDistance) {
+				sendExtinguish(time, alvo, maxPower);
+				return;
 			}
 			
 			//Caso nenhum prédio possa ser combatido, move-se até um prédio
-			for (EntityID next : all) {
-				path = planPathToFire(next);
-				if (path != null) {
-					sendMove(time, path);
-					return;
+			//Se o destino já é o alvo então só atualiza o path
+			if(alvo.getValue() == destino.getValue()){
+				System.out.println("JÀ ESTOU CAMINHANDO");
+				List<EntityID> p = new ArrayList<EntityID>(path);
+				for(EntityID e: p){
+					if(e.getValue() == me.getPosition().getValue()){
+						break;
+					}else{
+						path.remove(e);
+					}
 				}
+			//Caso contrário calcula o caminho ate o alvo
+			}else{
+				//Calcula o caminho
+				path = routing.Combater(me().getPosition(), alvo, Bloqueios);
+				//Atualiza o destino
+				destino = path.get(path.size()-1);
+			}
+			if (path != null) {
+				sendMove(time, path);
+				return;
 			}
 		
 		//Explorando
@@ -332,26 +381,82 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				}
 			}
 		}
-		// Sort by distance
-		Collections.sort(result, new DistanceSorter(location(), model));
 		return objectsToIDs(result);
-	}
-
-	private List<EntityID> planPathToFire(EntityID target) {
-		// Try to get to anything within maxDistance of the target
-		Collection<StandardEntity> targets = model.getObjectsInRange(target,
-				maxDistance);
-		if (targets.isEmpty()) {
-			return null;
-		}
-		//TODO - Definir o alvo do combate
-		return routing.Combater(me().getPosition(), new ArrayList<EntityID>(objectsToIDs(targets)).get(0), Bloqueios);
 	}
 	
 	/*
 	 * 
 	 * Métodos Definidos por nós
 	 */
+	
+	private void AtualizarIncendios(int time){
+		//Cria uma lista auxiliar para fazer a iteração
+		List<BurningBuilding> alvosAuxiliar = new ArrayList<BurningBuilding>(Alvos);
+
+		//Perceber prédios próximos para remover da lista de incendios
+		Collection<EntityID> notBurning = getNOTBurningBuildings();
+		
+		//Remove os prédios que não estão mais pegando fogo
+		for(BurningBuilding a: alvosAuxiliar){
+			if(notBurning.contains(new EntityID(a.getID()))){
+				Alvos.remove(a);
+			}
+		}
+		
+		//Percenebendo incendios para atualizar a lista de incendios
+		Collection<EntityID> burning = getBurningBuildings();
+		
+		//Adiciona prédios pegando fogo
+		boolean inserir = true;
+		for(EntityID e: burning){
+			inserir = true;
+			for(BurningBuilding a: Alvos){
+				if(burning.contains(new EntityID(a.getID()))){
+					inserir = false;
+				}
+			}
+			
+			if (inserir){
+				Building b = (Building)model.getEntity(e);
+				//TODO - Atualizar cálculo
+				Alvos.add(new BurningBuilding(e.getValue(), time, (b.getBrokenness() / b.getTemperature())));
+				AlvosComunicar.add(new BurningBuilding(e.getValue(), time, (b.getBrokenness() / b.getTemperature())));
+			}
+		}
+		
+		
+	}
+	
+	private Collection<EntityID> getNOTBurningBuildings() {
+		Collection<StandardEntity> e = model.getObjectsInRange(me().getPosition(), maxDistance);
+		List<Building> result = new ArrayList<Building>();
+		for (StandardEntity next : e) {
+			if (next instanceof Building) {
+				Building b = (Building) next;
+				if (!b.isOnFire()) {
+					result.add(b);
+				}
+			}
+		}
+		return objectsToIDs(result);
+	}
+
+	private EntityID getIncendio(int time, List<BurningBuilding> all){
+		int maiorTempoVida = Integer.MIN_VALUE;
+		BurningBuilding bb = null;
+		
+		for(BurningBuilding b: all){
+			
+			if(maiorTempoVida < (b.getTempoRestante(time))){
+				maiorTempoVida = b.getTempoRestante(time);
+				bb = b;
+			}
+		}
+		if(bb != null)
+			return new EntityID(bb.getID());
+		else
+			return null;
+	}
 	
 	/*
 	 * 
