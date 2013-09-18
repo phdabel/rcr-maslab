@@ -235,7 +235,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
             }
         }
         
-        System.out.println("ID: " + me().getID() + " MSG: " + msg);
+        //System.out.println("ID: " + me().getID() + " MSG: " + msg);
         //envia de acordo com o meio (voz, radio)
         if (radio) {
             sendSpeak(time, channel.ordinal(), msg.getBytes());
