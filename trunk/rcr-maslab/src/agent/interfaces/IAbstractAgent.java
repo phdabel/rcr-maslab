@@ -7,7 +7,7 @@ package agent.interfaces;
 import java.util.Collection;
 import java.util.List;
 
-import model.Mensagem;
+import model.BurningMensagem;
 import rescuecore2.messages.Command;
 import util.MSGType;
 
@@ -20,7 +20,8 @@ public interface IAbstractAgent {
     /**
      *
      */
-    void sendMessage(MSGType type, boolean radio, int time, Mensagem ... mensagens);
+    void sendMessage(MSGType type, boolean radio, int time, List<BurningMensagem> mensagens);
+    void sendMessage(MSGType type, boolean radio, int time, BurningMensagem mensagens);
     
     List<String> heardMessage(Collection<Command> messages);
 }   
