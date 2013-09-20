@@ -41,6 +41,14 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * Variaveis definidas por nós
 	 * 
 	 */
+	
+	public final static String MEAN_BURIEDNESS_DMG_KEY = "misc.damage.mean";
+	public final static String STD_BURIEDNESS_DMG_KEY = "misc.damage.sd";
+	public final static String FIRE_DMG_KEY = "misc.damage.fire";
+	
+	private float buriedness_dmg_factor;
+	private int fire_damage;
+	
 
 	/*
 	 * 
@@ -73,6 +81,12 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION,
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
+		
+		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness 
+		buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
+		
+		//fire damage is the one directly given in config
+		fire_damage = config.getIntValue(FIRE_DMG_KEY);
 	}
 
 	@Override
@@ -199,6 +213,46 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * 
 	 * Métodos Definidos por nós
 	 */
+	
+	/**
+	 * Retorna a expectativa de vida do agente, levando em conta o tempo que a ambulância leva até resgatá-lo.
+	 * Ev=(time_until_victim + buriedness)*(fire_damage + buriedness_dmg_factor*buriedness + damage)
+	 * time_until_victim = tempo de deslocamento até a vítima (estimativa de 1 timestep por EntityID)
+	 * buriedness = o nível de soterramento da vítima
+	 * fire_damage = o quanto de damage o fogo causa na vítima por timestep
+	 * buriedness_dmg_factor = estimativa de quanto damage o buriedness vai causar na vítima por timestep
+	 * damage = damage atual da vítima 
+	 * @param Human victim 
+	 * @return double
+	 */
+	protected double estimatedLifeTime(Human victim) {
+		int time_until_victim = routing.Resgatar(me().getPosition(), victim.getPosition(), Bloqueios, Setores.UNDEFINED_SECTOR).size();
+		float buriedness_dmg = buriedness_dmg_factor * victim.getBuriedness();
+		
+		double ev = (time_until_victim + victim.getBuriedness()) * (fire_damage + buriedness_dmg + victim.getDamage());
+		return ev;
+	}
+	
+	/**
+	 * Escolhe a vítima com maior estimativa de vida
+	 */
+	protected Human chooseVictimToRescue() {
+		//TODO: atualizar getTargets() para retornar algum humano na base de conhecimento do agente, ao inves do atualmente implementado do sample agent
+		
+		Human choosen = null;
+		double choosen_ev = 0;
+		for (Human victim : getTargets()) { 
+			double ev = estimatedLifeTime(victim);
+			if (choosen == null || ev > choosen_ev) {
+				choosen = victim;
+				choosen_ev = ev;
+			}
+		}
+		return choosen;
+	}
+	
+	
+	
 	/*
 	 * 
 	 * Métodos Acessores se necessário
