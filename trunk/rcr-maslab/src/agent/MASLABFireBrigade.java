@@ -150,7 +150,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		maxPower = config.getIntValue(MAX_POWER_KEY);
 		//gasStationRange = config.getIntValue(GAS_STATION_RANGE);
 		
-		Logger.info("Sample fire brigade connected: max extinguish distance = "
+		Logger.info("MASLAB fire brigade connected: max extinguish distance = "
 				+ maxDistance + ", max power = " + maxPower + ", max tank = "
 				+ maxWater);
 		
