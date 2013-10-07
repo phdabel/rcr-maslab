@@ -192,6 +192,17 @@ public final class MASLABRouting {
 			dest = roadIDs.get(r.nextInt(roadIDs.size() - 1));			
 		}
 
+		se = model.getEntity(dest);
+		
+		if(se instanceof Road){
+			x = ((Road) se).getX();
+			y = ((Road) se).getY();
+		}else if(se instanceof Building){
+			x = ((Building) se).getX();
+			y = ((Building) se).getY();
+		}
+		int setorDestino = sectoring.getSetorPertencente(x, y);
+		
 		List<EntityID> path = new ArrayList<EntityID>(); 
 		//Se for no mesmo setor, utiliza uma busca simples
 		if(setorOrigem == Setor){
@@ -212,7 +223,7 @@ public final class MASLABRouting {
 			
 			// Obtem o grafo de busca conforme o setor atual
 			searchOrigem = getSearch(setorOrigem);
-			searchDestino = getSearch(Setor);
+			searchDestino = getSearch(setorDestino);
 			
 			path = searchOrigem.breadthFirstSearch(Origem, Bloqueios, true, principalIDs);
 			
