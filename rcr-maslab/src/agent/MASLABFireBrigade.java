@@ -12,6 +12,7 @@ import java.util.EnumSet;
 
 import model.BurningBuilding;
 import model.BurningMensagem;
+import model.FightingMessage;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -29,7 +30,6 @@ import util.Channel;
 import util.MASLABPreProcessamento;
 import util.MASLABSectoring;
 import util.MSGType;
-import util.Setores;
 
 /**
  * A sample fire brigade agent.
@@ -97,7 +97,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		BurningMensagem m = new BurningMensagem();
 		MSG_SEPARATOR = m.getMSG_SEPARATOR();
 		MSG_FIM = m.getMSG_FIM();
-		capacidade = 50;
+		capacidade = 300;
 	}
 	
 	@Override
@@ -186,7 +186,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		FireBrigade me = me();
 		
-		if(time == 2 && me.getPosition().getValue() == 2526)
+		if(time == 2)
 			debug = true;
 		
 		if(debug)
@@ -195,7 +195,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		
 		//Receber Mensagens
 		List<String> msgs = heardMessage(heard);
-		
+
 		//Separa todas as mensagens recebidas pois podem vir agrupadas de um único agente
 		List<String> mensagens = new ArrayList<String>();
 		for(String s: msgs){
@@ -220,6 +220,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 						for(BurningBuilding bb : Alvos){
 							if(bb.getID() == Integer.parseInt(msg.get(1))){
 								bAdd = false;
+								bb.AtualizarImportancia(Integer.parseInt(msg.get(3)));
 							}
 						}
 						alvoAux = null;
@@ -276,6 +277,14 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		
 		alvoAnterior = alvoAtual;
 		alvo = getIncendio(time, Alvos);
+		if(alvo != null){
+			System.out.println(me().getID().getValue() + " Importancia: " + alvo.getImportancia());
+			if(alvo.getImportancia() < 0){
+				alvo = null;
+				alvoAtual = null;
+			}
+		}
+
 		if(alvoAtual != null && debug)
 			System.out.println("ID: " + me.getID().getValue() + " Alvo: " + alvoAtual.getValue());
 		
@@ -593,7 +602,13 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			}
 		}
 		
-		return (imp - (totalAgentes * capacidade));
+		imp = (imp - (totalAgentes * capacidade));
+		
+		if(imp != bb.getImportancia()){
+			AlvosComunicar.add(bb);
+		}
+		
+		return imp;
 	}
 	
 	private Collection<EntityID> getNOTBurningBuildings() {
