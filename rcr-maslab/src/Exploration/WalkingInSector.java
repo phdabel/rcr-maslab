@@ -16,7 +16,13 @@ public class WalkingInSector {
 	private StandardWorldModel model;
 	private Map<EntityID, Set<EntityID>> Setor;
 	private List<StandardEntity> nodesconhecidos;
-
+	Exploration exploracao;
+	
+	public WalkingInSector(StandardWorldModel world){
+		exploracao = new Exploration(world);
+		model = world;
+	}
+	
 	/**
 	 * Obtém o node a ser explorado
 	 * @param int Time - Tempo atual da simulação 
@@ -26,12 +32,9 @@ public class WalkingInSector {
 	 * @return StandardEntity Node - Node a ser explorado
 	 */
 	
-	public StandardEntity GetExplorationNode(int Time, EntityID start,
-			StandardWorldModel world, Map<EntityID, Set<EntityID>> graph) {
-		
-		model = world;
+	public StandardEntity GetExplorationNode(int Time, EntityID start, Map<EntityID, Set<EntityID>> graph) {
 		Setor = graph;
-		Exploration exploracao = new Exploration(world);
+		
 		nodesconhecidos = exploracao.GetExplorationNodes();
 
 		List<EntityID> open = new LinkedList<EntityID>();
