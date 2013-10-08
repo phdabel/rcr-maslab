@@ -15,11 +15,10 @@ public class WalkingInSector {
 
 	private StandardWorldModel model;
 	private Map<EntityID, Set<EntityID>> Setor;
-	private List<StandardEntity> nodesconhecidos;
-	Exploration exploracao;
+	//private ;
+	//Exploration exploracao;
 	
 	public WalkingInSector(StandardWorldModel world){
-		exploracao = new Exploration(world);
 		model = world;
 	}
 	
@@ -32,10 +31,10 @@ public class WalkingInSector {
 	 * @return StandardEntity Node - Node a ser explorado
 	 */
 	
-	public StandardEntity GetExplorationNode(int Time, EntityID start, Map<EntityID, Set<EntityID>> graph) {
+	public StandardEntity GetExplorationNode(int Time, EntityID start, Map<EntityID, Set<EntityID>> graph, List<StandardEntity> nodesconhecidos, StandardEntity ultimonode) {
 		Setor = graph;
 		
-		nodesconhecidos = exploracao.GetExplorationNodes();
+		//nodesconhecidos = exploracao.GetExplorationNodes();
 
 		List<EntityID> open = new LinkedList<EntityID>();
 		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
@@ -55,21 +54,24 @@ public class WalkingInSector {
 			for (EntityID neighbour : neighbours) {
 				// Caso os nodes ja foram visitados
 				if (isGoal(neighbour, nodesconhecidos)) {
+					System.out.println("Visitou: "+ neighbour);
 					if (ancestors.containsKey(neighbour)) {
 						open.add(neighbour);
 						ancestors.put(neighbour, next);
 					}
 					// Caso o node ainda não foi explorado
 				} else {
+					System.out.println("Buscando novo node de Exploração: "+ neighbour + "Já Explorado: " + nodesconhecidos );
 					// Atualiza a lista de exploração
-					exploracao.InsertNewInformation(Time, model.getEntity(neighbour), "000", 0, 0);
 					return  model.getEntity(neighbour);
 				}
 			}
 		} while (!found && !open.isEmpty());
 
 		// Caso todos os nodes foram explorado....
-		return exploracao.GetNewExplorationNode(Time);
+		//exploracao.GetNewExplorationNode(Time)
+		System.out.println("Exploração Completa: "+ ultimonode);
+		return ultimonode;
 
 	}
 
@@ -83,7 +85,7 @@ public class WalkingInSector {
 	 * @return true/false
 	 */
 	private boolean isGoal(EntityID e, List<StandardEntity> nodesconhecidos2) {
-		return nodesconhecidos2.contains(e);
+		return nodesconhecidos2.contains(model.getEntity(e));
 	}
 
 }

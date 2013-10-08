@@ -48,6 +48,8 @@ public class Exploration {
 	 */
 	public void InsertNewInformation(int time, StandardEntity ID,
 			String Problem, int remainingLifeTime, int gravidadeIncendio) {
+		
+		
 		// Caso o problema seja conhecido será atualizado o conhecimento
 		if (Exploracao.containsKey(ID)) {
 			UpdateInformation(time, ID, Problem, remainingLifeTime,
@@ -56,7 +58,10 @@ public class Exploration {
 		} else {
 			Exploracao.put(ID, Arrays.asList(Problem, time, remainingLifeTime,
 					gravidadeIncendio));
+			//System.out.println("Conhecidos2:"+ Exploracao.keySet());
 		}
+		
+		
 
 	}
 
@@ -318,7 +323,8 @@ public class Exploration {
 	 */
 	public List<StandardEntity> GetExplorationNodes() {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
-		Explorationnodes = (List<StandardEntity>) Exploracao.keySet();
+		
+		Explorationnodes = new ArrayList<StandardEntity> (Exploracao.keySet());
 
 		return Explorationnodes;
 

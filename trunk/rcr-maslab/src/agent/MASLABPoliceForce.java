@@ -1,11 +1,19 @@
 package agent;
 
+import Exploration.Exploration;
+import Exploration.WalkingInSector;
 import agent.interfaces.IPoliceForce;
+
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
+import rescuecore.objects.World;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
@@ -14,7 +22,6 @@ import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Vector2D;
-
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.Road;
@@ -22,6 +29,7 @@ import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
 import util.Channel;
+import util.MASLABSectoring;
 import util.MSGType;
 import util.Setores;
 
@@ -38,6 +46,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	 */
 	private static final String DISTANCE_KEY = "clear.repair.distance";
 	private int distance;
+	private Exploration exploracao = new Exploration(model);;
 	/**
 	 * 
 	 * Variaveis definidas por nós
@@ -82,8 +91,12 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
                 //envia uma mensagem para outro bombeiro
 //                sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
 		
+		//System.out.println("Eu to em:"+ model.getEntity(me().getPosition()).toString()+ "   ...  "+ me().getPosition() );
+		
+		exploracao.InsertNewInformation(time, model.getEntity(me().getPosition()), "000", 0, 0);
+		
 		// Am I near a blockade?
-		Blockade target = getTargetBlockade();
+		Blockade target = getTargetBlockade(time);
 		if (target != null) {
 			Logger.info("Clearing blockade " + target);
 			sendSpeak(time, 1, ("Clearing " + target).getBytes());
@@ -122,7 +135,23 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		}
 		Logger.debug("Couldn't plan a path to a blocked road");
 		Logger.info("Moving randomly");
-		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
+		
+		
+		
+		
+		WalkingInSector walking = new WalkingInSector(model);
+		//System.out.println("Setor: "+ Setores.PRINCIPAL);
+		Map<EntityID, Set<EntityID>> mapa = sectoring.MapSetor2;
+		//System.out.println("Mapa: "+ mapa + " ME :"+ me().getPosition(model).getID());
+		
+		
+		StandardEntity node = walking.GetExplorationNode(time,me().getPosition(model).getID(),mapa,exploracao.GetExplorationNodes(),exploracao.GetNewExplorationNode(time));
+		//System.out.println("Conhecidos: "+ Ex);
+		//getMapSetor
+		
+		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios, node.getID()));
+			
+		//sendMove(time, ));
 	}
 
 	@Override
@@ -148,7 +177,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		return result;
 	}
 
-	private Blockade getTargetBlockade() {
+	private Blockade getTargetBlockade(int time) {
 		Logger.debug("Looking for target blockade");
 		Area location = (Area) location();
 		Logger.debug("Looking in current location");
@@ -159,6 +188,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		Logger.debug("Looking in neighbouring locations");
 		for (EntityID next : location.getNeighbours()) {
 			location = (Area) model.getEntity(next);
+			
 			result = getTargetBlockade(location, distance);
 			if (result != null) {
 				return result;
