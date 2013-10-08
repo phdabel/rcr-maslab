@@ -240,7 +240,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		
 		//TODO - Perceber o ambiente
-		//TODO - Atualizar os IDsCorrespondentes
 		//Percenbendo onde está
 		if(destino != null){
 			if(me.getPosition().getValue() == destino.getValue()){
@@ -682,7 +681,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				
 				
 				if(b.isTemperatureDefined()){
-					if(menorTemperatura > b.getTemperature()){
+					if(menorTemperatura > b.getTemperature() && b.getTemperature() > 0){
 						menorTemperatura = b.getTemperature();
 						alvoAtual = b.getID();
 					}
