@@ -58,6 +58,8 @@ public class WalkingInSector {
 					}
 					// Caso o node ainda não foi explorado
 				} else {
+					// Atualiza a lista de exploração
+					exploracao.InsertNewInformation(Time, model.getEntity(neighbour), "000", 0, 0);
 					return  model.getEntity(neighbour);
 				}
 			}
