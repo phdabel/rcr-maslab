@@ -12,7 +12,6 @@ import java.util.EnumSet;
 
 import model.BurningBuilding;
 import model.BurningMensagem;
-import model.FightingMessage;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
