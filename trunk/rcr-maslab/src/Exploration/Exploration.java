@@ -126,22 +126,24 @@ public class Exploration {
 		HashMap<StandardEntity, Double> Roleta = new HashMap<StandardEntity, Double>();
 		Set<StandardEntity> chaves = Exploracao.keySet();
 
-		int auxTime = 0;
+		int auxTime = 1000000;
+		int timeagent=0;
 		StandardEntity value = null;
 
 		for (StandardEntity chave : chaves) {
 			// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual - Tempo de
 			// Visita)))
-			int time = timeAtual
-					- Integer.parseInt(Exploracao.get(chave).get(0).toString());
+			timeagent = Integer.parseInt(Exploracao.get(chave).get(0).toString());
+			int time =   timeagent / timeAtual ;
+			//int time = timeAtual - Integer.parseInt(Exploracao.get(chave).get(0).toString());
 			auxlimear = 100 * (1 - (Math.pow(0.9999, time)));
 			// Gera uma Roleta
 			limite = limite + auxlimear;
 			Roleta.put(chave, limite);
 
 			// Guarda o valor com mais tempo sem acessar
-			if (auxTime <= time) {
-				auxTime = time;
+			if (auxTime >= timeagent) {
+				auxTime = timeagent;
 				value = chave;
 			}
 
@@ -302,6 +304,7 @@ public class Exploration {
 			}
 
 		}
+		
 		List<StandardEntity> UltimasAcoes = new ArrayList<StandardEntity>();
 		int j = 0;
 		for (StandardEntity chave : (List<StandardEntity>) sortedMap) {

@@ -6,6 +6,7 @@ import agent.interfaces.IPoliceForce;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import firesimulator.world.Civilian;
 import rescuecore.objects.World;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -22,13 +24,17 @@ import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Vector2D;
+import rescuecore2.standard.entities.Building;
+import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.StandardWorldModel;
 import util.Channel;
+import util.MASLABBFSearch;
 import util.MASLABSectoring;
 import util.MSGType;
 import util.Setores;
@@ -45,8 +51,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	 * 
 	 */
 	private static final String DISTANCE_KEY = "clear.repair.distance";
+	public static final String MAX_VIEW_KEY = "perception.los.max-distance";
+	
 	private int distance;
 	private Exploration exploracao = new Exploration(model);;
+	private int temObjetivo = 0; // define se o policial ja tem uma tarefa
+	private int radioControl = 0; // define se existe algum pedido de socorro
+	private List<EntityID> pathtoclean;
+	private int maxView;
 	/**
 	 * 
 	 * Variaveis definidas por nós
@@ -59,10 +71,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	 * Métodos Standard Agent
 	 */
 
-	public MASLABPoliceForce(int pp){
+	public MASLABPoliceForce(int pp) {
 		super(pp);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "MASLAB police force";
@@ -72,86 +84,107 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	protected void postConnect() {
 		super.postConnect();
 		model.indexClass(StandardEntityURN.ROAD);
+		maxView = config.getIntValue(MAX_VIEW_KEY);
 		distance = config.getIntValue(DISTANCE_KEY);
 	}
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		if (time == config
-				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
+		Area location = (Area) location();
+		search = new MASLABBFSearch(model);
+		
+		
+		//System.out.println(exploracao.Exploracao.toString());
+		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Sunbscribe to channel 1
 			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
 		}
+
 		for (Command next : heard) {
 			Logger.debug("Heard " + next);
 		}
-                //ouve as mensagens
-//                List<String> msgsOuvidas = heardMessage(heard);
-                
-                //envia uma mensagem para outro bombeiro
-//                sendMessage(MSGType.UNLOCK_MAIN_STREET, true, time, "5","6");
+
+		// Atualiza o node onde o agente está
 		
-		//System.out.println("Eu to em:"+ model.getEntity(me().getPosition()).toString()+ "   ...  "+ me().getPosition() );
+
 		
-		exploracao.InsertNewInformation(time, model.getEntity(me().getPosition()), "000", 0, 0);
-		
-		// Am I near a blockade?
-		Blockade target = getTargetBlockade(time);
-		if (target != null) {
-			Logger.info("Clearing blockade " + target);
-			sendSpeak(time, 1, ("Clearing " + target).getBytes());
-			// sendClear(time, target.getX(), target.getY());
-			List<Line2D> lines = GeometryTools2D.pointsToLines(
-					GeometryTools2D.vertexArrayToPoints(target.getApexes()),
-					true);
-			double best = Double.MAX_VALUE;
-			Point2D bestPoint = null;
-			Point2D origin = new Point2D(me().getX(), me().getY());
-			for (Line2D next : lines) {
-				Point2D closest = GeometryTools2D.getClosestPointOnSegment(
-						next, origin);
-				double d = GeometryTools2D.getDistance(origin, closest);
-				if (d < best) {
-					best = d;
-					bestPoint = closest;
-				}
+		LookAround(time);
+		System.out.println("nodes explorados:" +exploracao.Exploracao.toString());
+		exploracao.InsertNewInformation(time,model.getEntity(me().getPosition()), "000", 0, 0);
+		// Verifica se existe um objetivo especifico
+		if (temObjetivo == 1) {
+			// Caso exista um chamado
+			if (radioControl == 1) {
+
 			}
-			Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-			v = v.normalised().scale(1000000);
-			sendClear(time, (int) (me().getX() + v.getX()),
-					(int) (me().getY() + v.getY()));
-			return;
-		}
-		// Plan a path to a blocked area
-		List<EntityID> path  = routing.Mover(me().getPosition(), Setores.UNDEFINED_SECTOR, getBlockedRoads());
-		if (path != null) {
-			Logger.info("Moving to target");
-			Road r = (Road) model.getEntity(path.get(path.size() - 1));
-			Blockade b = getTargetBlockade(r, -1);
-			sendMove(time, path, b.getX(), b.getY());
-			Logger.debug("Path: " + path);
-			Logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
-			return;
-		}
-		Logger.debug("Couldn't plan a path to a blocked road");
-		Logger.info("Moving randomly");
-		
-		
-		
-		
-		WalkingInSector walking = new WalkingInSector(model);
-		//System.out.println("Setor: "+ Setores.PRINCIPAL);
-		Map<EntityID, Set<EntityID>> mapa = sectoring.MapSetor2;
-		//System.out.println("Mapa: "+ mapa + " ME :"+ me().getPosition(model).getID());
-		
-		
-		StandardEntity node = walking.GetExplorationNode(time,me().getPosition(model).getID(),mapa,exploracao.GetExplorationNodes(),exploracao.GetNewExplorationNode(time));
-		//System.out.println("Conhecidos: "+ Ex);
-		//getMapSetor
-		
-		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios, node.getID()));
+			// Continuar tarefa priori de alocação
+			else {
+				// Am I near a blockade?
+				Blockade target = getTargetBlockade(time);
+				if (target != null) {
+				// Verifica se o bloqueio se encontra sob a rota de limpeza ou onde eu estou
+				if (isGoal(target.getPosition(), pathtoclean) || getTargetBlockade(location, distance)!= null) {
+						System.out.println("Existe um bloqueio onde estou *.*");
+						// Caso afirmativo limpar
+						Logger.info("Clearing blockade " + target);
+						sendSpeak(time, 1, ("Clearing " + target).getBytes());
+						// sendClear(time, target.getX(), target.getY());
+						List<Line2D> lines = GeometryTools2D.pointsToLines(
+								GeometryTools2D.vertexArrayToPoints(target
+										.getApexes()), true);
+						double best = Double.MAX_VALUE;
+						Point2D bestPoint = null;
+						Point2D origin = new Point2D(me().getX(), me().getY());
+						for (Line2D next : lines) {
+							Point2D closest = GeometryTools2D
+									.getClosestPointOnSegment(next, origin);
+							double d = GeometryTools2D.getDistance(origin,
+									closest);
+							if (d < best) {
+								best = d;
+								bestPoint = closest;
+							}
+						}
+						Vector2D v = bestPoint.minus(new Point2D(me().getX(),
+								me().getY()));
+						v = v.normalised().scale(1000000);
+						sendClear(time, (int) (me().getX() + v.getX()),
+								(int) (me().getY() + v.getY()));
+						return;
+
+					}
+					 if (haveDoors(me().getPosition(), model) != null){
+						 
+					 }
+
+				}
+				//System.out.println("Target: "+target);
+				System.out.println("Estou longe do bloqueio");
+				temObjetivo = 0;
+				
+
+			}
+
+		} else {
 			
-		//sendMove(time, ));
+			// senão obter nova rota para explorar/limpar
+			WalkingInSector walking = new WalkingInSector(model);
+			Map<EntityID, Set<EntityID>> mapa = sectoring.MapSetor2;
+			mapa = search.getGraph();
+			
+			//System.out.println("Objetivo: "+ mapa.values().toString());
+			
+			StandardEntity node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploracao.GetExplorationNodes(), exploracao.GetNewExplorationNode(time),0);
+			pathtoclean = routing.Explorar(me().getPosition(),
+					Setores.UNDEFINED_SECTOR, Bloqueios, node.getID());
+
+			System.out.println("Iniciando exploração: " + pathtoclean);
+			temObjetivo = 1;
+			sendMove(time, pathtoclean);
+			
+		}
+		
+
 	}
 
 	@Override
@@ -188,7 +221,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		Logger.debug("Looking in neighbouring locations");
 		for (EntityID next : location.getNeighbours()) {
 			location = (Area) model.getEntity(next);
-			
+
 			result = getTargetBlockade(location, distance);
 			if (result != null) {
 				return result;
@@ -302,5 +335,93 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 	public void setResultado(int resultado) {
 		this.resultado = resultado;
+	}
+
+	private boolean isGoal(EntityID e, List<EntityID> nodesconhecidos2) {
+		if (nodesconhecidos2.contains(e) && getBlockedRoads().contains(e))
+		{return true;}
+		return false;
+				//nodesconhecidos2.contains(e);
+	}
+
+	/**
+	 * Método que identifica as portas pertencentes a uma determinada road
+	 * 
+	 * @param EntityID
+	 *            - road
+	 * @return List<EntityID> doors
+	 */
+
+	private void LookAround(int time){
+		
+		// civis .substring(0, 1) incendio .substring(1, 2) bloqueio .substring(2, 3)
+		Collection<StandardEntity> Cenario = model.getObjectsInRange(me().getID(), maxView);
+		
+		for(StandardEntity objeto_cenario: Cenario){
+			//System.out.println(objeto_cenario.getID()+ " : "+ objeto_cenario.toString()+ " "+objeto_cenario.getProperties().toString());
+			if(!objeto_cenario.getProperties().toString().contains("urn:rescuecore2.standard:property:temperature (undefined)")
+					&& 
+					!objeto_cenario.getProperties().toString().contains("urn:rescuecore2.standard:property:blockades (undefined)"))
+			{
+				
+				
+				
+				String problem = "000";
+			
+				// caso seja um edificio
+			if(model.getEntitiesOfType(StandardEntityURN.BUILDING).contains(objeto_cenario)){
+				
+				Building predio = new Building(objeto_cenario.getID());
+
+				if ( predio.getTemperature()> 10){
+					problem = problem.substring(0, 1)+"1"+problem.substring(2,3);
+					//exploracao.InsertNewInformation(time, objeto_cenario, "010", 0, 0);
+				}
+			}
+			
+			// caso seja um outro policial
+			if(model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE).contains(objeto_cenario)){
+				// Outro policial
+				if(me().getID() != objeto_cenario.getID()){
+					// Comunicação aqui
+				}	
+			}
+			
+			if( model.getEntitiesOfType(StandardEntityURN.POLICE_FORCE).contains(objeto_cenario) ||
+				model.getEntitiesOfType(StandardEntityURN.CIVILIAN).contains(objeto_cenario) ||
+				model.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM).contains(objeto_cenario) ||
+				model.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE).contains(objeto_cenario)){
+				Human h = (Human) objeto_cenario;
+				if (h == me()) {
+					continue;
+				}
+				if (h.isHPDefined() && h.isBuriednessDefined()
+						&& h.isDamageDefined() && h.isPositionDefined()
+						&& h.getHP() > 0
+						&& (h.getBuriedness() > 0 || h.getDamage() > 0)) {
+					problem = "1"+problem.substring(1, 2)+problem.substring(2,3);
+				}		
+			}
+			// caso seja uma road
+			if(model.getEntitiesOfType(StandardEntityURN.ROAD).contains(objeto_cenario)){
+				Road road = new Road(objeto_cenario.getID());
+				
+				if(road.isBlockadesDefined()){
+					problem = problem.substring(0, 1)+problem.substring(1,2)+"1";
+				}
+			}else{
+				exploracao.InsertNewInformation(time, objeto_cenario, problem, 0, 0);
+			}
+			
+			if(!problem.equals("000")){
+				System.out.println(problem+" o/:"+objeto_cenario);
+			}
+			}
+		}
+		
+	}
+	private List<EntityID> haveDoors(EntityID road, StandardWorldModel world) {
+				 
+		return null;
 	}
 }
