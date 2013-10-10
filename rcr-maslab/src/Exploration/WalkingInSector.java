@@ -35,10 +35,10 @@ public class WalkingInSector {
 	 * @return StandardEntity Node - Node a ser explorado
 	 */
 	
-	public StandardEntity GetExplorationNode(int Time, EntityID start, Map<EntityID, Set<EntityID>> graph, List<StandardEntity> nodesconhecidos, StandardEntity ultimonode, int agent) {
+	public StandardEntity GetExplorationNode(int Time, EntityID start, Map<EntityID, Set<EntityID>> graph, List<StandardEntity> nodesconhecidos, int agent) {
 		Setor = graph;
+
 		
-		//nodesconhecidos = exploracao.GetExplorationNodes();
 
 		List<EntityID> open = new LinkedList<EntityID>();
 		Map<EntityID, EntityID> ancestors = new HashMap<EntityID, EntityID>();
@@ -46,7 +46,7 @@ public class WalkingInSector {
 		EntityID next = null;
 		boolean found = false;
 		ancestors.put(start, start);
-		//System.out.println("ME: "+start.toString()+ " open:"+open.toString());
+
 		do {
 			next = open.remove(0);
 			Collection<EntityID> neighbours = Setor.get(next);
@@ -57,42 +57,23 @@ public class WalkingInSector {
 			}
 			// Para os nodes filhos
 			for (EntityID neighbour : neighbours) {
-				// Caso os nodes ja foram visitados
-				if (isGoal(neighbour, nodesconhecidos)) {
-					//System.out.println("Visitou: "+ neighbour);
-					if (ancestors.containsKey(neighbour)) {
-						// caso seja um policial 
-						if(agent == 0){
-							// apenas as roads 
-							if(model.getEntitiesOfType(StandardEntityURN.BUILDING).contains(neighbour)){
-								// SEM PREDIOS
-							}else{
-								// o/
-							open.add(neighbour);
-							ancestors.put(neighbour, next);
-							}	
-						}else{
+				// Caso o node não foi visitados
+				if (!isGoal(neighbour, nodesconhecidos)) {
+					System.out.println(":--> : "+model.getEntity(neighbour));
+					return  model.getEntity(neighbour);
+				} 
+				//System.out.println("Visitou: "+ neighbour);
+				if (ancestors.containsKey(neighbour)) {
 						open.add(neighbour);
 						ancestors.put(neighbour, next);
-						}
-					}
-					// Caso o node ainda não foi explorado
-				} else {
-					//System.out.println("Buscando novo node de Exploração: "+ neighbour + "Já Explorado: " + nodesconhecidos );
-					// Atualiza a lista de exploração
-					if(model.getEntitiesOfType(StandardEntityURN.BUILDING).contains(neighbour)){
-						
-					}else{
-						return  model.getEntity(neighbour);
-					}
-				}
+				}		
 			}
 		} while (!found && !open.isEmpty());
 
 		// Caso todos os nodes foram explorado....
 		//exploracao.GetNewExplorationNode(Time)
-		//System.out.println("Exploração Completa: "+ ultimonode);
-		return ultimonode;
+		System.out.println("Exploração Completa ");
+		return null;
 
 	}
 

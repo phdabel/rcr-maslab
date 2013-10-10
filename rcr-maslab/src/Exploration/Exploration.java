@@ -120,11 +120,11 @@ public class Exploration {
 	 * @param int timeAtual - Tempo atual da simulação
 	 * @return StandardEntity node - node à visitar
 	 */
-	public StandardEntity GetNewExplorationNode(int timeAtual) {
+	public StandardEntity GetNewExplorationNode(int timeAtual,HashMap<StandardEntity, List> Exploracaolocal) {
 		double limite = 0;
-		double auxlimear;
+		//double auxlimear;
 		HashMap<StandardEntity, Double> Roleta = new HashMap<StandardEntity, Double>();
-		Set<StandardEntity> chaves = Exploracao.keySet();
+		Set<StandardEntity> chaves = Exploracaolocal.keySet();
 
 		int auxTime = 1000000;
 		int timeagent=0;
@@ -133,12 +133,14 @@ public class Exploration {
 		for (StandardEntity chave : chaves) {
 			// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual - Tempo de
 			// Visita)))
-			timeagent = Integer.parseInt(Exploracao.get(chave).get(0).toString());
-			int time =   timeagent / timeAtual ;
+			timeagent = Integer.parseInt(Exploracaolocal.get(chave).get(1).toString());
+			//System.out.println("Timeagent: "+timeagent + " timeAtual: "+ timeAtual);
+			double time =   (double) ((double)timeagent / (double)timeAtual) ;
+			//System.out.println("Time:"+time);
 			//int time = timeAtual - Integer.parseInt(Exploracao.get(chave).get(0).toString());
-			auxlimear = 100 * (1 - (Math.pow(0.9999, time)));
+			//auxlimear = 100 * (1 - (Math.pow(0.9999, time)));
 			// Gera uma Roleta
-			limite = limite + auxlimear;
+			limite = limite + time;
 			Roleta.put(chave, limite);
 
 			// Guarda o valor com mais tempo sem acessar
@@ -150,12 +152,15 @@ public class Exploration {
 		}
 
 		/* Sorteio de um limear para exploção */
-		Random rand = new Random();
-		double numerodasorte = (int) (rand.nextDouble() * limite);
+		Random r = new Random();
+		double numerodasorte = (limite ) * r.nextDouble();
+		//double numerodasorte = (int) (rand.nextDouble() nextDouble(0.0,100.) * limite);
 		/* Seleção do node */
 		Set<StandardEntity> indices = Roleta.keySet();
+		//System.out.println("Roleta: "+Roleta.toString());
 		for (StandardEntity indice : indices) {
 			if (numerodasorte <= Roleta.get(indice).doubleValue()) {
+				
 				return indice;
 			}
 		}
@@ -324,10 +329,10 @@ public class Exploration {
 	 * 
 	 * @return List<StandardEntity> Nodes já Explorados
 	 */
-	public List<StandardEntity> GetExplorationNodes() {
+	public List<StandardEntity> GetExplorationNodes(HashMap<StandardEntity, List> Exploracaolocal) {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
 		
-		Explorationnodes = new ArrayList<StandardEntity> (Exploracao.keySet());
+		Explorationnodes = new ArrayList<StandardEntity> (Exploracaolocal.keySet());
 
 		return Explorationnodes;
 
