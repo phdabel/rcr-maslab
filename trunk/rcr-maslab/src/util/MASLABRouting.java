@@ -385,7 +385,7 @@ public final class MASLABRouting {
 		// Remove a última posição do caminho para não duplicar e armazena para
 		// realizar o roteamento
 		EntityID paux = path.get(path.size() - 1);
-		path.remove(path.size() - 1);
+		//path.remove(path.size() - 1);
 
 		// Calcula o caminho mais curto da via principal até o ponto da via
 		// principal onde tem um refúgio mais perto e adiciona ao path
@@ -416,7 +416,21 @@ public final class MASLABRouting {
 		// Transforma os parametros recebidos em um Array
 		List<Integer> s = getListInteger(Setores);
 		MASLABBFSearch search;
-
+		
+		if(s.size() > 1){
+			if(s.get(0) == s.get(1)){
+				search = getSearch(s.get(0));
+				List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios, Destino);
+				if(!EntrarEdificio){
+					if(model.getEntity(path.get(path.size()-1)) instanceof Building){
+						path.remove(path.size()-1);
+					}
+				}
+				return path;
+			}
+		}
+		
+		
 		// Se o setor de origem do agente foi informado, busca somente no local
 		// onde ele está
 		if (s.size() > 0) {
@@ -430,7 +444,8 @@ public final class MASLABRouting {
 		// Calcula o caminho mais curto do agente até a via principal
 		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios,
 				principalIDs);
-
+		System.out.println("Origem -> Principal" + path.toString());
+		
 		// Se o setor de destido do agente foi informado, busca somente no local
 		// onde ele está
 		if (s.size() > 1) {
@@ -440,11 +455,15 @@ public final class MASLABRouting {
 			// Caso contrário, utiliza todo mapa
 			search = GlobalSearch;
 		}
-
+		
+		
 		// Calcula o caminho mais curto entre o destino e a via principal
 		List<EntityID> aux = search.breadthFirstSearch(Destino, Bloqueios,
 				principalIDs);
 
+		System.out.println("Destino -> Principal" + aux.toString());
+
+		
 		// Reverte a ordem do caminho encontrado pois queremos ir da via para o
 		// destino e não ao contrário.
 		Collections.reverse(aux);
@@ -454,6 +473,11 @@ public final class MASLABRouting {
 			// Se deve entrar adiciona o edificio na rota
 			aux.add(Destino);
 		}
+
+		System.out.println("Principal -> Principal" + Psearch.breadthFirstSearch(path.get(path.size() - 1),
+				Bloqueios, aux.get(0)));
+
+		System.out.println("Principal -> Destino" + aux.toString());
 
 		// Calcula o caminho mais curto da via principal até o ponto da via
 		// principal encontrado anteriormente e adiciona ao path
@@ -465,6 +489,8 @@ public final class MASLABRouting {
 
 		// Adiciona o caminho final ao path
 		path.addAll(aux);
+
+		System.out.println("Path Completo" + aux.toString());
 
 		return path;
 	}
