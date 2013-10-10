@@ -312,12 +312,12 @@ public class MASLABSectoring {
 			rota.add(e);
 			MapSecundarias.put(rota.get(0), rota);
 		}
-		for(EntityID e: hydrantIDs){
-			rota = search.breadthFirstSearch(e, MapPrincipal.keySet());
-			Collections.reverse(rota);
-			rota.add(e);
-			MapSecundarias.put(rota.get(0), rota);
-		}
+//		for(EntityID e: hydrantIDs){
+//			rota = search.breadthFirstSearch(e, MapPrincipal.keySet());
+//			Collections.reverse(rota);
+//			rota.add(e);
+//			MapSecundarias.put(rota.get(0), rota);
+//		}
 	}
 	
 	/**

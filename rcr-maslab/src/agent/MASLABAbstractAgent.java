@@ -1,9 +1,11 @@
 package agent;
 
+import Exploration.Exploration;
 import agent.interfaces.IAbstractAgent;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +13,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map;
 
-import model.BurningMensagem;
+import model.AbstractMessage;
+import model.BurningBuilding;
+import model.AbstractMessage;
 
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.Constants;
@@ -19,6 +23,8 @@ import rescuecore2.config.Config;
 import rescuecore2.log.Logger;
 import rescuecore2.messages.Command;
 import rescuecore2.standard.components.StandardAgent;
+import rescuecore2.standard.entities.FireBrigade;
+import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.Hydrant;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.Building;
@@ -86,7 +92,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * Classe de setorização, responsável por pre-processar e carregar os arquivos.
      */
 	protected MASLABSectoring sectoring;
-	
+	protected Exploration exploration;
+	private static final String MAX_DISTANCE_KEY = "fire.extinguish.max-distance";
+	private static final String MAX_VIEW_KEY = "perception.los.max-distance";
+	protected List<BurningBuilding> IncendiosComunicar = new LinkedList<BurningBuilding>(); 
+
+	protected int maxDistance;
+	protected int maxView;
+    protected int capacidadeCombate = 140;
+
 	
     /**
      * Cache of Hydrant IDs.
@@ -139,9 +153,12 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         // Criação de uma lista com hidrantes e refúgios para os bombeiros
         List<EntityID> waterIDs = new ArrayList<EntityID>();
         waterIDs.addAll(refugeIDs);
-        waterIDs.addAll(hydrantIDs);
         sectoring = new MASLABSectoring(model);
+        exploration = new Exploration(model);
 		
+		maxDistance = config.getIntValue(MAX_DISTANCE_KEY);
+	    maxView = config.getIntValue(MAX_VIEW_KEY);
+
 		//Realiza o pre-processamento
 		if(PreProcessamento > 0){
 			//Esse procedimento está descrito em cada agente pois pode ser iremos realizar diferentes processamentos em cada agente
@@ -191,8 +208,7 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         System.out.println(time + " - " + me().getID() + " - " + str);
     }
 
-    @Override
-    public void sendMessage(MSGType type, boolean radio, int time, BurningMensagem mensagens) {
+    public void sendMessage(MSGType type, boolean radio, int time, AbstractMessage mensagens) {
     	sendMessage(type, radio, time, Arrays.asList(mensagens));
     }
 
@@ -205,15 +221,15 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
      * @param params - parametros que compõem a mensagem. Variam de acordo com o
      * type da mensagem.
      */
-    @Override
-    public void sendMessage(MSGType type, boolean radio, int time, List<BurningMensagem> mensagens) {
+
+    public void sendMessage(MSGType type, boolean radio, int time, List<AbstractMessage> mensagens) {
 
         //inicializa variaveis
         String msg = "";
         Channel channel = null;
 
         //monta a mensagem em um string
-        for (BurningMensagem m: mensagens) {
+        for (AbstractMessage m: mensagens) {
             msg += m.getMSG();
         }
         //compacta a mensagem IMPLEMENTAR! - huffman ou zip?
@@ -298,4 +314,89 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
     public Config getConfig(){
     	return config;
     }
+    
+    /**
+     * Atualiza as informações do ambiente:
+     *    - Incêndios;
+     *    - Bloqueios;
+     *    - Agentes soterrados;
+     */
+    public void PerceberAmbiente(int time, StandardEntity PosicaoAtual){
+    	Collection<StandardEntity> all = model.getObjectsInRange(PosicaoAtual, maxDistance);
+    	//Monta a string de problemas
+    	String civis, fogo, bloqueios;
+    	EntityID local;
+    	
+    	//Para tudo que estiver no raio de visão, verifica se possui bloqueios ou incêndios, ou civis soterrados
+    	for(StandardEntity se: all){
+    		civis = "0"; fogo = "0"; bloqueios = "0";
+    		local = se.getID();
+    		
+    		//Se for um building, verifica se está pegando fogo e se tem civis (se conseguir)
+    		if(se instanceof Building){
+    			if(((Building) se).isOnFire()){
+    				fogo = "1";
+    			}
+    			
+    		//Se for uma rua, verifica se existe um bloqueio
+    		}else if(se instanceof Road){
+    			if(((Road) se).isBlockadesDefined()){
+    				if(((Road) se).getBlockades().size() > 0){
+    					bloqueios = "1";
+    				}
+    			}
+    		}else if(se instanceof Human){
+				Human h = (Human)se;
+    			local = h.getPosition();
+    			if(h.getID().getValue() != me().getID().getValue()){
+    				if (h.isHPDefined() && h.isBuriednessDefined()
+    						&& h.isDamageDefined() && h.isPositionDefined()
+    						&& h.getHP() > 0
+    						&& (h.getBuriedness() > 0 || h.getDamage() > 0)) {
+    					civis = "1";
+    				}
+    			}
+    		}
+    		
+    		//Atualiza a exploração com base no que foi percebido e verifica se precisa enviar uma mensagem
+    		if(exploration.InsertNewInformation(time, model.getEntity(local), civis+fogo+bloqueios, 0, 0)){
+    			if(civis.equals("1")){
+    				
+    			}
+    			if(fogo.equals("1")){
+    				BurningBuilding bb = new BurningBuilding(local.getValue(), time, 0);
+    				bb.AtualizarImportancia(CalcularImportancia(bb, PosicaoAtual.getID()));
+    			}
+    			if(bloqueios.equals("1")){
+    				
+    			}
+    		}
+    		
+    	}
+    }
+    
+    protected int CalcularImportancia(BurningBuilding bb, EntityID PosicaoAtual){
+		int imp = 0;
+		int totalAgentes = 0;
+		
+		for(Integer i : bb.getIDsCorrespondentes()){
+			Building b = (Building)model.getEntity(new EntityID(i));
+			imp += b.getTotalArea();
+		}
+		
+		Collection<StandardEntity> e = model.getObjectsInRange(PosicaoAtual, maxView);
+		for(StandardEntity se : e){
+			if(se instanceof FireBrigade){
+				totalAgentes += 1;
+			}
+		}
+		
+		imp = (imp - (totalAgentes * capacidadeCombate));
+		
+		if(imp != bb.getImportancia()){
+			IncendiosComunicar.add(bb);
+		}
+		
+		return imp;
+	}
 }
