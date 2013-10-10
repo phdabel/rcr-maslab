@@ -35,6 +35,7 @@ import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.StandardWorldModel;
 import util.Channel;
 import util.MASLABBFSearch;
+import util.MASLABRouting;
 import util.MASLABSectoring;
 import util.MSGType;
 import util.Setores;
@@ -59,6 +60,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	private int radioControl = 0; // define se existe algum pedido de socorro
 	private List<EntityID> pathtoclean;
 	private int maxView;
+	private StandardEntity node; // node objetivo
+	
 	/**
 	 * 
 	 * Variaveis definidas por nós
@@ -94,7 +97,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		search = new MASLABBFSearch(model);
 		
 		
-		//System.out.println(exploracao.Exploracao.toString());
 		if (time == config.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Sunbscribe to channel 1
 			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
@@ -105,11 +107,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		}
 
 		// Atualiza o node onde o agente está
-		
 
-		
-		LookAround(time);
-		System.out.println("nodes explorados:" +exploracao.Exploracao.toString());
+		//LookAround(time);
+		//System.out.println("nodes explorados:" +exploracao.Exploracao.toString());
 		exploracao.InsertNewInformation(time,model.getEntity(me().getPosition()), "000", 0, 0);
 		// Verifica se existe um objetivo especifico
 		if (temObjetivo == 1) {
@@ -122,9 +122,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				// Am I near a blockade?
 				Blockade target = getTargetBlockade(time);
 				if (target != null) {
-				// Verifica se o bloqueio se encontra sob a rota de limpeza ou onde eu estou
-				if (isGoal(target.getPosition(), pathtoclean) || getTargetBlockade(location, distance)!= null) {
-						System.out.println("Existe um bloqueio onde estou *.*");
+				// Verifica se o bloqueio se encontra sob a rota de limpeza ou onde eu estou 
+				if (isGoal(target.getPosition(), pathtoclean)|| getTargetBlockade(location, distance)!= null) {
+						//System.out.println("Existe um bloqueio onde estou *.*");
 						// Caso afirmativo limpar
 						Logger.info("Clearing blockade " + target);
 						sendSpeak(time, 1, ("Clearing " + target).getBytes());
@@ -158,12 +158,18 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					 }
 
 				}
-				//System.out.println("Target: "+target);
-				System.out.println("Estou longe do bloqueio");
-				temObjetivo = 0;
+				//System.out.println("Me: "+me().getPosition()+ " Objetivo: "+ node.getID());
+				if( me().getPosition().equals(node.getID())){
+					System.out.println("Objetivo Atual Concluido: "+me().getPosition().toString());
+					temObjetivo = 0;
+				}else{
+					sendMove(time, routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, node.getID()));
+				}
 				
-
-			}
+				//temObjetivo = 0;
+				//pathtoclean = ;
+				
+				}
 
 		} else {
 			
@@ -171,14 +177,24 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			WalkingInSector walking = new WalkingInSector(model);
 			Map<EntityID, Set<EntityID>> mapa = sectoring.MapSetor2;
 			mapa = search.getGraph();
+			//System.out.println("Objetivo: "+mapa.values());
+			System.out.println("Explorados: "+exploracao.Exploracao.toString());
+			node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploracao.GetExplorationNodes(exploracao.Exploracao),0);
+			if (node == null){
+				System.out.println("Roleta....");
+				node  = exploracao.GetNewExplorationNode(time,exploracao.Exploracao);
+			}
+			//System.out.println("Posicao Atual: "+ me().getPosition()+" Objetivo: "+ node.getID());
 			
-			//System.out.println("Objetivo: "+ mapa.values().toString());
+			pathtoclean = routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, node.getID());
+					
+			//Mover(me().getID(),Setores.UNDEFINED_SECTOR, node.getID());
+			//System.out.println(" indo por : "+pathtoclean);
 			
-			StandardEntity node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploracao.GetExplorationNodes(), exploracao.GetNewExplorationNode(time),0);
-			pathtoclean = routing.Explorar(me().getPosition(),
-					Setores.UNDEFINED_SECTOR, Bloqueios, node.getID());
-
-			System.out.println("Iniciando exploração: " + pathtoclean);
+			//gotoDestino(me().getID(), node.getID(), Bloqueios, false, 0);
+			//routing.Explorar();
+			
+			//System.out.println("Iniciando exploração: " + node.getID().toString());
 			temObjetivo = 1;
 			sendMove(time, pathtoclean);
 			
@@ -421,7 +437,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		
 	}
 	private List<EntityID> haveDoors(EntityID road, StandardWorldModel world) {
-				 
+		
 		return null;
 	}
 }
