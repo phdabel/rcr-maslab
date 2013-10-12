@@ -436,8 +436,50 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		}
 		
 	}
-	private List<EntityID> haveDoors(EntityID road, StandardWorldModel world) {
-		
-		return null;
+	
+
+	/**
+	 *  retorna todos os vizinhos de um buildings que sejam roads
+	 *  supõe-se que um vizinho de um building que seja road é uma porta,
+	 *  então este é adicionado a lista e retornado
+	 * 
+	 * @param e EntityID
+	 * @param world WorldModel
+	 * @return Doors List
+	 */
+	private List<EntityID> haveDoors(EntityID e, StandardWorldModel world)
+	{
+		List<EntityID> doors = new ArrayList<EntityID>();
+		StandardEntity entity = world.getEntity(e);
+		//se o no do parametro é road
+		if(entity.getStandardURN().equals(StandardEntityURN.ROAD))
+		{
+			Road r = (Road)entity;
+			//procura portas entre cada vizinho
+			for(EntityID n : r.getNeighbours())
+			{
+				StandardEntity _entity = world.getEntity(n);
+				//se o vizinho é uma building
+				if(_entity.getStandardURN().equals(StandardEntityURN.BUILDING))
+				{
+					//adiciona o nó do parâmetro e o retorna, pois é uma porta
+					doors.add(n);
+					return doors;
+					//senão, se o vizinho é road
+				}else if(_entity.getStandardURN().equals(StandardEntityURN.ROAD)){
+					Road r2 = (Road)_entity;
+					for(EntityID n2 : r2.getNeighbours())
+					{
+						StandardEntity _entity2 = world.getEntity(n2);
+						if(_entity2.getStandardURN().equals(StandardEntityURN.BUILDING))
+						{
+							doors.add(n2);
+						}
+					}
+				}
+			}
+		}
+		return doors;
 	}
+	
 }
