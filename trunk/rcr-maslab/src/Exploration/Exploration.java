@@ -248,13 +248,12 @@ public class Exploration {
 	 * @return List<StandardEntity> Edificios - Lista de Prédios em chamas
 	 *         conhecidos
 	 */
-	public List<StandardEntity> GetBurningBuilds(HashMap<StandardEntity, List> ExploracaoLocal) {
-		Set<StandardEntity> chaves = ExploracaoLocal.keySet();
+	public List<StandardEntity> GetBurningBuilds() {
+		Set<StandardEntity> chaves = Exploracao.keySet();
 		List<StandardEntity> Predios = new ArrayList<>();
 
 		for (StandardEntity chave : chaves) {
-			if (ExploracaoLocal.get(chave).get(0).toString().substring(1, 2)
-					.equals("1")) {
+			if (Exploracao.get(chave).get(0).toString().substring(1, 2).equals("1")) {
 				Predios.add(chave);
 			}
 		}
