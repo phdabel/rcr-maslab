@@ -73,6 +73,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	
     private String MSG_SEPARATOR = "-";
     private String MSG_FIM = ",";
+    private Boolean trocarCanal = false;
     
     private List<BurningBuilding> Alvos = new LinkedList<BurningBuilding>();
 //    private List<BurningBuilding> AlvosComunicar = new LinkedList<BurningBuilding>();
@@ -176,6 +177,11 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			sendSubscribe(time, Channel.FIRE_BRIGADE.ordinal());
 		}
 		FireBrigade me = me();
+		
+		if (trocarCanal){
+			trocarCanal = false;
+			sendSubscribe(time, Channel.FIRE_BRIGADE.ordinal());
+		}
 		
 		if(time == 2)
 			debug = true;
@@ -288,8 +294,19 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			IncendiosComunicar.clear();
 		if(m.size()>0){
 			sendMessage(MSGType.BURNING_BUILDING, true, time, m);
+		}else{
+			StandardEntity se = model.getEntity(me().getPosition());
+			if(se instanceof Road){
+				Road r = (Road)se;
+				if(r.isBlockadesDefined() && r.getBlockades().size() > 0){
+					sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
+					m.add(new AbstractMessage(String.valueOf(MSGType.UNBLOCK_ME.ordinal()), String.valueOf(r.getID().getValue())));
+					sendMessage(MSGType.UNBLOCK_ME, true, time, m);
+					trocarCanal = true;
+				}
+			}
 		}
-
+		
 		System.out.println(me().getID() + " TIMESTEP : " + time);
 		
 		if(debug && time == 2){
