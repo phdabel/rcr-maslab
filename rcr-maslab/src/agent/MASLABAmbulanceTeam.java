@@ -1,6 +1,7 @@
 package agent;
 
 import agent.interfaces.IAmbulanceTeam;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,8 +12,8 @@ import java.util.HashSet;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
+import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.log.Logger;
-
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.AmbulanceTeam;
@@ -56,6 +57,12 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 */
 	public MASLABAmbulanceTeam(int pp){
 		super(pp);
+		
+		//coloca valores default nos parametros de calculo de fogo
+		//caso nao seja possivel ler no misc-new.cfg
+		buriedness_dmg_factor = 1.1f;
+		fire_damage = 10;
+				
 	}
 	
 	@Override
@@ -82,15 +89,35 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
 		
-		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness 
-		buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
-		
+		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness
+		try {
+			buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
+		}
+		catch (NoSuchConfigOptionException e) {
+			System.out.println(
+				"WARNING: key " + MEAN_BURIEDNESS_DMG_KEY + " or " + STD_BURIEDNESS_DMG_KEY +
+				" not found in config files. Using default value of " + buriedness_dmg_factor + 
+				" for buriedness_dmg_factor."
+			);
+		}
 		//fire damage is the one directly given in config
-		fire_damage = config.getIntValue(FIRE_DMG_KEY);
+		try {
+			fire_damage = config.getIntValue(FIRE_DMG_KEY);
+		}
+		catch (NoSuchConfigOptionException e) {
+			System.out.println(
+				"WARNING: key " + FIRE_DMG_KEY + 
+				" not found in config files. Using default value of " + fire_damage + 
+				" for fire_damage."
+			);
+		}
+		//System.out.println("POST-CONNECTED");
+		
 	}
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		System.out.println("U want a piece of me, boy?");
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
