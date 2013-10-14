@@ -2,6 +2,7 @@ package agent;
 
 import agent.interfaces.IAmbulanceTeam;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +51,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private float buriedness_dmg_factor;
 	private int fire_damage;
 	
+	private HashMap<EntityID, Double> buriedness_memory;
+	
 
 	/*
 	 * 
@@ -62,6 +65,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		//caso nao seja possivel ler no misc-new.cfg
 		buriedness_dmg_factor = 1.1f;
 		fire_damage = 10;
+		
+		buriedness_memory = new HashMap<EntityID, Double>();
 				
 	}
 	
