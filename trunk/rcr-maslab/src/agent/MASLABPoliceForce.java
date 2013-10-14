@@ -79,7 +79,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	private List<EntityID> ComunicarIncendios = new ArrayList<EntityID>();
 	private int controletempoParado=0;
 	private EntityID PosicaoAtual;
-
+	private List<EntityID> MensageActivites = new ArrayList<EntityID>();
 	/**
 	 * 
 	 * Variaveis definidas por nós
@@ -132,8 +132,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			PosicaoAtual = me().getPosition();
 		}
 		
-		List<EntityID> MensageActivites = new ArrayList<EntityID>();
-		; // lista de chamado
+		
+		// lista de chamado
 
 		// Comunicar incendios observados
 		// sendMessage(BURNING_BUILDING,true,time,mensagem)
