@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 
+import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
@@ -51,7 +52,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private float buriedness_dmg_factor;
 	private int fire_damage;
 	
-	private HashMap<EntityID, Double> buriedness_memory;
+	private HashMap<EntityID, Integer> buriedness_memory;
 	
 
 	/*
@@ -66,7 +67,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		buriedness_dmg_factor = 1.1f;
 		fire_damage = 10;
 		
-		buriedness_memory = new HashMap<EntityID, Double>();
+		buriedness_memory = new HashMap<EntityID, Integer>();
 				
 	}
 	
@@ -122,7 +123,22 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		System.out.println("changed = " + changed);
+		//System.out.println("changed = " + changed);
+		
+		for (EntityID id : changed.getChangedEntities()){
+			if (model.getEntity(id) instanceof Human) {
+				Human h = (Human) model.getEntity(id);
+				
+				if (h.getBuriedness() != 0) {
+					int estimatedDeathTime = estimatedDeathTime(time, h);
+					buriedness_memory.put(id, estimatedDeathTime);
+					//TODO: comunicar o humano encontrado
+				}
+			}
+		}
+		
+		System.out.println(me().getID() + ": " + buriedness_memory);
+		
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
@@ -247,7 +263,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 */
 	
 	/**
-	 * Retorna a expectativa de vida do agente, levando em conta o tempo que a ambulância leva até resgatá-lo.
+	 * Retorna a o dano que o agente estara ate ambulancia chegar nele
 	 * Ev=(time_until_victim + buriedness)*(fire_damage + buriedness_dmg_factor*buriedness + damage)
 	 * time_until_victim = tempo de deslocamento até a vítima (estimativa de 1 timestep por EntityID)
 	 * buriedness = o nível de soterramento da vítima
@@ -257,12 +273,31 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * @param Human victim 
 	 * @return double
 	 */
-	protected double estimatedLifeTime(Human victim) {
+	protected double estimatedDamageUntilRescue(Human victim) {
 		int time_until_victim = routing.Resgatar(me().getPosition(), victim.getPosition(), Bloqueios, Setores.UNDEFINED_SECTOR).size();
 		float buriedness_dmg = buriedness_dmg_factor * victim.getBuriedness();
 		
 		double ev = (time_until_victim + victim.getBuriedness()) * (fire_damage + buriedness_dmg + victim.getDamage());
 		return ev;
+	}
+	
+	/**
+	 * Calcula uma estimativa de que timestep a referida vítima vai morrer.
+	 * @param current_time - o timestep atual
+	 * @param victim - a vítima em questão
+	 * @return tempo estimado
+	 */
+	protected int estimatedDeathTime(int current_time, Human victim) {
+		int edt = 0;
+		float buriedness_dmg = buriedness_dmg_factor * victim.getBuriedness();
+		float hp = victim.getHP();
+		float damage = victim.getDamage();
+		while (hp > 0) {
+			hp -=  damage;
+			damage += fire_damage + buriedness_dmg;
+			edt++;
+		}
+		return current_time + edt;
 	}
 	
 	/**
@@ -274,7 +309,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		Human chosen = null;
 		double chosen_ev = 0;
 		for (Human victim : getTargets()) { 
-			double ev = estimatedLifeTime(victim);
+			double ev = estimatedDamageUntilRescue(victim);
 			if (chosen == null || ev > chosen_ev) {
 				chosen = victim;
 				chosen_ev = ev;
