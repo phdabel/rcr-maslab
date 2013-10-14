@@ -139,12 +139,11 @@ public class Exploration {
 	 *            = 0:Policial, 1: bombeiro, 2: ambulancia
 	 * @return StandardEntity node - node à visitar
 	 */
-	public StandardEntity GetNewExplorationNode(int timeAtual,
-			HashMap<StandardEntity, List> Exploracaolocal, int agente) {
+	public StandardEntity GetNewExplorationNode(int timeAtual, int agente) {
 		double limite = 0;
 		// double auxlimear;
 		HashMap<StandardEntity, Double> Roleta = new HashMap<StandardEntity, Double>();
-		Set<StandardEntity> chaves = Exploracaolocal.keySet();
+		Set<StandardEntity> chaves = Exploracao.keySet();
 
 		int auxTime = 1000000;
 		int timeagent = 0;
@@ -158,7 +157,7 @@ public class Exploration {
 					// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual -
 					// Tempo de
 					// Visita)))
-					timeagent = Integer.parseInt(Exploracaolocal.get(chave)
+					timeagent = Integer.parseInt(Exploracao.get(chave)
 							.get(1).toString());
 					// System.out.println("Timeagent: "+timeagent +
 					// " timeAtual: "+ timeAtual);
@@ -201,7 +200,7 @@ public class Exploration {
 				// Calculo do tempo: 100*( 1 - ( 0.999 ^ ( Tempo Atual -
 				// Tempo de
 				// Visita)))
-				timeagent = Integer.parseInt(Exploracaolocal.get(chave)
+				timeagent = Integer.parseInt(Exploracao.get(chave)
 						.get(1).toString());
 				// System.out.println("Timeagent: "+timeagent +
 				// " timeAtual: "+ timeAtual);
@@ -266,12 +265,12 @@ public class Exploration {
 	 * @return List<StandardEntity> Civis - Lista de civis identificado em
 	 *         estado de perigo
 	 */
-	public List<StandardEntity> GetInjuredCivilians(HashMap<StandardEntity, List> ExploracaoLocal) {
-		Set<StandardEntity> chaves = ExploracaoLocal.keySet();
+	public List<StandardEntity> GetInjuredCivilians( ) {
+		Set<StandardEntity> chaves = Exploracao.keySet();
 		List<StandardEntity> civis = new ArrayList<>();
 
 		for (StandardEntity chave : chaves) {
-			if (ExploracaoLocal.get(chave).get(0).toString().substring(0, 1)
+			if (Exploracao.get(chave).get(0).toString().substring(0, 1)
 					.equals("1")) {
 				civis.add(chave);
 			}
@@ -284,13 +283,13 @@ public class Exploration {
 	 * 
 	 * @return List<StandardEntity> Bloqueio - Lista de bloqueios identificados
 	 */
-	public List<StandardEntity> GetBlockRoads(HashMap<StandardEntity, List> ExploracaoLocal) {
-		Set<StandardEntity> chaves = ExploracaoLocal.keySet();
+	public List<StandardEntity> GetBlockRoads( ) {
+		Set<StandardEntity> chaves = Exploracao.keySet();
 		List<StandardEntity> bloqueios = new ArrayList<>();
 
 		for (StandardEntity chave : chaves) {
 			
-			if (ExploracaoLocal.get(chave).get(0).toString().substring(2, 3).equals("1")) {
+			if (Exploracao.get(chave).get(0).toString().substring(2, 3).equals("1")) {
 				//System.out.println("Bloqueio: "+ExploracaoLocal.get(chave));
 				bloqueios.add(chave);
 			}
@@ -305,17 +304,17 @@ public class Exploration {
 	 *            <StandardEntity> informacoes - Lista de problemas a ser limpo
 	 * @param int problema - 0- civis, 1- incendio, 2- bloqueio
 	 */
-	public void clear(List<StandardEntity> informacoes, int problema, HashMap<StandardEntity, List> ExploracaoLocal) {
+	public void clear(List<StandardEntity> informacoes, int problema) {
 		// Civis
 		if (problema == 0) {
 			for (StandardEntity chave : informacoes) {
-				String aux = ExploracaoLocal.get(chave).get(2).toString();
-				int time = Integer.parseInt(ExploracaoLocal.get(chave).get(0)
+				String aux = Exploracao.get(chave).get(2).toString();
+				int time = Integer.parseInt(Exploracao.get(chave).get(0)
 						.toString());
-				ExploracaoLocal.remove(chave);
+				Exploracao.remove(chave);
 				String Problem = "0" + aux.substring(1, 2)
 						+ aux.substring(2, 3);
-				ExploracaoLocal.put(chave, Arrays.asList(Problem, time));
+				Exploracao.put(chave, Arrays.asList(Problem, time));
 			}
 		}
 		// Incendios
@@ -354,10 +353,10 @@ public class Exploration {
 	 * @return List<StandardEntity> UltimosNodesVisitados - Retorna uma lista
 	 * dos ultimos lugares visitados pelo agente
 	 */
-	public List<StandardEntity> GetLastAction(int Passos,  HashMap<StandardEntity, List> ExploracaoLocal) {
+	public List<StandardEntity> GetLastAction(int Passos) {
 
-		List mapKeys = new ArrayList<StandardEntity>(ExploracaoLocal.keySet());
-		List mapValues = new ArrayList(ExploracaoLocal.get(0));
+		List mapKeys = new ArrayList<StandardEntity>(Exploracao.keySet());
+		List mapValues = new ArrayList(Exploracao.get(0));
 
 		Collections.sort(mapValues);
 		Collections.sort(mapKeys);
@@ -371,11 +370,11 @@ public class Exploration {
 
 			while (keyIt.hasNext()) {
 				Object key = keyIt.next();
-				String comp1 = ExploracaoLocal.get(key).toString();
+				String comp1 = Exploracao.get(key).toString();
 				String comp2 = val.toString();
 
 				if (comp1.equals(comp2)) {
-					ExploracaoLocal.remove(key);
+					Exploracao.remove(key);
 					mapKeys.remove(key);
 					sortedMap.put((String) key, (Double) val);
 					break;
@@ -405,11 +404,11 @@ public class Exploration {
 	 * @return List<StandardEntity> Nodes já Explorados
 	 */
 	public List<StandardEntity> GetExplorationNodes(
-			HashMap<StandardEntity, List> Exploracaolocal) {
+			 ) {
 		List<StandardEntity> Explorationnodes = new ArrayList<>();
 
 		Explorationnodes = new ArrayList<StandardEntity>(
-				Exploracaolocal.keySet());
+				Exploracao.keySet());
 
 		return Explorationnodes;
 
