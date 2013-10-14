@@ -13,7 +13,9 @@ public enum MSGType {
     //início, fim.
     BURNING_BUILDING("Edificio em chamas"),
     UNBLOCK_ME("Me desbloqueie"),
-    SAVE_ME("Me salvem");
+    SAVE_ME("Me salvem"),
+    BURIED_HUMAN("Humano soterrado");
+    
     private String name;
 
     private MSGType(String name) {
