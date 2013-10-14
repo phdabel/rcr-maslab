@@ -62,6 +62,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	private List<EntityID> pathtoclean;
 	private int maxView;
 	private StandardEntity node; // node objetivo
+	private int Setor;
 	
 	/**
 	 * 
@@ -90,6 +91,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		model.indexClass(StandardEntityURN.ROAD);
 		maxView = config.getIntValue(MAX_VIEW_KEY);
 		distance = config.getIntValue(DISTANCE_KEY);
+		Setor = random.nextInt(6);
+		//Setores.UNDEFINED_SECTOR;
+		
 	}
 
 	@Override
@@ -169,7 +173,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							StandardEntity auxdor = model.getEntity(dor);
 							if(((Road) auxdor).isBlockadesDefined()){
 								System.out.println("Porta bloqueada: "+dor);
-								pathtoclean = routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, dor);
+								pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, dor);
 								sendMove(time, pathtoclean);
 								node = auxdor;
 								System.out.println("Novo Objetivo: Porta identificada ("+node.getID()+")");
@@ -208,7 +212,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					}
 				}
 				// Continua se movendo
-				sendMove(time, routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, node.getID()));
+				sendMove(time, routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID()));
 				return;
 			}
 
@@ -223,7 +227,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						//isGoal(road.getID(), pathtoclean)){
 						node = road;
 						System.out.println("Resultado exploração:"+node.getID());
-						pathtoclean = routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, node.getID());
+						pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
 						sendMove(time, pathtoclean);
 						temObjetivo = 1;
 						return;
@@ -249,9 +253,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			}
 			//System.out.println("Posicao Atual: "+ me().getPosition()+" Objetivo: "+ node.getID());
 			
-			pathtoclean = routing.Explorar(me().getPosition(),Setores.UNDEFINED_SECTOR, Bloqueios, node.getID());
+			pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
 					
-			//Mover(me().getID(),Setores.UNDEFINED_SECTOR, node.getID());
+			//Mover(me().getID(),Setor, node.getID());
 			//System.out.println(" indo por : "+pathtoclean);
 			
 			//gotoDestino(me().getID(), node.getID(), Bloqueios, false, 0);
