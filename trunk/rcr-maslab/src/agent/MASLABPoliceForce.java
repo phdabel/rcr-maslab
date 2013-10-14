@@ -565,6 +565,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				//System.out.println("Roleta....");
 				node = exploration.GetNewExplorationNode(time, 0);
 				if(Setor == 5){
+					Setor = sectoring.getSetorPertencente(me().getX(), me()
+							.getY()) ;}
+				if(Setor == 5){
 					Setor = 6;}
 				setSector();
 			}
