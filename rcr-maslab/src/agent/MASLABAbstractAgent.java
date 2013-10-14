@@ -256,7 +256,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
         if (radio) {
             sendSpeak(time, channel.ordinal(), msg.getBytes());
         } else {
-            sendSay(time, msg.getBytes());
+        	sendTell(time, msg.getBytes());
+            //sendSay(time, msg.getBytes());
         }
     }
 

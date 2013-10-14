@@ -348,7 +348,7 @@ public final class MASLABRouting {
 		return GlobalSearch;
 	}
 
-	private List<EntityID> getRoadIDs(int Setor) {
+	public List<EntityID> getRoadIDs(int Setor) {
 		if (Setor == Setores.S1) {
 			return setor1IDs;
 		} else if (Setor == Setores.S2) {

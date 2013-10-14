@@ -70,10 +70,15 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 									// agente
 	private String MSG_SEPARATOR = "-";
 	private String MSG_FIM = ",";
-	private List<EntityID> ObrigacoesSoterramento = new ArrayList<EntityID>();; // lista de chamado do setor
+	private List<EntityID> ObrigacoesSoterramento = new ArrayList<EntityID>();; // lista
+																				// de
+																				// chamado
+																				// do
+																				// setor
 	private int ControlResgate = 0; // status de resgate
 	private List<EntityID> ComunicarIncendios = new ArrayList<EntityID>();
-	private int controletempoIncendio;
+	private int controletempoParado=0;
+	private EntityID PosicaoAtual;
 
 	/**
 	 * 
@@ -117,28 +122,35 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			// Subscribe to channel 1
 			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
 		}
-		
+
 		Area location = (Area) location();
 		search = new MASLABBFSearch(model);
 		// Atualiza o ambiente ao redor do agente
 		PerceberAmbiente(time, me().getPosition(model));
+
+		if(time==1){
+			PosicaoAtual = me().getPosition();
+		}
 		
-		List<EntityID> MensageActivites = new ArrayList<EntityID>();; // lista de chamado
-		
+		List<EntityID> MensageActivites = new ArrayList<EntityID>();
+		; // lista de chamado
+
 		// Comunicar incendios observados
-		//	sendMessage(BURNING_BUILDING,true,time,mensagem)
-		//  ComunicarIncendios
-		
-		//TODO - Enviar Mensagens
+		// sendMessage(BURNING_BUILDING,true,time,mensagem)
+		// ComunicarIncendios
+
+		// TODO - Enviar Mensagens
 		List<AbstractMessage> m = new ArrayList<AbstractMessage>();
-		for(BurningBuilding bb: IncendiosComunicar){
-			m.add(new AbstractMessage(String.valueOf(MSGType.BURNING_BUILDING.ordinal()), String.valueOf(bb.getID()), String.valueOf(bb.getTempoAtual()), String.valueOf(bb.getImportancia())));
+		for (BurningBuilding bb : IncendiosComunicar) {
+			m.add(new AbstractMessage(String.valueOf(MSGType.BURNING_BUILDING
+					.ordinal()), String.valueOf(bb.getID()), String.valueOf(bb
+					.getTempoAtual()), String.valueOf(bb.getImportancia())));
 			ComunicarIncendios.add(new EntityID(bb.getID()));
 		}
-		if(time > 4)
+		if (time > 4)
 			IncendiosComunicar.clear();
-		if(m.size()>0 ){
-			System.out.println("Informando incendio");
+		if (m.size() > 0) {
+			// System.out.println("Informando incendio");
 			sendMessage(MSGType.BURNING_BUILDING, true, time, m);
 		}
 		// Verifica se existe policiais ao redor
@@ -146,7 +158,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 		// Receber Mensagens
 		List<String> msgs = heardMessage(heard);
-		System.out.println("mensagens 00: "+msgs);
+		// System.out.println("mensagens 00: "+msgs);
 		// Separa todas as mensagens recebidas pois podem vir agrupadas de um
 		// único agente
 		List<String> mensagens = new ArrayList<String>();
@@ -155,67 +167,77 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			mensagens.addAll(Arrays.asList(s.split(MSG_FIM)));
 		}
 
-		System.out.println("Verificando canais de comunicação.....");
-		System.out.println("Mensagem: "+ mensagens.toString());
+		// System.out.println("Verificando canais de comunicação.....");
+		// System.out.println("Mensagem: "+ mensagens.toString());
 		// Armazena as informações recebidas
-		
+
 		for (String s : mensagens) {
 			// Separa as partes da mensagem
 			List<String> msg = Arrays.asList(s.split(MSG_SEPARATOR));
-			System.out.println("Existe um pedido de resgate.................................:"+ s.toString());
+			// System.out.println("Existe um pedido de resgate.................................:"+
+			// s.toString());
 			// Tamanho da mensagem de prédios em chamas
 			// TODO - Ver uma forma eficiente de tratar as mensagens pois pode
 			// ser que recebamos um texto
 			Boolean bAdd = true;
 			BurningBuilding alvoAux = null;
-				// Caso seja uma mensagem por radio
-				if (msg.size() == 2) {
-					System.out.println("Pedido de resgate em: "+ msg.get(1).toString());
-					// Se for um infeliz bloqueado adicionar a lista
-					// MensageActivites
-					if (Integer.parseInt(msg.get(0)) == MSGType.UNBLOCK_ME
-							.ordinal()) {
-						System.out.println("Adicionando nova tarefa");
-						
-						if(!MensageActivites.contains(new EntityID(Integer.parseInt(msg.get(1))))){
-							MensageActivites.add(new EntityID(Integer.parseInt(msg.get(1))));
-							radioControl = 1;
+			// Caso seja uma mensagem por radio
+			if (msg.size() == 2) {
+				// System.out.println("Pedido de resgate em: "+
+				// msg.get(1).toString());
+				// Se for um infeliz bloqueado adicionar a lista
+				// MensageActivites
+				if (Integer.parseInt(msg.get(0)) == MSGType.UNBLOCK_ME
+						.ordinal()) {
+					// System.out.println("Adicionando nova tarefa");
+
+					if (!MensageActivites.contains(new EntityID(Integer
+							.parseInt(msg.get(1))))) {
+						MensageActivites.add(new EntityID(Integer.parseInt(msg
+								.get(1))));
+						radioControl = 1;
+					}
+					
+					// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+					// A ideia é gerar uma lista <MensageActivites> de
+					// Locais onde estão os bloqueados
+				}
+			}
+			if  (msg.size() != 2)
+			System.out.println("Objetivo "+ msg.get(1));
+			// Caso seja uma mensagem por voz
+			if (msg.size() == 3) {
+				System.out.println("Verificando mensagem por voz");
+				if (Integer.parseInt(msg.get(0)) == MSGType.UNBLOCK_ME
+						.ordinal()) {
+					// verificar se o objetivo é o mesmo
+					if (node.equals(new EntityID(Integer.parseInt(msg.get(1))))) {
+						// Menor id permanece com a tarefa
+						if (Integer.parseInt(me().getID().toString()) > Integer
+								.parseInt(new EntityID(Integer.parseInt(msg
+										.get(2))).toString())) {
+							System.out.println("Policial com mesmo objetivo ...");
+							try {
+								MensageActivites.remove(new EntityID(Integer
+										.parseInt(msg.get(1))));
+								ObrigacoesSoterramento.remove(new EntityID(
+										Integer.parseInt(msg.get(1))));
+								System.out.println("Removendo Atividade");
+							} catch (Exception e) {
+								// TODO: handle exception
+							}
 						}
 
-						// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
-						// A ideia é gerar uma lista <MensageActivites> de
-						// Locais onde estão os bloqueados
 					}
+
+					// new EntityID(Integer.parseInt(msg.get(1)));
+
 				}
-				// Caso seja uma mensagem por voz
-				if (msg.size() == 3) {
-					
-					if (Integer.parseInt(msg.get(0)) == MSGType.UNBLOCK_ME
-							.ordinal()) {
-					//  verificar se o objetivo é o mesmo
-						if(node.equals(new EntityID(Integer.parseInt(msg.get(1))))){
-							// Menor id permanece com a tarefa
-							if(Integer.parseInt(me().getID().toString()) > Integer.parseInt(new EntityID(Integer.parseInt(msg.get(2))).toString())){
-								System.out.println("Policial com mesmo objetivo ...");
-								try {
-									MensageActivites.remove(new EntityID(Integer.parseInt(msg.get(1)))); 
-									ObrigacoesSoterramento.remove(new EntityID(Integer.parseInt(msg.get(1)))); 
-								} catch (Exception e) {
-									// TODO: handle exception
-								}							
-							}
-							
-						}
-						
-					//new EntityID(Integer.parseInt(msg.get(1)));
-						
-					}
-					
-				}
+
+			}
 
 		}
 
-		
 		// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 		// caso seja uma mensagem por voz de outro policial
 		// verificar checarInteresse.CheckAnotherActions(me().getID(),
@@ -223,23 +245,44 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		// exploration.Exploracao), OutrosObjetivos)
 		// tomar outra ação de acordo com o return e o ID (menor)
 
+		
+		if(time>1){
+			if(me().getPosition().equals(PosicaoAtual) 
+			//((Road) model.getEntity(me().getPosition())).isBlockadesDefined()
+					){
+				controletempoParado ++;
+			}else{
+				controletempoParado = 0;
+				PosicaoAtual = me().getPosition();
+			}
+			
+			if(controletempoParado>10){
+				temObjetivo = 0;
+			}
+		}
+		
 		// Verifica se existe um objetivo especifico
 		if (temObjetivo == 1) {
+			System.out.println("Tenho um objetivo:" + node);
 			// Caso exista um chamado de radio
 			if (radioControl == 1) {
-				System.out.println("Existe um pedido de socorro verificando....");
+				System.out.println("é um atendendimento de radio");
+				// System.out.println("Existe um pedido de socorro verificando....");
 				// Verifica se realmente existe mensagem
 				if (!MensageActivites.isEmpty()) {
 					for (EntityID mensage : MensageActivites) {
-						System.out.println("Pedido de socorro: "+mensage);
+						System.out.println("Pedido de socorro: "
+								+ mensage.getValue());
 						// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 						// a ideia verificar se a atividade pertence ao setor
 						// que eu me encontro....
 						// caso afirmativo inserir essa obrigação
 						if (routing.getRoadIDs(Setor).contains(mensage)) {
-							//System.out.println("é meu dever sevir a sociedade e atirar no fogo");
+							System.out.println("Obrigação:"
+									+ mensage.getValue());
+							// //System.out.println("é meu dever sevir a sociedade e atirar no fogo");
 							// adiciona uma tarefa na lista de soterrados
-							if(!ObrigacoesSoterramento.contains(mensage)){
+							if (!ObrigacoesSoterramento.contains(mensage)) {
 								ObrigacoesSoterramento.add(mensage);
 							}
 						}
@@ -249,22 +292,23 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 				// caso não esteja realizando nenhum resgate
 				if (ControlResgate == 0) {
-					System.out.println("Não tenho nenhum dever no momento verificando pendencias....");
+					System.out.println("verificando obrigações");
+					// System.out.println("Não tenho nenhum dever no momento verificando pendencias....");
 					// verifica se possui alguma pendencia
 					if (!ObrigacoesSoterramento.isEmpty()) {
-						System.out.println("to devendo horas... merda");
+						// System.out.println("to devendo horas... merda");
 						List<EntityID> caminho0 = routing.Explorar(me()
 								.getPosition(), Setor, Bloqueios,
 								ObrigacoesSoterramento.get(0));
 						List<EntityID> caminho1;
 						node = model.getEntity(ObrigacoesSoterramento.get(0));
-						System.out.println("Opção01: "+ObrigacoesSoterramento.get(0));
+						// System.out.println("Opção01: "+ObrigacoesSoterramento.get(0));
 						// busca a ação de resgate mais proximo
 						for (EntityID soterrados : ObrigacoesSoterramento) {
 
 							caminho1 = routing.Explorar(me().getPosition(),
 									Setor, Bloqueios, soterrados);
-							System.out.println("Opção: "+soterrados);
+							// System.out.println("Opção: "+soterrados);
 							// busca o menor caminho
 							if (caminho1.size() <= caminho0.size()) {
 								node = model.getEntity(soterrados);
@@ -277,13 +321,17 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						// gera novo caminho
 						pathtoclean = routing.Explorar(me().getPosition(),
 								Setor, Bloqueios, node.getID());
-						System.out.println(me().getID()+" nova atividade:" + node.getID());
+						// System.out.println(me().getID()+" nova atividade:" +
+						// node.getID());
 						sendMove(time, pathtoclean);
 						return;
 
 					}
 
+					//radioControl = 0;
+
 				} else {
+
 					// Continua o resgate do soterrado
 					// Am I near a blockade?
 					Blockade target = getTargetBlockade(time);
@@ -292,7 +340,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						// limpeza ou onde eu estou
 						if (isGoal(target.getPosition(), pathtoclean)
 								|| getTargetBlockade(location, distance) != null) {
-							System.out.println("Tem um bloqueio aqui");
+							// System.out.println("Tem um bloqueio aqui");
 							// Caso afirmativo limpar
 							Logger.info("Clearing blockade " + target);
 							sendSpeak(time, 1,
@@ -323,12 +371,13 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							return;
 
 						}
-						System.out.println("Tem um bloqueio mais n é meu dever...");
+						// System.out.println("Tem um bloqueio mais n é meu dever...");
 					}
 
 					// Verifica se cheguei ao meu objetivo
 					if (me().getPosition().equals(node.getID())) {
-						System.out.println(me().getID().toString()+" Estou em meu objetivo:" + node.getID());
+						System.out.println(me().getID().toString()
+								+ " Estou em meu objetivo:" + node.getID());
 						StandardEntity local = model.getEntity(me()
 								.getPosition());
 						try {
@@ -341,11 +390,12 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 										.isBlockadesDefined()) {
 									// Remove a tarefa da lista e busca nova
 									// tarefa
-									System.out.println(me().getID()+" Tarefa concluida:" + node.getID());
+									// System.out.println(me().getID()+" Tarefa concluida:"
+									// + node.getID());
 									ObrigacoesSoterramento.remove(me()
 											.getPosition());
 									ControlResgate = 0;
-									radioControl = 0;
+									//radioControl = 0;
 								}
 
 								else {
@@ -353,13 +403,16 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 									ObrigacoesSoterramento.remove(me()
 											.getPosition());
 									ControlResgate = 0;
-									System.out.println(me().getID()+" Tarefa concluida o/:" + node.getID());
+									//radioControl = 0;
+									// System.out.println(me().getID()+" Tarefa concluida o/:"
+									// + node.getID());
 								}
 							}
 						} catch (Exception e) {
 							// Remove a tarefa da lista e busca nova tarefa
 							ObrigacoesSoterramento.remove(me().getPosition());
 							ControlResgate = 0;
+							//radioControl = 0;
 						}
 					}
 					// Continua se movendo
@@ -368,12 +421,13 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					return;
 
 				}
-				System.out.println("Obrigações: ...."+ ObrigacoesSoterramento.toString());
+				// System.out.println("Obrigações: ...."+
+				// ObrigacoesSoterramento.toString());
 				// Caso não tenha mais obrigações inicia exploração
 				if (ObrigacoesSoterramento.isEmpty()) {
 					radioControl = 0;
 					temObjetivo = 0;
-					System.out.println(" não estou devendo horas o/");
+					// System.out.println(" não estou devendo horas o/");
 				}
 			}
 			// Continuar tarefa priori de alocação
@@ -385,7 +439,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					// ou onde eu estou
 					if (isGoal(target.getPosition(), pathtoclean)
 							|| getTargetBlockade(location, distance) != null) {
-						System.out.println("Existe um bloqueio onde estou *.*");
+						// System.out.println("Existe um bloqueio onde estou *.*");
 						// Caso afirmativo limpar
 						Logger.info("Clearing blockade " + target);
 						sendSpeak(time, 1, ("Clearing " + target).getBytes());
@@ -415,7 +469,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 					}
 
-					System.out.println("Verificando portas");
+					// System.out.println("Verificando portas");
 					// caso exista uma porta onde estou e caso eu esteja no rumo
 					// do objetivo
 					if ((haveDoors(me().getPosition(), model) != null)) {
@@ -427,7 +481,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							// caso esteja bloqueada
 							StandardEntity auxdor = model.getEntity(dor);
 							if (((Road) auxdor).isBlockadesDefined()) {
-								System.out.println("Porta bloqueada: " + dor);
+								// System.out.println("Porta bloqueada: " +
+								// dor);
 								pathtoclean = routing.Explorar(me()
 										.getPosition(), Setor, Bloqueios, dor);
 								sendMove(time, pathtoclean);
@@ -441,19 +496,20 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					}
 
 				}
-				// System.out.println("Me: "+me().getPosition()+ " Objetivo: "+
+				// //System.out.println("Me: "+me().getPosition()+
+				// " Objetivo: "+
 				// node.getID())
 				if (me().getPosition().equals(node.getID())) {
 					StandardEntity local = model.getEntity(me().getPosition());
 					// Verifica se estou em uma road
-					System.out.println("Alcancei o meu objetivo");
+					// System.out.println("Alcancei o meu objetivo");
 					// Tem uma merda aqui --- quando entra num edificio
 					try {
 
 						if (((Road) local).getStandardURN().equals(
 								StandardEntityURN.ROAD)) {
 
-							System.out.println("é uma Rua o/");
+							// System.out.println("é uma Rua o/");
 							// Verifica se n existe bloqueio
 							if (!((Road) model.getEntity(me().getPosition()))
 									.isBlockadesDefined()) {
@@ -464,7 +520,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 							else {
 								// Quando ele cai numa porta ele da merda
-								// System.out.println("Merda ......");
+								// //System.out.println("Merda ......");
 								temObjetivo = 0;
 							}
 						}
@@ -480,9 +536,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 		} else {
 
+			System.out.println("Iniciando Exploração");
 			// Verifica se existe uma rua explorada e que esteja bloqueada
-			System.out
-					.println("Nenhum objetivo .... Verificando Nodes Explorados");
+			System.out.println("Nenhum objetivo .... Verificando Nodes Explorados");
 			if (exploration.GetBlockRoads() != null) {
 				// checar se essa rua esta sob a rota de responsabilidade do
 				// agente
@@ -490,8 +546,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					if (model.getEntity(road.getID()) != null) {
 						// isGoal(road.getID(), pathtoclean)){
 						node = road;
-						System.out.println("Resultado exploração:"
-								+ node.getID());
+						// System.out.println("Resultado exploração:"+
+						// node.getID());
 						pathtoclean = routing.Explorar(me().getPosition(),
 								Setor, Bloqueios, node.getID());
 						sendMove(time, pathtoclean);
@@ -507,35 +563,35 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			WalkingInSector walking = new WalkingInSector(model);
 			Map<EntityID, Set<EntityID>> mapa = sectoring.MapSetor2;
 			mapa = search.getGraph();
-			// System.out.println("Objetivo: "+mapa.values());
+			// //System.out.println("Objetivo: "+mapa.values());
 
 			node = walking.GetExplorationNode(time, me().getPosition(model)
-					.getID(), mapa, exploration
-					.GetExplorationNodes(), 0);
+					.getID(), mapa, exploration.GetExplorationNodes(), 0);
 
 			if (node == null) {
 				System.out.println("Roleta....");
-				node = exploration.GetNewExplorationNode(time,
-						 0);
+				node = exploration.GetNewExplorationNode(time, 0);
+				if(Setor == 5){
+					Setor = 6;}
 				setSector();
 			}
-			// System.out.println("Posicao Atual: "+
+			// //System.out.println("Posicao Atual: "+
 			// me().getPosition()+" Objetivo: "+ node.getID());
 
 			pathtoclean = routing.Explorar(me().getPosition(), Setor,
 					Bloqueios, node.getID());
 
 			// Mover(me().getID(),Setor, node.getID());
-			// System.out.println(" indo por : "+pathtoclean);
+			// //System.out.println(" indo por : "+pathtoclean);
 
 			// gotoDestino(me().getID(), node.getID(), Bloqueios, false, 0);
 			// routing.Explorar();
 
-			// System.out.println("Iniciando exploração: " +
+			// //System.out.println("Iniciando exploração: " +
 			// node.getID().toString());
 			temObjetivo = 1;
 			sendMove(time, pathtoclean);
-			System.out.println("Novo Objetivo: " + node);
+			// System.out.println("Novo Objetivo: " + node);
 			return;
 
 		}
@@ -755,13 +811,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				Human h = (Human) se;
 				// Senão for eu
 				if (h.getID().getValue() != me().getID().getValue()) {
-					System.out.println("Eu: "+me().getID().toString()+"Existe outro Policial aqui"+" ele: "+h.getID().getValue());
+					// System.out.println("Eu: "+me().getID().toString()+"Existe outro Policial aqui"+" ele: "+h.getID().getValue());
 					// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 					// A ideia é enviar a tarefa objetivo identicos
 					List<AbstractMessage> m = new ArrayList<AbstractMessage>();
-					if(node != null){
-					m.add(new AbstractMessage(String.valueOf(MSGType.UNBLOCK_ME.ordinal()), node.getID().toString(), me().getID().toString()));
-					sendMessage(MSGType.UNBLOCK_ME, false, time,m);
+					if (node != null) {
+						m.add(new AbstractMessage(String.valueOf(MSGType.UNBLOCK_ME.ordinal()), node.getID().toString(), me().getID().toString()));
+						System.out.println("Informando Objetivo voz");
+						sendMessage(MSGType.UNBLOCK_ME, false, time, m);
 					}
 				}
 			}
