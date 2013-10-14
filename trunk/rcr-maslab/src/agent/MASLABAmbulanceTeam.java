@@ -117,7 +117,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		System.out.println("U want a piece of me, boy?");
+		System.out.println("changed = " + changed);
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
@@ -266,16 +266,16 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	protected Human chooseVictimToRescue() {
 		//TODO: atualizar getTargets() para retornar algum humano na base de conhecimento do agente, ao inves do atualmente implementado do sample agent
 		
-		Human choosen = null;
-		double choosen_ev = 0;
+		Human chosen = null;
+		double chosen_ev = 0;
 		for (Human victim : getTargets()) { 
 			double ev = estimatedLifeTime(victim);
-			if (choosen == null || ev > choosen_ev) {
-				choosen = victim;
-				choosen_ev = ev;
+			if (chosen == null || ev > chosen_ev) {
+				chosen = victim;
+				chosen_ev = ev;
 			}
 		}
-		return choosen;
+		return chosen;
 	}
 	
 	
