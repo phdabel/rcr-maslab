@@ -56,7 +56,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private float buriedness_dmg_factor;
 	private int fire_damage;
 	
-	private HashMap<EntityID, Integer> buriedness_memory;
+	private HashMap<EntityID, MemoryEntry> buriedness_memory;
 	
 
 	/*
@@ -71,7 +71,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		buriedness_dmg_factor = 1.1f;
 		fire_damage = 10;
 		
-		buriedness_memory = new HashMap<EntityID, Integer>();
+		buriedness_memory = new HashMap<EntityID, MemoryEntry>();
 				
 	}
 	
@@ -147,7 +147,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					
 					//adiciona o humano machucado 'a memoria
 					int estimatedDeathTime = estimatedDeathTime(time, h);
-					buriedness_memory.put(id, estimatedDeathTime);
+					buriedness_memory.put(id, new MemoryEntry(estimatedDeathTime, h.getPosition()));
 					
 					//adiciona o humano machucado 'a mensagem
 					msgs.add(new AbstractMessage(
@@ -367,6 +367,15 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return chosen;
 	}
 	
+	private class MemoryEntry {
+		public int expectedDeathTime;
+		public EntityID position;
+		
+		public MemoryEntry(int expectedDeathTime, EntityID position) {
+			this.expectedDeathTime = expectedDeathTime;
+			this.position = position;
+		}
+	}
 	
 	
 	/*
