@@ -272,14 +272,18 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			PosicaoPassada = me().getPosition();
 				//if( == false)
 			if(controletempoParadoTotal > 10){
-				temObjetivo = 0;
+				node = exploration.GetNewExplorationNode(time, 0);
+				pathtoclean = routing.Explorar(me().getPosition(), Setor, Bloqueios);
+				sendMove(time, pathtoclean);
+				temObjetivo = 1;
 				radioControl = 0;
 				ControlResgate = 0;
 				MensageActivites = new ArrayList<EntityID>();
+				return;
 			}
 			
 			if(controletempoParado>=3){
-				temObjetivo = 1;
+				temObjetivo = 0;
 				radioControl = 0;
 				ControlResgate = 0;
 				MensageActivites = new ArrayList<EntityID>();
@@ -288,11 +292,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
 				//System.out.println("Novo Caminho: "+ pathtoclean.toString());
 				sendMove(time, pathtoclean);
-				if(me().getPosition().equals(node.getID())){
-				temObjetivo = 0;
-				
-				}
-				controletempoParado = 0;
+
+				return;
+				//controletempoParado = 0;
 				//Setor = sectoring.getSetorPertencente(me().getX(), me().getY()) ;
 			}
 		}
