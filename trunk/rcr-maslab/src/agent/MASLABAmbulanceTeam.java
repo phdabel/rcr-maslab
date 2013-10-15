@@ -161,14 +161,15 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					
 					//adiciona o humano machucado 'a memoria
 					int estimatedDeathTime = estimatedDeathTime(h);
-					buriedness_memory.put(h.getID(), new MemoryEntry(h.getPosition(), estimatedDeathTime));
+					buriedness_memory.put(h.getID(), new MemoryEntry(h.getPosition(), estimatedDeathTime, h.getBuriedness()));
 					
 					//adiciona o humano machucado 'a mensagem
 					AbstractMessage msg = new AbstractMessage(
 						String.valueOf(MSGType.BURIED_HUMAN.ordinal()),
 						String.valueOf(h.getID()),
 						String.valueOf(h.getPosition()),
-						String.valueOf(estimatedDeathTime)
+						String.valueOf(estimatedDeathTime),
+						String.valueOf(h.getBuriedness())
 					);
 					msgs.add(msg);
 					System.out.println(me().getID()+": added message " + msg);
@@ -206,9 +207,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					EntityID human_id = new EntityID(Integer.parseInt(msg.get(1)));
 					EntityID human_position = new EntityID(Integer.parseInt(msg.get(2)));
 					int estimatedDeathTime = Integer.parseInt(msg.get(3));
+					int buriedness = Integer.parseInt(msg.get(4));
 					
 					buriedness_memory.put(
-						human_id, new MemoryEntry(human_position, estimatedDeathTime)
+						human_id, new MemoryEntry(human_position, estimatedDeathTime, buriedness)
 					);
 				}
 			} catch(Exception e) {
@@ -396,16 +398,25 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	protected Human chooseVictimToRescue() {
 		
 		Human chosen = null;
-		double chosen_hp = 0;
+		double chosen_ets = 0;
 		for (EntityID v : buriedness_memory.keySet()) { 
 			Human victim = (Human)model.getEntity(v);
-			double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
-			if (chosen == null || hp > chosen_hp) {
+			//double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
+			int ets = estimatedTimeSaved(victim, buriedness_memory.get(v));
+			if (chosen == null || ets > chosen_ets) {
 				chosen = victim;
-				chosen_hp = hp;
+				chosen_ets = ets;
 			}
 		}
 		return chosen;
+	}
+	
+	protected int estimatedTimeSaved(Human victim, MemoryEntry mem) {
+		//calcula o tempo até resgatar a vítima (se deslocar até ela e desenterrá-la)
+		int time_until_rescue = routing.Resgatar(me().getPosition(), mem.position, Bloqueios, Setores.UNDEFINED_SECTOR).size();
+		time_until_rescue += victim.getBuriedness();
+		
+		return mem.expectedDeathTime - (current_time + time_until_rescue);
 	}
 	
 	/**
@@ -441,14 +452,16 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private class MemoryEntry {
 		public EntityID position;
 		public int expectedDeathTime;
+		public int buriedness;
 		
-		public MemoryEntry(EntityID position, int expectedDeathTime) {
+		public MemoryEntry(EntityID position, int expectedDeathTime, int buriedness) {
 			this.position = position;
 			this.expectedDeathTime = expectedDeathTime;
+			this.buriedness = buriedness;
 		}
 		
 		public String toString(){
-			return "[(edt,pos)=("+expectedDeathTime+","+position+")]"; 
+			return "[(edt,pos,bur)=("+expectedDeathTime+","+position+","+buriedness+")]"; 
 		}
 	}
 	
