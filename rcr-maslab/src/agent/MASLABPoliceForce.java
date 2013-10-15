@@ -78,7 +78,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	private int ControlResgate = 0; // status de resgate
 	private List<EntityID> ComunicarIncendios = new ArrayList<EntityID>();
 	private int controletempoParado=0;
-	private EntityID PosicaoAtual;
+	private int controletempoParadoTotal=0;
+	private EntityID PosicaoPassada;
 	private List<EntityID> MensageActivites = new ArrayList<EntityID>();
 	/**
 	 * 
@@ -129,7 +130,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		PerceberAmbiente(time, me().getPosition(model));
 
 		if(time==1){
-			PosicaoAtual = me().getPosition();
+			PosicaoPassada = me().getPosition();
 		}
 		
 		
@@ -244,19 +245,51 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		// exploration.Exploracao), OutrosObjetivos)
 		// tomar outra ação de acordo com o return e o ID (menor)
 
-		
+     	//System.out.println("Estou: "+ me().getPosition() +" estive:"+ PosicaoPassada);
 		if(time>1){
-			if(me().getPosition().equals(PosicaoAtual) 
-			//((Road) model.getEntity(me().getPosition())).isBlockadesDefined()
-					){
-				controletempoParado ++;
+			
+			// verifica se estou na mesma posição
+			if(( me().getPosition().equals(PosicaoPassada))){
+				controletempoParadoTotal++;
+				// verifica se eh uma rua
+				if (model.getEntity(me().getPosition()).getStandardURN().equals(StandardEntityURN.ROAD)){
+					// verifica se tem bloqueio 
+					if (((Road) model.getEntity(me().getPosition())).isBlockadesDefined() && !((Road) model.getEntity(me().getPosition())).getBlockades().isEmpty() ){
+						controletempoParado = 0;
+					}else{
+						controletempoParado ++;
+						//System.out.println("Estou parado numa rua");
+					}
+				}else{
+					controletempoParado ++;
+				}
 			}else{
-				controletempoParado = 0;
-				PosicaoAtual = me().getPosition();
+				controletempoParadoTotal = 0;
+			}
+			PosicaoPassada = me().getPosition();
+				//if( == false)
+			if(controletempoParadoTotal > 10){
+				temObjetivo = 0;
+				radioControl = 0;
+				ControlResgate = 0;
 			}
 			
-			if(controletempoParado>10){
+			if(controletempoParado>=3){
+				temObjetivo = 1;
+				radioControl = 0;
+				ControlResgate = 0;
+				//System.out.println("Objetivo: "+ node.getID().toString());
+				//System.out.println("Caminho: "+ pathtoclean.toString());
+				pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
+				//System.out.println("Novo Caminho: "+ pathtoclean.toString());
+				sendMove(time, pathtoclean);
+				if(me().getPosition().equals(node.getID())){
 				temObjetivo = 0;
+				
+				}
+				controletempoParado = 0;
+				//Setor = sectoring.getSetorPertencente(me().getX(), me().getY()) ;
+				//System.out.println("BUG ---------------- oO");
 			}
 		}
 		
@@ -335,8 +368,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					if (target != null) {
 						// Verifica se o bloqueio se encontra sob a rota de
 						// limpeza ou onde eu estou
+						location = (Area) location();
 						if (isGoal(target.getPosition(), pathtoclean)
-								|| getTargetBlockade(location, distance) != null) {
+								|| getTargetBlockade((location), distance) != null) {
 							// //System.out.println("Tem um bloqueio aqui");
 							// Caso afirmativo limpar
 							Logger.info("Clearing blockade " + target);
@@ -381,9 +415,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							if (((Road) local).getStandardURN().equals(
 									StandardEntityURN.ROAD)) {
 								// Verifica se n existe bloqueio
-								if (!((Road) model
-										.getEntity(me().getPosition()))
-										.isBlockadesDefined()) {
+								if (!((Road) model.getEntity(me().getPosition())).isBlockadesDefined() && ((Road) model.getEntity(me().getPosition())).getBlockades().isEmpty() ) {
 									// Remove a tarefa da lista e busca nova
 									// tarefa
 									// //System.out.println(me().getID()+" Tarefa concluida:"
@@ -476,7 +508,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						for (EntityID dor : doors) {
 							// caso esteja bloqueada
 							StandardEntity auxdor = model.getEntity(dor);
-							if (((Road) auxdor).isBlockadesDefined()) {
+							if (((Road) auxdor).isBlockadesDefined() && !((Road) auxdor).getBlockades().isEmpty()) {
 								// //System.out.println("Porta bloqueada: " +
 								// dor);
 								pathtoclean = routing.Explorar(me()
@@ -505,8 +537,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 							// //System.out.println("é uma Rua o/");
 							// Verifica se n existe bloqueio
-							if (!((Road) model.getEntity(me().getPosition()))
-									.isBlockadesDefined()) {
+							if (!((Road) model.getEntity(me().getPosition())).isBlockadesDefined() && ((Road) model.getEntity(me().getPosition())).getBlockades().isEmpty()) {
 								//System.out.println("não Existe mais nada para limpar aqui o/");
 								temObjetivo = 0;
 							}
