@@ -10,12 +10,15 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 
+import model.AbstractMessage;
+import model.BurningBuilding;
 import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.log.Logger;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.AmbulanceTeam;
@@ -24,6 +27,7 @@ import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Refuge;
 import util.Channel;
 import util.DistanceSorter;
+import util.MSGType;
 import util.Setores;
 
 /**
@@ -95,6 +99,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
 		
+		System.out.println(config.getValue("kernel.agents.think-time"));
+		System.out.println(config.getValue("kernel.timesteps"));
+		
 		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness
 		try {
 			buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
@@ -125,20 +132,42 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		//System.out.println("changed = " + changed);
 		
+		//cria msg vazia
+		List<AbstractMessage> msgs = new ArrayList<AbstractMessage>();
+		
+		//percorre lista de entidades percebidas procurando humanos soterrados
 		for (EntityID id : changed.getChangedEntities()){
+			
+			//processa apenas humanos
 			if (model.getEntity(id) instanceof Human) {
 				Human h = (Human) model.getEntity(id);
 				
-				if (h.getBuriedness() != 0) {
+				//processa apenas humanos com damage
+				if (h.getDamage() > 0) {
+					
+					//adiciona o humano machucado 'a memoria
 					int estimatedDeathTime = estimatedDeathTime(time, h);
 					buriedness_memory.put(id, estimatedDeathTime);
+					
+					//adiciona o humano machucado 'a mensagem
+					msgs.add(new AbstractMessage(
+						String.valueOf(MSGType.BURIED_HUMAN.ordinal()),
+						String.valueOf(h.getID()),
+						String.valueOf(h.getPosition()),
+						String.valueOf(estimatedDeathTime)
+						//String.valueOf(time),
+					));
 					//TODO: comunicar o humano encontrado
 				}
 			}
 		}
 		
-		System.out.println(me().getID() + ": " + buriedness_memory);
+		if(msgs.size() > 0){
+			sendMessage(MSGType.BURIED_HUMAN, true, time, msgs);
+		}
 		
+		System.out.println(me().getID() + ": " + buriedness_memory);
+		System.out.println(me().getID() + ": " + msgs);
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			// Subscribe to channel 1
@@ -289,12 +318,32 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 */
 	protected int estimatedDeathTime(int current_time, Human victim) {
 		int edt = 0;
-		float buriedness_dmg = buriedness_dmg_factor * victim.getBuriedness();
+		
 		float hp = victim.getHP();
 		float damage = victim.getDamage();
+		
+		//estima o dano relativo ao soterramento
+		float bury = 0.9f;
+		
+		//estima o dano relativo ao fogo
+		float fire = 0;
+		if (model.getEntity(victim.getPosition()) instanceof Building) {
+			Building b = (Building)model.getEntity(victim.getPosition());
+			if (b.isOnFire()) {
+				switch (b.getFieryness()) {
+					case 1:
+						fire = 10;
+					case 2:
+						fire = 100;
+					default:
+						fire = 1000;
+				}
+			}
+		}
+		
 		while (hp > 0) {
 			hp -=  damage;
-			damage += fire_damage + buriedness_dmg;
+			damage += fire + bury;
 			edt++;
 		}
 		return current_time + edt;
