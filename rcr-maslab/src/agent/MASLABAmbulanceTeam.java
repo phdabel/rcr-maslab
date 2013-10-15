@@ -32,7 +32,7 @@ import util.MSGType;
 import util.Setores;
 
 /**
- * A sample ambulance team agent.
+ * Agente ambulancia do time EPICENTER
  */
 public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		implements IAmbulanceTeam {
@@ -57,12 +57,16 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private float buriedness_dmg_factor;
 	private int fire_damage;
 	
+	//memoria do agente, mapeia ID para um objeto q armazena os dados do humano
 	private HashMap<EntityID, MemoryEntry> buriedness_memory;
 	
+	//timestep atual
 	private int current_time;
 	
+	//alvo atual
 	private EntityID current_target;
 	
+	//exibir prints?
 	private final static boolean DEBUG = false;
 
 	/*
@@ -83,7 +87,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	
 	@Override
 	public String toString() {
-		return "MASLAB ambulance team";
+		return "MASLAB ambulance team, id="+me().getID();
 	}
 
 	/**
@@ -105,7 +109,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
 		
-		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness
+		//buriedness damage factor e' a media + desv. padrao da distribuicao gaussiana usada pra aumentar dmg por soterramento
 		try {
 			buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
 		}
@@ -116,7 +120,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				" for buriedness_dmg_factor."
 			);
 		}
-		//fire damage is the one directly given in config
+		//dano por fogo e' dado diretamente no config
 		try {
 			fire_damage = config.getIntValue(FIRE_DMG_KEY);
 		}
@@ -148,12 +152,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		//cria msg vazia
 		List<AbstractMessage> msgs = new ArrayList<AbstractMessage>();
 		
-		//percorre lista de entidades percebidas procurando humanos soterrados
-		//for (EntityID id : changed.getChangedEntities()){
-			
-			//processa apenas humanos
-		for(Human h : getTargets()){//	if (model.getEntity(id) instanceof Human) {
-				//Human h = (Human) model.getEntity(id);
+		//percorre lista de humanos, procurando os soterrados e machcados
+		for(Human h : getTargets()){
 				
 				//processa apenas humanos com buriedness ou machucados
 				if (h.getBuriedness() > 0 || h.getDamage() > 0) {
@@ -173,11 +173,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					msgs.add(msg);
 					if(DEBUG) System.out.println(me().getID()+": added message " + msg);
 				}
-				//else
-					//System.out.println(me() + ": hdmg="+h.getDamage());
-			//}
 		}
 		
+		//envia mensagens
 		if(msgs.size() > 0){
 			sendMessage(MSGType.BURIED_HUMAN, true, time, msgs);
 			if (DEBUG) System.out.println(me().getID()+": sent message"); 
@@ -189,7 +187,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		//Separa todas as mensagens recebidas pois podem vir agrupadas de um único agente
 		List<String> mensagens = new ArrayList<String>();
 		for(String s: received){
-			String x[] = s.split(AbstractMessage.MSG_FIM);
+			//String x[] = s.split(AbstractMessage.MSG_FIM);
 			mensagens.addAll(Arrays.asList(s.split(AbstractMessage.MSG_FIM)));
 		}
 		
@@ -202,12 +200,15 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				//Se for um humano soterrado...
 				if(Integer.parseInt(msg.get(0)) == MSGType.BURIED_HUMAN.ordinal()){
 					
+					//obtem os atributos dele...
 					EntityID human_id = new EntityID(Integer.parseInt(msg.get(1)));
 					EntityID human_position = new EntityID(Integer.parseInt(msg.get(2)));
 					int estimatedDeathTime = Integer.parseInt(msg.get(3));
 					int buriedness = Integer.parseInt(msg.get(4));
 					
 					if(DEBUG) System.out.println(me().getID()+": received msg!" + human_id);
+					
+					//... e o adiciona 'a memoria
 					buriedness_memory.put(
 						human_id, new MemoryEntry(human_position, estimatedDeathTime, buriedness)
 					);
@@ -224,6 +225,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		}
 		
 		updateUnexploredBuildings(changed);
+		
 		// Am I transporting a civilian to a refuge?
 		if (someoneOnBoard()) {
 			// Am I at a refuge?
@@ -252,20 +254,26 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				System.out.println(me().getID()+": Failed to plan path to refuge");
 			}
 		}
-		// Go through targets (sorted by distance) and check for things we can
-		// do
+		
+		//se nao esta engajado em salvar alguem, procura alguem na memoria 
 		if (current_target == null) {
 			current_target = chooseVictimToRescue();
 		}
-		else {
+		else {//se esta engajado em salvar alguem...
+			
+			//se estou no mesmo lugar que a vitima estaria...
 			if (buriedness_memory.get(current_target).position.equals(location().getID())) {
-				// Targets in the same place might need rescueing or loading
+				
+				//obtem o human com os dados da vitima (teoricamente esta dentro da visao, dai posso obte-lo)
 				Human h_target = (Human)model.getEntity(current_target);
+				
+				//checa se a vitima foi removida de sua posicao esperada, e a remove da memoria em caso afirmativo
 				if (!h_target.getPosition().equals(buriedness_memory.get(current_target).position)) {
 					current_target = null;
 					buriedness_memory.remove(current_target);
 				}
 				else {
+					//se o alvo foi desenterrado, leva-o para refugio
 					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 							&& !(location() instanceof Refuge)) {
 						// Load
@@ -273,6 +281,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 						sendLoad(time, current_target);
 						return;
 					}
+					//se alvo ainda esta enterrado, desenterra-o
 					if (h_target.getBuriedness() > 0) {
 						// Rescue
 						if(DEBUG) System.out.println(me().getID() + ": Rescueing " + current_target);
@@ -281,7 +290,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					}
 				}
 			} else {
-				// Try to move to the target
+				//se nao estiver na mesma posicao da vitima, planeja caminho ate ela
 				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
 					if(DEBUG) System.out.println(me().getID() + ":Moving to target");
@@ -317,9 +326,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				}
 			}
 		}*/
-		// Nothing to do
+		
+		//nao tenho vitima pra salvar, vou explorar o mapa
 		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
-//		List<EntityID> path = search.breadthFirstSearch(me().getPosition(),unexploredBuildings);
 		if (path != null) {
 			if(DEBUG) System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
@@ -339,6 +348,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * Métodos Sample Agent
 	 * 
 	 */
+	
+	/**
+	 * Retorna se esta carregando alguem
+	 * @return
+	 */
 	private boolean someoneOnBoard() {
 		for (StandardEntity next : model
 				.getEntitiesOfType(StandardEntityURN.CIVILIAN)) {
@@ -350,6 +364,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return false;
 	}
 
+	/**
+	 * Retorna uma lista de humanos
+	 * (creio que dentro do raio de visao <- confirmar isso)
+	 * @return
+	 */
 	private List<Human> getTargets() {
 		List<Human> targets = new ArrayList<Human>();
 		for (StandardEntity next : model.getEntitiesOfType(
@@ -371,6 +390,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return targets;
 	}
 
+	/**
+	 * Atualiza a lista de buildings q nao foram explorados,
+	 * removendo aqueles que percebi neste timestep
+	 * @param changed
+	 */
 	private void updateUnexploredBuildings(ChangeSet changed) {
 		for (EntityID next : changed.getChangedEntities()) {
 			unexploredBuildings.remove(next);
@@ -409,12 +433,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 */
 	protected EntityID chooseVictimToRescue() {
 		if(DEBUG) System.out.println(me().getID() + ": escolhendo vitima...");
-		//TODO levar em consideracao as vitimas vindas de comunicacao
+
 		EntityID chosen = null;
 		double chosen_ets = 0;
 		for (EntityID v : buriedness_memory.keySet()) { 
-			//Human victim = (Human)model.getEntity(v);
-			//double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
+
 			int ets = estimatedTimeSaved(buriedness_memory.get(v));
 			if(DEBUG) System.out.println(""+v+" - ets:" + ets);
 			if (chosen == null || ets > chosen_ets) {
@@ -426,8 +449,12 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return chosen;
 	}
 	
+	/**
+	 * Estima o tempo até resgatar a vítima (se deslocar até ela e desenterrá-la)
+	 * @param mem
+	 * @return
+	 */
 	protected int estimatedTimeSaved(MemoryEntry mem) {
-		//calcula o tempo até resgatar a vítima (se deslocar até ela e desenterrá-la)
 		int time_until_rescue = routing.Resgatar(me().getPosition(), mem.position, Bloqueios, Setores.UNDEFINED_SECTOR).size();
 		time_until_rescue += mem.buriedness;
 		
@@ -464,6 +491,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return hp;
 	}
 	
+	/**
+	 * Item da memoria da ambulancia.
+	 * Contem a posicao, timestep esperado da morte e buriedness da vitima
+	 * 
+	 * @author Gabriel
+	 *
+	 */
 	private class MemoryEntry {
 		public EntityID position;
 		public int expectedDeathTime;
@@ -480,14 +514,21 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		}
 	}
 	
+	/**
+	 * Estima o dano relativo ao soterramento
+	 * @return
+	 */
 	protected float getVictimBury() {
-		//estima o dano relativo ao soterramento
 		float bury = 0.9f;
 		return bury;
 	}
 	
+	/**
+	 * Estima o dano relativo ao fogo
+	 * @param victim_position
+	 * @return
+	 */
 	protected float getVictimFire(EntityID victim_position) {
-		//estima o dano relativo ao fogo
 		float fire = 0;
 		if (model.getEntity(victim_position) instanceof Building) {
 			Building b = (Building)model.getEntity(victim_position);
