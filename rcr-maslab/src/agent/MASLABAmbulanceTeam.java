@@ -261,18 +261,24 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			if (buriedness_memory.get(current_target).position.equals(location().getID())) {
 				// Targets in the same place might need rescueing or loading
 				Human h_target = (Human)model.getEntity(current_target);
-				if ((h_target instanceof Human) && h_target.getBuriedness() == 0
-						&& !(location() instanceof Refuge)) {
-					// Load
-					System.out.println(me().getID() + ": Loading " + current_target);
-					sendLoad(time, current_target);
-					return;
+				if (!h_target.getPosition().equals(buriedness_memory.get(current_target).position)) {
+					current_target = null;
+					buriedness_memory.remove(current_target);
 				}
-				if (h_target.getBuriedness() > 0) {
-					// Rescue
-					System.out.println(me().getID() + ": Rescueing " + current_target);
-					sendRescue(time, current_target);
-					return;
+				else {
+					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
+							&& !(location() instanceof Refuge)) {
+						// Load
+						System.out.println(me().getID() + ": Loading " + current_target);
+						sendLoad(time, current_target);
+						return;
+					}
+					if (h_target.getBuriedness() > 0) {
+						// Rescue
+						System.out.println(me().getID() + ": Rescueing " + current_target);
+						sendRescue(time, current_target);
+						return;
+					}
 				}
 			} else {
 				// Try to move to the target
