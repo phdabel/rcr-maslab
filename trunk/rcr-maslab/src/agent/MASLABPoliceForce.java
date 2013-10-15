@@ -272,12 +272,14 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				temObjetivo = 0;
 				radioControl = 0;
 				ControlResgate = 0;
+				MensageActivites = new ArrayList<EntityID>();
 			}
 			
 			if(controletempoParado>=3){
 				temObjetivo = 1;
 				radioControl = 0;
 				ControlResgate = 0;
+				MensageActivites = new ArrayList<EntityID>();
 				//System.out.println("Objetivo: "+ node.getID().toString());
 				//System.out.println("Caminho: "+ pathtoclean.toString());
 				pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
