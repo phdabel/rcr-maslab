@@ -256,6 +256,9 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					// verifica se tem bloqueio 
 					if (((Road) model.getEntity(me().getPosition())).isBlockadesDefined() && !((Road) model.getEntity(me().getPosition())).getBlockades().isEmpty() ){
 						controletempoParado = 0;
+						// Aqui tem um bug  --- caso o agente esteja em uma lane com bloqueio e o bloqueio esta longe
+						// ele ficará aqui para sempre --- boa sorte o/
+						// a ideia seria ele mover um pouco em direção ao bloqueio e alcança-lo
 					}else{
 						controletempoParado ++;
 						//System.out.println("Estou parado numa rua");
@@ -291,7 +294,6 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 				}
 				controletempoParado = 0;
 				//Setor = sectoring.getSetorPertencente(me().getX(), me().getY()) ;
-				//System.out.println("BUG ---------------- oO");
 			}
 		}
 		
