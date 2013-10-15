@@ -54,6 +54,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	public final static String STD_BURIEDNESS_DMG_KEY = "misc.damage.sd";
 	public final static String FIRE_DMG_KEY = "misc.damage.fire";
 	
+	//exibir prints?
+	private final static boolean DEBUG = false;
+	
+	//fatores de dano devido a buriedness e fogo
 	private float buriedness_dmg_factor;
 	private int fire_damage;
 	
@@ -65,9 +69,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	
 	//alvo atual
 	private EntityID current_target;
+
+	//armazena a ultima posicao deste agente
+	EntityID lastPosition;
 	
-	//exibir prints?
-	private final static boolean DEBUG = false;
+	//indicador de 'estou bloqueado por quantos timesteps'?
+	int stuckFor;
+	
 
 	/*
 	 * 
@@ -83,6 +91,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		
 		buriedness_memory = new HashMap<EntityID, MemoryEntry>();
 		current_target = null; 
+		
+		stuckFor = 0;
+		
+		lastPosition = null;
 	}
 	
 	@Override
@@ -131,7 +143,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				" for fire_damage."
 			);
 		}
-		//System.out.println("POST-CONNECTED");
+		if (DEBUG) System.out.println("Ambulance post-connected.");
 		
 	}
 
@@ -144,6 +156,27 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
 			sendSubscribe(time, Channel.AMBULANCE.ordinal());
 		}
+		
+		//quando stuckFor e' maior q 1, ambulancia entra no canal da policia
+		if (stuckFor > 1){
+			//precisa voltar pro canal da ambulancia
+			sendSubscribe(time, Channel.AMBULANCE.ordinal());
+			if(DEBUG) System.out.println(me().getID() +": voltei pro canal da ambulancia");
+			
+		}
+		
+		//testa se esta no mesmo lugar do timestep passado
+		if(DEBUG) System.out.println(me().getID() + ": last,cur,stuck = " + lastPosition+","+me().getPosition()+","+stuckFor);
+		if (me().getPosition().equals(lastPosition)){
+			stuckFor++;
+		}
+		else {
+			stuckFor = 0;
+		}
+		
+		//atualiza o marcador de posicao anterior
+		lastPosition = me().getPosition();
+		
 		/*
 		for (Command next : heard) {
 			Logger.debug("Heard " + next);
@@ -213,6 +246,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 						human_id, new MemoryEntry(human_position, estimatedDeathTime, buriedness)
 					);
 				}
+				
+				//se for um pedido de socorro de agente...
+				if(Integer.parseInt(msg.get(0)) == MSGType.SAVE_ME.ordinal()){
+					
+					//TODO tratar pedido de socorro de agente
+					System.out.println("Alguem pediu socorro, mas nao implementei o tratamento desta msg...");
+				}
 			} 
 			catch(Exception e) {
 				System.out.println("Erro ao decodificar mensagem: " + msg);
@@ -246,6 +286,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				List<EntityID> path = routing.Resgatar(me().getPosition(), Bloqueios); 
 				if (path != null) {
 					if(DEBUG) System.out.println(me().getID()+": Moving to refuge");
+					
+					//pede ajuda para policial se nao consegue se mover
+					checkStuck(time);
+					
 					sendMove(time, path);
 					return;
 				}
@@ -273,7 +317,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					buriedness_memory.remove(current_target);
 				}
 				else {
-					//se o alvo foi desenterrado, leva-o para refugio
+					//se o alvo foi desenterrado, carrega-o para levar p/ refugio
 					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 							&& !(location() instanceof Refuge)) {
 						// Load
@@ -294,6 +338,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
 					if(DEBUG) System.out.println(me().getID() + ":Moving to target");
+					//pede ajuda para policial se nao consegue se mover
+					checkStuck(time);
 					sendMove(time, path);
 					return;
 				}
@@ -336,6 +382,29 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		}
 		if (DEBUG) System.out.println(me().getID() + ":Moving randomly");
 		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
+	}
+
+	/**
+	 * Checa se o agente esta parado ha mais de dois timestep 
+	 * e pede ajuda para policial se precisar
+	 * @param time
+	 */
+	private void checkStuck(int time) {
+		
+		if(stuckFor > 2) {
+			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
+			List<AbstractMessage> sos = new ArrayList<AbstractMessage>();
+			sos.add(new AbstractMessage(
+				String.valueOf(MSGType.UNBLOCK_ME.ordinal()), 
+				String.valueOf(me().getPosition().getValue()))
+			);
+			sendMessage(MSGType.UNBLOCK_ME, true, time, sos);
+			//trocarCanal = true;
+			if(DEBUG) System.out.println(me().getID()+ ": SOS! " + sos);
+		}
+		else {
+			if(DEBUG) System.out.println(me().getID() + ": not stuck...");
+		}
 	}
 
 	@Override
