@@ -143,7 +143,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				" for fire_damage."
 			);
 		}
-		if (DEBUG) System.out.println("Ambulance post-connected.");
+		//if (DEBUG) //System.out.println("Ambulance post-connected.");
 		
 	}
 
@@ -161,12 +161,12 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		if (stuckFor > 1){
 			//precisa voltar pro canal da ambulancia
 			sendSubscribe(time, Channel.AMBULANCE.ordinal());
-			if(DEBUG) System.out.println(me().getID() +": voltei pro canal da ambulancia");
+			//if(DEBUG) //System.out.println(me().getID() +": voltei pro canal da ambulancia");
 			
 		}
 		
 		//testa se esta no mesmo lugar do timestep passado
-		if(DEBUG) System.out.println(me().getID() + ": last,cur,stuck = " + lastPosition+","+me().getPosition()+","+stuckFor);
+		//if(DEBUG) //System.out.println(me().getID() + ": last,cur,stuck = " + lastPosition+","+me().getPosition()+","+stuckFor);
 		if (me().getPosition().equals(lastPosition)){
 			stuckFor++;
 		}
@@ -204,14 +204,14 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 						String.valueOf(h.getBuriedness())
 					);
 					msgs.add(msg);
-					if(DEBUG) System.out.println(me().getID()+": added message " + msg);
+					//if(DEBUG) //System.out.println(me().getID()+": added message " + msg);
 				}
 		}
 		
 		//envia mensagens
 		if(msgs.size() > 0){
 			sendMessage(MSGType.BURIED_HUMAN, true, time, msgs);
-			if (DEBUG) System.out.println(me().getID()+": sent message"); 
+			//if (DEBUG) //System.out.println(me().getID()+": sent message"); 
 		}
 		
 		//Receber Mensagens
@@ -239,7 +239,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					int estimatedDeathTime = Integer.parseInt(msg.get(3));
 					int buriedness = Integer.parseInt(msg.get(4));
 					
-					if(DEBUG) System.out.println(me().getID()+": received msg!" + human_id);
+					//if(DEBUG) //System.out.println(me().getID()+": received msg!" + human_id);
 					
 					//... e o adiciona 'a memoria
 					buriedness_memory.put(
@@ -251,17 +251,17 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				if(Integer.parseInt(msg.get(0)) == MSGType.SAVE_ME.ordinal()){
 					
 					//TODO tratar pedido de socorro de agente
-					System.out.println("Alguem pediu socorro, mas nao implementei o tratamento desta msg...");
+					//System.out.println("Alguem pediu socorro, mas nao implementei o tratamento desta msg...");
 				}
 			} 
 			catch(Exception e) {
-				System.out.println("Erro ao decodificar mensagem: " + msg);
+				//System.out.println("Erro ao decodificar mensagem: " + msg);
 			}
 			
 		}
 		if(DEBUG) {
-			System.out.println(me().getID() + ": " + buriedness_memory);
-			System.out.println(me().getID() + ": " + msgs);
+			//System.out.println(me().getID() + ": " + buriedness_memory);
+			//System.out.println(me().getID() + ": " + msgs);
 		}
 		
 		updateUnexploredBuildings(changed);
@@ -271,21 +271,21 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			// Am I at a refuge?
 			if (location() instanceof Refuge) {
 				// Unload!
-				if(DEBUG) System.out.println("Unloading");
+				//if(DEBUG) //System.out.println("Unloading");
 				sendUnload(time);
 				
 				//tira a vítima da memória 
 				current_target = null;
 				buriedness_memory.remove(current_target);
 				
-				if (DEBUG) System.out.println(me().getID()+": delivered human to refuge!");
+				if (DEBUG) //System.out.println(me().getID()+": delivered human to refuge!");
 				
 				return;
 			} else {
 				// Move to a refuge
 				List<EntityID> path = routing.Resgatar(me().getPosition(), Bloqueios); 
 				if (path != null) {
-					if(DEBUG) System.out.println(me().getID()+": Moving to refuge");
+					//if(DEBUG) //System.out.println(me().getID()+": Moving to refuge");
 					
 					//pede ajuda para policial se nao consegue se mover
 					checkStuck(time);
@@ -295,7 +295,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				}
 				// What do I do now? Might as well carry on and see if we can
 				// dig someone else out.
-				System.out.println(me().getID()+": Failed to plan path to refuge");
+				//System.out.println(me().getID()+": Failed to plan path to refuge");
 			}
 		}
 		
@@ -321,14 +321,14 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 							&& !(location() instanceof Refuge)) {
 						// Load
-						if(DEBUG) System.out.println(me().getID() + ": Loading " + current_target);
+						//if(DEBUG) //System.out.println(me().getID() + ": Loading " + current_target);
 						sendLoad(time, current_target);
 						return;
 					}
 					//se alvo ainda esta enterrado, desenterra-o
 					if (h_target.getBuriedness() > 0) {
 						// Rescue
-						if(DEBUG) System.out.println(me().getID() + ": Rescueing " + current_target);
+						//if(DEBUG) //System.out.println(me().getID() + ": Rescueing " + current_target);
 						sendRescue(time, current_target);
 						return;
 					}
@@ -337,7 +337,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				//se nao estiver na mesma posicao da vitima, planeja caminho ate ela
 				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
-					if(DEBUG) System.out.println(me().getID() + ":Moving to target");
+					//if(DEBUG) //System.out.println(me().getID() + ":Moving to target");
 					//pede ajuda para policial se nao consegue se mover
 					checkStuck(time);
 					sendMove(time, path);
@@ -352,13 +352,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				if ((next instanceof Civilian) && next.getBuriedness() == 0
 						&& !(location() instanceof Refuge)) {
 					// Load
-					System.out.println(me().getID() + ": Loading " + next);
+					//System.out.println(me().getID() + ": Loading " + next);
 					sendLoad(time, next.getID());
 					return;
 				}
 				if (next.getBuriedness() > 0) {
 					// Rescue
-					System.out.println(me().getID() + ":Rescueing " + next);
+					//System.out.println(me().getID() + ":Rescueing " + next);
 					sendRescue(time, next.getID());
 					return;
 				}
@@ -366,7 +366,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				// Try to move to the target
 				List<EntityID> path = routing.Resgatar(me().getPosition(), next.getPosition(), Bloqueios); 
 				if (path != null) {
-					System.out.println(me().getID() + ":Moving to target");
+					//System.out.println(me().getID() + ":Moving to target");
 					sendMove(time, path);
 					return;
 				}
@@ -376,11 +376,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		//nao tenho vitima pra salvar, vou explorar o mapa
 		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 		if (path != null) {
-			if(DEBUG) System.out.println(me().getID() + ":Searching buildings");
+			//if(DEBUG) //System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
 			return;
 		}
-		if (DEBUG) System.out.println(me().getID() + ":Moving randomly");
+		if (DEBUG) //System.out.println(me().getID() + ":Moving randomly");
 		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
 	}
 
@@ -400,10 +400,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			);
 			sendMessage(MSGType.UNBLOCK_ME, true, time, sos);
 			//trocarCanal = true;
-			if(DEBUG) System.out.println(me().getID()+ ": SOS! " + sos);
+			//if(DEBUG) //System.out.println(me().getID()+ ": SOS! " + sos);
 		}
 		else {
-			if(DEBUG) System.out.println(me().getID() + ": not stuck...");
+			//if(DEBUG) //System.out.println(me().getID() + ": not stuck...");
 		}
 	}
 
@@ -501,20 +501,20 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * @return
 	 */
 	protected EntityID chooseVictimToRescue() {
-		if(DEBUG) System.out.println(me().getID() + ": escolhendo vitima...");
+		//if(DEBUG) //System.out.println(me().getID() + ": escolhendo vitima...");
 
 		EntityID chosen = null;
 		double chosen_ets = 0;
 		for (EntityID v : buriedness_memory.keySet()) { 
 
 			int ets = estimatedTimeSaved(buriedness_memory.get(v));
-			if(DEBUG) System.out.println(""+v+" - ets:" + ets);
+			//if(DEBUG) //System.out.println(""+v+" - ets:" + ets);
 			if (chosen == null || ets > chosen_ets) {
 				chosen = v;
 				chosen_ets = ets;
 			}
 		}
-		if(DEBUG) System.out.println(me().getID() + ": escolhi " + chosen);
+		//if(DEBUG) //System.out.println(me().getID() + ": escolhi " + chosen);
 		return chosen;
 	}
 	

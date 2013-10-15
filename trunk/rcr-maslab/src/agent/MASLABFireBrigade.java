@@ -183,8 +183,8 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			sendSubscribe(time, Channel.FIRE_BRIGADE.ordinal());
 		}
 		
-		if(time == 2)
-			debug = true;
+		//if(time == 2)
+		//	debug = true;
 		
 
 		
@@ -307,7 +307,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			}
 		}
 		
-		System.out.println(me().getID() + " TIMESTEP : " + time);
+		//System.out.println(me().getID() + " TIMESTEP : " + time);
 		
 		if(debug && time == 2){
 			for(EntityID e : refugeIDs){
