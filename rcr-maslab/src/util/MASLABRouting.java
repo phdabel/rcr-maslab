@@ -444,7 +444,7 @@ public final class MASLABRouting {
 		// Calcula o caminho mais curto do agente até a via principal
 		List<EntityID> path = search.breadthFirstSearch(Origem, Bloqueios,
 				principalIDs);
-		System.out.println("Origem -> Principal" + path.toString());
+		//System.out.println("Origem -> Principal" + path.toString());
 		
 		// Se o setor de destido do agente foi informado, busca somente no local
 		// onde ele está
@@ -461,7 +461,7 @@ public final class MASLABRouting {
 		List<EntityID> aux = search.breadthFirstSearch(Destino, Bloqueios,
 				principalIDs);
 
-		System.out.println("Destino -> Principal" + aux.toString());
+		//System.out.println("Destino -> Principal" + aux.toString());
 
 		
 		// Reverte a ordem do caminho encontrado pois queremos ir da via para o
@@ -474,10 +474,9 @@ public final class MASLABRouting {
 			aux.add(Destino);
 		}
 
-		System.out.println("Principal -> Principal" + Psearch.breadthFirstSearch(path.get(path.size() - 1),
-				Bloqueios, aux.get(0)));
+		//System.out.println("Principal -> Principal" + Psearch.breadthFirstSearch(path.get(path.size() - 1),				Bloqueios, aux.get(0)));
 
-		System.out.println("Principal -> Destino" + aux.toString());
+		//System.out.println("Principal -> Destino" + aux.toString());
 
 		// Calcula o caminho mais curto da via principal até o ponto da via
 		// principal encontrado anteriormente e adiciona ao path
@@ -490,7 +489,7 @@ public final class MASLABRouting {
 		// Adiciona o caminho final ao path
 		path.addAll(aux);
 
-		System.out.println("Path Completo" + aux.toString());
+		//System.out.println("Path Completo" + aux.toString());
 
 		return path;
 	}
