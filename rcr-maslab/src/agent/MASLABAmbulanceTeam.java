@@ -2,6 +2,7 @@ package agent;
 
 import agent.interfaces.IAmbulanceTeam;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -100,8 +101,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
 		
-		System.out.println(config.getValue("kernel.agents.think-time"));
-		System.out.println(config.getValue("kernel.timesteps"));
+		//System.out.println(config.getValue("kernel.agents.think-time"));
+		//System.out.println(config.getValue("kernel.timesteps"));
 		
 		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness
 		try {
@@ -134,52 +135,89 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		
 		current_time = time;
 		
-		//System.out.println("changed = " + changed);
-		
+		if (time == config
+				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
+			sendSubscribe(time, Channel.AMBULANCE.ordinal());
+		}
+		/*
+		for (Command next : heard) {
+			Logger.debug("Heard " + next);
+		}
+		*/
 		//cria msg vazia
 		List<AbstractMessage> msgs = new ArrayList<AbstractMessage>();
 		
 		//percorre lista de entidades percebidas procurando humanos soterrados
-		for (EntityID id : changed.getChangedEntities()){
+		//for (EntityID id : changed.getChangedEntities()){
 			
 			//processa apenas humanos
-			if (model.getEntity(id) instanceof Human) {
-				Human h = (Human) model.getEntity(id);
+		for(Human h : getTargets()){//	if (model.getEntity(id) instanceof Human) {
+				//Human h = (Human) model.getEntity(id);
 				
-				//processa apenas humanos com damage
-				if (h.getDamage() > 0) {
+				//processa apenas humanos com buriedness ou machucados
+				if (h.getBuriedness() > 0 || h.getDamage() > 0) {
 					
 					//adiciona o humano machucado 'a memoria
 					int estimatedDeathTime = estimatedDeathTime(h);
-					buriedness_memory.put(id, new MemoryEntry(h.getPosition(), estimatedDeathTime));
+					buriedness_memory.put(h.getID(), new MemoryEntry(h.getPosition(), estimatedDeathTime));
 					
 					//adiciona o humano machucado 'a mensagem
-					msgs.add(new AbstractMessage(
+					AbstractMessage msg = new AbstractMessage(
 						String.valueOf(MSGType.BURIED_HUMAN.ordinal()),
 						String.valueOf(h.getID()),
 						String.valueOf(h.getPosition()),
 						String.valueOf(estimatedDeathTime)
-						//String.valueOf(time),
-					));
-					//TODO: comunicar o humano encontrado
+					);
+					msgs.add(msg);
+					System.out.println(me().getID()+": added message " + msg);
 				}
-			}
+				//else
+					//System.out.println(me() + ": hdmg="+h.getDamage());
+			//}
 		}
 		
 		if(msgs.size() > 0){
 			sendMessage(MSGType.BURIED_HUMAN, true, time, msgs);
+			System.out.println(me().getID()+": sent message"); 
+		}
+		
+		//Receber Mensagens
+		List<String> received = heardMessage(heard);
+
+		//Separa todas as mensagens recebidas pois podem vir agrupadas de um único agente
+		List<String> mensagens = new ArrayList<String>();
+		for(String s: received){
+			String x[] = s.split(AbstractMessage.MSG_FIM);
+			mensagens.addAll(Arrays.asList(s.split(AbstractMessage.MSG_FIM)));
+		}
+		
+		//Armazena as informações recebidas
+		for(String s: mensagens){
+			//Separa as partes da mensagem
+			List<String> msg = Arrays.asList(s.split(AbstractMessage.MSG_SEPARATOR));
+			
+			//Tamanho da mensagem de prédios em chamas
+			try{
+				//Se for um humano soterrado...
+				if(Integer.parseInt(msg.get(0)) == MSGType.BURIED_HUMAN.ordinal()){
+					
+					EntityID human_id = new EntityID(Integer.parseInt(msg.get(1)));
+					EntityID human_position = new EntityID(Integer.parseInt(msg.get(2)));
+					int estimatedDeathTime = Integer.parseInt(msg.get(3));
+					
+					buriedness_memory.put(
+						human_id, new MemoryEntry(estimatedDeathTime, human_position)
+					);
+				}
+			} catch(Exception e) {
+				System.out.println("Erro ao decodificar mensagem: " + msg);
+			}
+			
 		}
 		
 		System.out.println(me().getID() + ": " + buriedness_memory);
 		System.out.println(me().getID() + ": " + msgs);
-		if (time == config
-				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
-			// Subscribe to channel 1
-			sendSubscribe(time, Channel.AMBULANCE.ordinal());
-		}
-		for (Command next : heard) {
-			Logger.debug("Heard " + next);
-		}
+		
 		updateUnexploredBuildings(changed);
 		// Am I transporting a civilian to a refuge?
 		if (someoneOnBoard()) {
@@ -210,13 +248,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				if ((next instanceof Civilian) && next.getBuriedness() == 0
 						&& !(location() instanceof Refuge)) {
 					// Load
-					Logger.info("Loading " + next);
+					System.out.println(me().getID() + ": Loading " + next);
 					sendLoad(time, next.getID());
 					return;
 				}
 				if (next.getBuriedness() > 0) {
 					// Rescue
-					Logger.info("Rescueing " + next);
+					System.out.println(me().getID() + ":Rescueing " + next);
 					sendRescue(time, next.getID());
 					return;
 				}
@@ -224,7 +262,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				// Try to move to the target
 				List<EntityID> path = routing.Resgatar(me().getPosition(), next.getPosition(), Bloqueios); 
 				if (path != null) {
-					Logger.info("Moving to target");
+					System.out.println(me().getID() + ":Moving to target");
 					sendMove(time, path);
 					return;
 				}
@@ -234,11 +272,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 //		List<EntityID> path = search.breadthFirstSearch(me().getPosition(),unexploredBuildings);
 		if (path != null) {
-			Logger.info("Searching buildings");
+			System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
 			return;
 		}
-		Logger.info("Moving randomly");
+		System.out.println(me().getID() + ":Moving randomly");
 		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
 	}
 
@@ -372,6 +410,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		public MemoryEntry(EntityID position, int expectedDeathTime) {
 			this.position = position;
 			this.expectedDeathTime = expectedDeathTime;
+		}
+		
+		public String toString(){
+			return "[(edt,pos)=("+expectedDeathTime+","+position+")]"; 
 		}
 	}
 	
