@@ -62,6 +62,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	private int current_time;
 	
 	private EntityID current_target;
+	
+	private final static boolean DEBUG = false;
 
 	/*
 	 * 
@@ -102,9 +104,6 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION,
 				StandardEntityURN.BUILDING);
 		unexploredBuildings = new HashSet<EntityID>(buildingIDs);
-		
-		//System.out.println(config.getValue("kernel.agents.think-time"));
-		//System.out.println(config.getValue("kernel.timesteps"));
 		
 		//buriedness damage factor is the mean + standard variation of the gaussian distribution used to increase damage by buriedness
 		try {
@@ -172,7 +171,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 						String.valueOf(h.getBuriedness())
 					);
 					msgs.add(msg);
-					System.out.println(me().getID()+": added message " + msg);
+					if(DEBUG) System.out.println(me().getID()+": added message " + msg);
 				}
 				//else
 					//System.out.println(me() + ": hdmg="+h.getDamage());
@@ -181,7 +180,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		
 		if(msgs.size() > 0){
 			sendMessage(MSGType.BURIED_HUMAN, true, time, msgs);
-			System.out.println(me().getID()+": sent message"); 
+			if (DEBUG) System.out.println(me().getID()+": sent message"); 
 		}
 		
 		//Receber Mensagens
@@ -208,7 +207,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					int estimatedDeathTime = Integer.parseInt(msg.get(3));
 					int buriedness = Integer.parseInt(msg.get(4));
 					
-					System.out.println(me().getID()+": received msg!" + human_id);
+					if(DEBUG) System.out.println(me().getID()+": received msg!" + human_id);
 					buriedness_memory.put(
 						human_id, new MemoryEntry(human_position, estimatedDeathTime, buriedness)
 					);
@@ -219,9 +218,10 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			}
 			
 		}
-		
-		System.out.println(me().getID() + ": " + buriedness_memory);
-		System.out.println(me().getID() + ": " + msgs);
+		if(DEBUG) {
+			System.out.println(me().getID() + ": " + buriedness_memory);
+			System.out.println(me().getID() + ": " + msgs);
+		}
 		
 		updateUnexploredBuildings(changed);
 		// Am I transporting a civilian to a refuge?
@@ -229,21 +229,21 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			// Am I at a refuge?
 			if (location() instanceof Refuge) {
 				// Unload!
-				System.out.println("Unloading");
+				if(DEBUG) System.out.println("Unloading");
 				sendUnload(time);
 				
 				//tira a vítima da memória 
 				current_target = null;
 				buriedness_memory.remove(current_target);
 				
-				System.out.println(me().getID()+": delivered human to refuge!");
+				if (DEBUG) System.out.println(me().getID()+": delivered human to refuge!");
 				
 				return;
 			} else {
 				// Move to a refuge
 				List<EntityID> path = routing.Resgatar(me().getPosition(), Bloqueios); 
 				if (path != null) {
-					System.out.println(me().getID()+": Moving to refuge");
+					if(DEBUG) System.out.println(me().getID()+": Moving to refuge");
 					sendMove(time, path);
 					return;
 				}
@@ -269,13 +269,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 							&& !(location() instanceof Refuge)) {
 						// Load
-						System.out.println(me().getID() + ": Loading " + current_target);
+						if(DEBUG) System.out.println(me().getID() + ": Loading " + current_target);
 						sendLoad(time, current_target);
 						return;
 					}
 					if (h_target.getBuriedness() > 0) {
 						// Rescue
-						System.out.println(me().getID() + ": Rescueing " + current_target);
+						if(DEBUG) System.out.println(me().getID() + ": Rescueing " + current_target);
 						sendRescue(time, current_target);
 						return;
 					}
@@ -284,7 +284,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				// Try to move to the target
 				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
-					System.out.println(me().getID() + ":Moving to target");
+					if(DEBUG) System.out.println(me().getID() + ":Moving to target");
 					sendMove(time, path);
 					return;
 				}
@@ -321,11 +321,11 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 //		List<EntityID> path = search.breadthFirstSearch(me().getPosition(),unexploredBuildings);
 		if (path != null) {
-			System.out.println(me().getID() + ":Searching buildings");
+			if(DEBUG) System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
 			return;
 		}
-		System.out.println(me().getID() + ":Moving randomly");
+		if (DEBUG) System.out.println(me().getID() + ":Moving randomly");
 		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
 	}
 
@@ -408,7 +408,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * @return
 	 */
 	protected EntityID chooseVictimToRescue() {
-		System.out.println(me().getID() + ": escolhendo vitima...");
+		if(DEBUG) System.out.println(me().getID() + ": escolhendo vitima...");
 		//TODO levar em consideracao as vitimas vindas de comunicacao
 		EntityID chosen = null;
 		double chosen_ets = 0;
@@ -416,13 +416,13 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			//Human victim = (Human)model.getEntity(v);
 			//double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
 			int ets = estimatedTimeSaved(buriedness_memory.get(v));
-			System.out.println(""+v+" - ets:" + ets);
+			if(DEBUG) System.out.println(""+v+" - ets:" + ets);
 			if (chosen == null || ets > chosen_ets) {
 				chosen = v;
 				chosen_ets = ets;
 			}
 		}
-		System.out.println(me().getID() + ": escolhi " + chosen);
+		if(DEBUG) System.out.println(me().getID() + ": escolhi " + chosen);
 		return chosen;
 	}
 	
