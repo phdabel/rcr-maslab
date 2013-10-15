@@ -382,7 +382,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		
 		while (hp > 0) {
 			hp -=  damage;
-			damage += getVictimBury(victim) + getVictimFire(victim);
+			damage += getVictimBury() + getVictimFire(victim.getPosition());
 			edt++;
 		}
 		return current_time + edt;
@@ -432,7 +432,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		//estima o hp que a vítima terá quando for resgatada
 		while (time_until_rescue-- > 0) {
 			hp -=  damage;
-			damage += getVictimBury(victim) + getVictimFire(victim);
+			damage += getVictimBury() + getVictimFire(mem.position);
 		}
 		
 		return hp;
@@ -452,17 +452,17 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		}
 	}
 	
-	protected float getVictimBury(Human victim) {
+	protected float getVictimBury() {
 		//estima o dano relativo ao soterramento
 		float bury = 0.9f;
 		return bury;
 	}
 	
-	protected float getVictimFire(Human victim) {
+	protected float getVictimFire(EntityID victim_position) {
 		//estima o dano relativo ao fogo
 		float fire = 0;
-		if (model.getEntity(victim.getPosition()) instanceof Building) {
-			Building b = (Building)model.getEntity(victim.getPosition());
+		if (model.getEntity(victim_position) instanceof Building) {
+			Building b = (Building)model.getEntity(victim_position);
 			if (b.isOnFire()) {
 				switch (b.getFieryness()) {
 					case 1:
