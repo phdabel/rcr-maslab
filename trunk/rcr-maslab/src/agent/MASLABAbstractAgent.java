@@ -245,7 +245,8 @@ public abstract class MASLABAbstractAgent<E extends StandardEntity> extends Stan
                 channel = Channel.POLICE_FORCE;
                 break;
             }
-            case SAVE_ME: {
+            case SAVE_ME:
+            case BURIED_HUMAN: {
                 channel = Channel.AMBULANCE;
                 break;
             }
