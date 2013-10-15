@@ -254,28 +254,30 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		if (current_target == null) {
 			current_target = chooseVictimToRescue();
 		}
-		if (current_target.getPosition().equals(location().getID())) {
-			// Targets in the same place might need rescueing or loading
-			if ((current_target instanceof Civilian) && current_target.getBuriedness() == 0
-					&& !(location() instanceof Refuge)) {
-				// Load
-				System.out.println(me().getID() + ": Loading " + current_target);
-				sendLoad(time, current_target.getID());
-				return;
-			}
-			if (current_target.getBuriedness() > 0) {
-				// Rescue
-				System.out.println(me().getID() + ":Rescueing " + current_target);
-				sendRescue(time, current_target.getID());
-				return;
-			}
-		} else {
-			// Try to move to the target
-			List<EntityID> path = routing.Resgatar(me().getPosition(), current_target.getPosition(), Bloqueios); 
-			if (path != null) {
-				System.out.println(me().getID() + ":Moving to target");
-				sendMove(time, path);
-				return;
+		else {
+			if (current_target.getPosition().equals(location().getID())) {
+				// Targets in the same place might need rescueing or loading
+				if ((current_target instanceof Civilian) && current_target.getBuriedness() == 0
+						&& !(location() instanceof Refuge)) {
+					// Load
+					System.out.println(me().getID() + ": Loading " + current_target);
+					sendLoad(time, current_target.getID());
+					return;
+				}
+				if (current_target.getBuriedness() > 0) {
+					// Rescue
+					System.out.println(me().getID() + ":Rescueing " + current_target);
+					sendRescue(time, current_target.getID());
+					return;
+				}
+			} else {
+				// Try to move to the target
+				List<EntityID> path = routing.Resgatar(me().getPosition(), current_target.getPosition(), Bloqueios); 
+				if (path != null) {
+					System.out.println(me().getID() + ":Moving to target");
+					sendMove(time, path);
+					return;
+				}
 			}
 		}
 		
