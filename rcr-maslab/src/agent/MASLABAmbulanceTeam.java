@@ -61,7 +61,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	
 	private int current_time;
 	
-	private Human current_target;
+	private EntityID current_target;
 
 	/*
 	 * 
@@ -234,7 +234,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				
 				//tira a vítima da memória 
 				current_target = null;
-				buriedness_memory.remove(current_target.getID());
+				buriedness_memory.remove(current_target);
 				
 				System.out.println(me().getID()+": delivered human to refuge!");
 				
@@ -258,24 +258,25 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			current_target = chooseVictimToRescue();
 		}
 		else {
-			if (current_target.getPosition().equals(location().getID())) {
+			if (buriedness_memory.get(current_target).position.equals(location().getID())) {
 				// Targets in the same place might need rescueing or loading
-				if ((current_target instanceof Civilian) && current_target.getBuriedness() == 0
+				Human h_target = (Human)model.getEntity(current_target);
+				if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 						&& !(location() instanceof Refuge)) {
 					// Load
 					System.out.println(me().getID() + ": Loading " + current_target);
-					sendLoad(time, current_target.getID());
+					sendLoad(time, current_target);
 					return;
 				}
-				if (current_target.getBuriedness() > 0) {
+				if (h_target.getBuriedness() > 0) {
 					// Rescue
 					System.out.println(me().getID() + ": Rescueing " + current_target);
-					sendRescue(time, current_target.getID());
+					sendRescue(time, current_target);
 					return;
 				}
 			} else {
 				// Try to move to the target
-				List<EntityID> path = routing.Resgatar(me().getPosition(), current_target.getPosition(), Bloqueios); 
+				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
 					System.out.println(me().getID() + ":Moving to target");
 					sendMove(time, path);
@@ -400,18 +401,18 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 * O critério de escolha é pela vítima com maior HP esperado.
 	 * @return
 	 */
-	protected Human chooseVictimToRescue() {
+	protected EntityID chooseVictimToRescue() {
 		System.out.println(me().getID() + ": escolhendo vitima...");
 		//TODO levar em consideracao as vitimas vindas de comunicacao
-		Human chosen = null;
+		EntityID chosen = null;
 		double chosen_ets = 0;
 		for (EntityID v : buriedness_memory.keySet()) { 
-			Human victim = (Human)model.getEntity(v);
+			//Human victim = (Human)model.getEntity(v);
 			//double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
-			int ets = estimatedTimeSaved(victim, buriedness_memory.get(v));
-			System.out.println(""+victim+" - ets:" + ets);
+			int ets = estimatedTimeSaved(buriedness_memory.get(v));
+			System.out.println(""+v+" - ets:" + ets);
 			if (chosen == null || ets > chosen_ets) {
-				chosen = victim;
+				chosen = v;
 				chosen_ets = ets;
 			}
 		}
@@ -419,7 +420,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		return chosen;
 	}
 	
-	protected int estimatedTimeSaved(Human victim, MemoryEntry mem) {
+	protected int estimatedTimeSaved(MemoryEntry mem) {
 		//calcula o tempo até resgatar a vítima (se deslocar até ela e desenterrá-la)
 		int time_until_rescue = routing.Resgatar(me().getPosition(), mem.position, Bloqueios, Setores.UNDEFINED_SECTOR).size();
 		time_until_rescue += mem.buriedness;
