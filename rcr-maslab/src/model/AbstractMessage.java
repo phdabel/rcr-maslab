@@ -2,9 +2,9 @@ package model;
 
 public class AbstractMessage {
 
-	private String MSG = "";
-	private final String MSG_SEPARATOR = "-";
-	private final String MSG_FIM = ",";
+	public String MSG = "";
+	public static final String MSG_SEPARATOR = "-";
+	public static final String MSG_FIM = ",";
 	
 	public AbstractMessage (String...strings){
         //monta a mensagem em um string
@@ -28,5 +28,9 @@ public class AbstractMessage {
 
 	public String getMSG_FIM(){
 		return MSG_FIM;
+	}
+	
+	public String toString(){
+		return getMSG();
 	}
 }
