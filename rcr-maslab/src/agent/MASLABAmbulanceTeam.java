@@ -58,6 +58,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	
 	private HashMap<EntityID, MemoryEntry> buriedness_memory;
 	
+	private int current_time;
 
 	/*
 	 * 
@@ -130,6 +131,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
+		
+		current_time = time;
+		
 		//System.out.println("changed = " + changed);
 		
 		//cria msg vazia
@@ -146,8 +150,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				if (h.getDamage() > 0) {
 					
 					//adiciona o humano machucado 'a memoria
-					int estimatedDeathTime = estimatedDeathTime(time, h);
-					buriedness_memory.put(id, new MemoryEntry(estimatedDeathTime, h.getPosition()));
+					int estimatedDeathTime = estimatedDeathTime(h);
+					buriedness_memory.put(id, new MemoryEntry(h.getPosition(), estimatedDeathTime));
 					
 					//adiciona o humano machucado 'a mensagem
 					msgs.add(new AbstractMessage(
@@ -292,39 +296,92 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	 */
 	
 	/**
-	 * Retorna a o dano que o agente estara ate ambulancia chegar nele
-	 * Ev=(time_until_victim + buriedness)*(fire_damage + buriedness_dmg_factor*buriedness + damage)
-	 * time_until_victim = tempo de deslocamento até a vítima (estimativa de 1 timestep por EntityID)
-	 * buriedness = o nível de soterramento da vítima
-	 * fire_damage = o quanto de damage o fogo causa na vítima por timestep
-	 * buriedness_dmg_factor = estimativa de quanto damage o buriedness vai causar na vítima por timestep
-	 * damage = damage atual da vítima 
-	 * @param Human victim 
-	 * @return double
-	 */
-	protected double estimatedDamageUntilRescue(Human victim) {
-		int time_until_victim = routing.Resgatar(me().getPosition(), victim.getPosition(), Bloqueios, Setores.UNDEFINED_SECTOR).size();
-		float buriedness_dmg = buriedness_dmg_factor * victim.getBuriedness();
-		
-		double ev = (time_until_victim + victim.getBuriedness()) * (fire_damage + buriedness_dmg + victim.getDamage());
-		return ev;
-	}
-	
-	/**
 	 * Calcula uma estimativa de que timestep a referida vítima vai morrer.
 	 * @param current_time - o timestep atual
 	 * @param victim - a vítima em questão
 	 * @return tempo estimado
 	 */
-	protected int estimatedDeathTime(int current_time, Human victim) {
+	protected int estimatedDeathTime(Human victim) {
 		int edt = 0;
 		
 		float hp = victim.getHP();
 		float damage = victim.getDamage();
 		
+		while (hp > 0) {
+			hp -=  damage;
+			damage += getVictimBury(victim) + getVictimFire(victim);
+			edt++;
+		}
+		return current_time + edt;
+	}
+	
+	/**
+	 * Escolhe qual vítima salvar. A vítima é escolhida a partir da memória da ambulância.
+	 * O critério de escolha é pela vítima com maior HP esperado.
+	 * @return
+	 */
+	protected Human chooseVictimToRescue() {
+		
+		Human chosen = null;
+		double chosen_hp = 0;
+		for (EntityID v : buriedness_memory.keySet()) { 
+			Human victim = (Human)model.getEntity(v);
+			double hp = estimatedHPWhenRescued(victim, buriedness_memory.get(v));
+			if (chosen == null || hp > chosen_hp) {
+				chosen = victim;
+				chosen_hp = hp;
+			}
+		}
+		return chosen;
+	}
+	
+	/**
+	 * Estima o HP que uma dada vítima terá após ser salva. 
+	 * Salvar uma vítima consiste em se deslocar até ela e desenterrá-la.
+	 * @param current_time
+	 * @param mem
+	 * @return hp esperado
+	 */
+	protected double estimatedHPWhenRescued(Human victim, MemoryEntry mem) {
+		//calcula o tempo até resgatar a vítima (se deslocar até ela e desenterrá-la)
+		int time_until_rescue = routing.Resgatar(me().getPosition(), victim.getPosition(), Bloqueios, Setores.UNDEFINED_SECTOR).size();
+		time_until_rescue += victim.getBuriedness();
+		
+		//se o tempo até resgatar a vítima excede a expectativa de seu tempo de morte, 
+		//então retorna zero (pois a vítima não será salva a tempo)  
+		if (current_time + time_until_rescue > mem.expectedDeathTime) {
+			return 0;
+		}
+		
+		double hp = victim.getHP();
+		float damage = victim.getDamage();
+		
+		//estima o hp que a vítima terá quando for resgatada
+		while (time_until_rescue-- > 0) {
+			hp -=  damage;
+			damage += getVictimBury(victim) + getVictimFire(victim);
+		}
+		
+		return hp;
+	}
+	
+	private class MemoryEntry {
+		public EntityID position;
+		public int expectedDeathTime;
+		
+		public MemoryEntry(EntityID position, int expectedDeathTime) {
+			this.position = position;
+			this.expectedDeathTime = expectedDeathTime;
+		}
+	}
+	
+	protected float getVictimBury(Human victim) {
 		//estima o dano relativo ao soterramento
 		float bury = 0.9f;
-		
+		return bury;
+	}
+	
+	protected float getVictimFire(Human victim) {
 		//estima o dano relativo ao fogo
 		float fire = 0;
 		if (model.getEntity(victim.getPosition()) instanceof Building) {
@@ -340,43 +397,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				}
 			}
 		}
-		
-		while (hp > 0) {
-			hp -=  damage;
-			damage += fire + bury;
-			edt++;
-		}
-		return current_time + edt;
+		return fire;
 	}
-	
-	/**
-	 * Escolhe a vítima com maior estimativa de vida
-	 */
-	protected Human chooseVictimToRescue() {
-		//TODO: atualizar getTargets() para retornar algum humano na base de conhecimento do agente, ao inves do atualmente implementado do sample agent
-		
-		Human chosen = null;
-		double chosen_ev = 0;
-		for (Human victim : getTargets()) { 
-			double ev = estimatedDamageUntilRescue(victim);
-			if (chosen == null || ev > chosen_ev) {
-				chosen = victim;
-				chosen_ev = ev;
-			}
-		}
-		return chosen;
-	}
-	
-	private class MemoryEntry {
-		public int expectedDeathTime;
-		public EntityID position;
-		
-		public MemoryEntry(int expectedDeathTime, EntityID position) {
-			this.expectedDeathTime = expectedDeathTime;
-			this.position = position;
-		}
-	}
-	
 	
 	/*
 	 * 
