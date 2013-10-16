@@ -466,28 +466,34 @@ public final class MASLABRouting {
 		
 		// Reverte a ordem do caminho encontrado pois queremos ir da via para o
 		// destino e não ao contrário.
-		Collections.reverse(aux);
+		if(aux != null){
+			Collections.reverse(aux);
 
-		// Verifica se deve ou não entrar no destino
-		if (EntrarEdificio) {
-			// Se deve entrar adiciona o edificio na rota
-			aux.add(Destino);
+			// Verifica se deve ou não entrar no destino
+			if (EntrarEdificio) {
+				// Se deve entrar adiciona o edificio na rota
+				aux.add(Destino);
+			}
+	
+			//System.out.println("Principal -> Principal" + Psearch.breadthFirstSearch(path.get(path.size() - 1),				Bloqueios, aux.get(0)));
+	
+			//System.out.println("Principal -> Destino" + aux.toString());
+	
+			// Calcula o caminho mais curto da via principal até o ponto da via
+			// principal encontrado anteriormente e adiciona ao path
+			path.addAll(Psearch.breadthFirstSearch(path.get(path.size() - 1),
+					Bloqueios, aux.get(0)));
+	
+			// Remove a primeira possição do aux para não duplicar
+			aux.remove(0);
+	
+			// Adiciona o caminho final ao path
+			path.addAll(aux);
+
+		}else{
+			search = getSearch(s.get(0));
+			path = search.breadthFirstSearch(Origem, refugeIDs);
 		}
-
-		//System.out.println("Principal -> Principal" + Psearch.breadthFirstSearch(path.get(path.size() - 1),				Bloqueios, aux.get(0)));
-
-		//System.out.println("Principal -> Destino" + aux.toString());
-
-		// Calcula o caminho mais curto da via principal até o ponto da via
-		// principal encontrado anteriormente e adiciona ao path
-		path.addAll(Psearch.breadthFirstSearch(path.get(path.size() - 1),
-				Bloqueios, aux.get(0)));
-
-		// Remove a primeira possição do aux para não duplicar
-		aux.remove(0);
-
-		// Adiciona o caminho final ao path
-		path.addAll(aux);
 
 		//System.out.println("Path Completo" + aux.toString());
 

@@ -37,23 +37,23 @@ public class MASLABPreProcessamento {
 	 */
 	public void GerarArquivos(){
 		//Grafos dos setores
-		GravarMapSetor(sectoring.getMapSetor(1), 1);
-		GravarMapSetor(sectoring.getMapSetor(2), 2);
-		GravarMapSetor(sectoring.getMapSetor(3), 3);
-		GravarMapSetor(sectoring.getMapSetor(4), 4);
+		GravarMapSetor(sectoring.getMapSetor(1), 1, false);
+		GravarMapSetor(sectoring.getMapSetor(2), 2, true);
+		GravarMapSetor(sectoring.getMapSetor(3), 3, true);
+		GravarMapSetor(sectoring.getMapSetor(4), 4, true);
 		
 		//Vias principais
-		GravarMapSetor(sectoring.getMapSetor(5), 5);
+		GravarMapSetor(sectoring.getMapSetor(5), 5, true);
 
 		//Vias secundárias
-		GravarMapSetor(sectoring.getMapSetorSecundarias());
+		GravarMapSetor(sectoring.getMapSetorSecundarias(), true);
 		
 		
 		//Alocacao dos agentes
 		
 	}
 	
-	private void GravarMapSetor(Map<EntityID, List<EntityID>> MapSetor){
+	private void GravarMapSetor(Map<EntityID, List<EntityID>> MapSetor, Boolean apend){
 		/*
 		 * MAPSETOR [Numero do Setor]
 		 * CHAVE VIZINHOS
@@ -62,7 +62,7 @@ public class MASLABPreProcessamento {
 		 * FIMMAPSETOR
 		 */
 		try{
-			FileWriter fw = new FileWriter(arquivo, true);
+			FileWriter fw = new FileWriter(arquivo, apend);
 			fw.write("MAPSETOR 6\n");
 			String values;
 			//Para cada chave gera uma linha
@@ -87,7 +87,7 @@ public class MASLABPreProcessamento {
 		}
 	}
 	
-	private void GravarMapSetor(Map<EntityID, Set<EntityID>> MapSetor, int Setor){
+	private void GravarMapSetor(Map<EntityID, Set<EntityID>> MapSetor, int Setor, Boolean apend){
 		/*
 		 * MAPSETOR [Numero do Setor]
 		 * CHAVE VIZINHOS
@@ -96,7 +96,7 @@ public class MASLABPreProcessamento {
 		 * FIMMAPSETOR
 		 */
 		try{
-			FileWriter fw = new FileWriter(arquivo, true);
+			FileWriter fw = new FileWriter(arquivo, apend);
 			fw.write("MAPSETOR " + String.valueOf(Setor) + "\n");
 			String values;
 			//Para cada chave gera uma linha

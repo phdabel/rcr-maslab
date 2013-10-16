@@ -90,6 +90,14 @@ public final class LaunchMaslabPreProcessamento {
         } catch (ComponentConnectionException e) {
             Logger.info("failed: " + e.getMessage());
         }
-
+		try {
+			while (true) {
+				Logger.info("Connecting dummy agent " + (i++) + "...");
+				launcher.connect(new MASLABDummyAgent());
+				Logger.info("success");
+			}
+		} catch (ComponentConnectionException e) {
+			Logger.info("failed: " + e.getMessage());
+		}
     }
 }
