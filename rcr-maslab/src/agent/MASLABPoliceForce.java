@@ -116,7 +116,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		System.out.println("EU SOU: "+me().getID().getValue());
+		//System.out.println("EU SOU: "+me().getID().getValue());
 // INICIO CONTROLE DA COMUNICAÇÃO / PERCEPÇÃO DO AMMBIENTE --------------------------------------------------------------------# 
 		if (time == config
 				.getIntValue(kernel.KernelConstants.IGNORE_AGENT_COMMANDS_KEY)) {
@@ -173,7 +173,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							.parseInt(msg.get(1))))) {
 						ObrigacoesSoterramento.add(new EntityID(Integer.parseInt(msg
 								.get(1))));
-						System.out.println("NOVA CHAMADA :  "+msg.get(1) +" ------------------------------------");
+						//System.out.println("NOVA CHAMADA :  "+msg.get(1) +" ------------------------------------");
 					}
 				}
 			}
@@ -203,10 +203,10 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	 
 // INICIO DA VERIFICAÇÃO DA CONCLUSAO DA TAREFA -----------------------------------------------------------------------------#
 		// Verifica se cheguei ao meu objetivo (NODE
-		System.out.println(node);
+		//System.out.println(node);
 		if(node != null ){
 		if (me().getPosition().equals(node.getID())) {
-			System.out.println("Estou sob meu Objetivo");
+			//System.out.println("Estou sob meu Objetivo");
 			StandardEntity local = model.getEntity(me().getPosition());
 			try {
 				// Verifica se estou em uma road
@@ -217,7 +217,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						if(ObrigacoesSoterramento.contains(me().getPosition())){
 							ObrigacoesSoterramento.remove(me().getPosition());
 							}
-						System.out.println("Terminei minha tarefa");
+						//System.out.println("Terminei minha tarefa");
 							ocupado = 0;
 					}
 
@@ -228,7 +228,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					
 					ObrigacoesSoterramento.remove(me().getPosition());
 					}
-					System.out.println("Terminei minha tarefa");
+					//System.out.println("Terminei minha tarefa");
 					ocupado = 0;
 				}
 			} catch (Exception e){
@@ -261,29 +261,29 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					// caso esteja bloqueada
 					StandardEntity auxdor = model.getEntity(dor);
 					if (((Road) auxdor).isBlockadesDefined() && !((Road) auxdor).getBlockades().isEmpty()) {
-						System.out.println("Limpando a Porta ....");
+						//System.out.println("Limpando a Porta ....");
 						node = model.getEntity(auxdor.getID());
 						pathtoclean = routing.Explorar(me().getPosition(), Setor, Bloqueios, auxdor.getID());
 					    Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
 					    Blockade b = getTargetBlockade(r, -1);
 					    
 					    if(b!= null && b.getID() != me().getPosition()){
-					    	System.out.println(" Posição errada");
+					    	//System.out.println(" Posição errada");
 
 					    try {
 					    	node = auxdor;
-					    	System.out.println(" MERDAAAA "+ pathtoclean);
+					    	//System.out.println(" MERDAAAA "+ pathtoclean);
 					    	ocupado = 1;
 					    	PortaBloqueada =1;
 					    	sendMove(time, pathtoclean, b.getX(), b.getY());
 					    	return;
 						} catch (Exception e) {
-							System.out.println("aqui");
+							//System.out.println("aqui");
 							ocupado = 0;
 							// TODO: handle exception
 						}
 					    }
-					    System.out.println(" PQPQPQPQPQQPPQ");
+					    //System.out.println(" PQPQPQPQPQQPPQ");
 						
 					}
 				}
@@ -332,13 +332,13 @@ if(time>1){
 
 			// ZERA TUDO
 			if(controletempoParadoTotal > 10){
-				System.out.println("BUG");
+				//System.out.println("BUG");
 				ObrigacoesSoterramento.clear();
 				ocupado = 0;
 			}
 			
 			//if(controletempoParado>=3){
-			//	System.out.println("Pensando muito");
+			//	//System.out.println("Pensando muito");
 			//	ocupado = 0;
 			// }
 }
@@ -351,13 +351,13 @@ if (!ObrigacoesSoterramento.isEmpty()) {
 	List<EntityID> caminho0 = routing.Explorar(me().getPosition(), Setor, Bloqueios,ObrigacoesSoterramento.get(0));
 	List<EntityID> caminho1;
 	node = model.getEntity(ObrigacoesSoterramento.get(0));
-	// //System.out.println("Opção01: "+ObrigacoesSoterramento.get(0));
+	// ////System.out.println("Opção01: "+ObrigacoesSoterramento.get(0));
 	// busca a ação de resgate mais proximo
 	for (EntityID soterrados : ObrigacoesSoterramento) {
 
 		caminho1 = routing.Explorar(me().getPosition(),
 				Setor, Bloqueios, soterrados);
-		// //System.out.println("Opção: "+soterrados);
+		// ////System.out.println("Opção: "+soterrados);
 		// busca o menor caminho
 		if (caminho1.size() <= caminho0.size()) {
 			node = model.getEntity(soterrados);
@@ -371,10 +371,10 @@ if (!ObrigacoesSoterramento.isEmpty()) {
 	Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
     Blockade b = getTargetBlockade(r, -1);
     try {
-    	System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
+    	//System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
     	sendMove(time, pathtoclean, b.getX(), b.getY());
 	} catch (Exception e) {
-		System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
+		//System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
 		sendMove(time, pathtoclean);
 	}
 	return;
@@ -398,7 +398,7 @@ if (exploration.GetBlockRoads() != null) {
 				// TODO: handle exception
 			}
 		    
-		    System.out.println("INDO PARA UMA RUA BLOQUEADA CONHECIDA");
+		    //System.out.println("INDO PARA UMA RUA BLOQUEADA CONHECIDA");
 			ocupado = 1;
 			return;
 		}
@@ -440,7 +440,7 @@ else{
 	node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploration.GetExplorationNodes(), 0);
 	// Caso tenha explorado todos nodes
 	if (node == null) {
-		System.out.println("EXPLORAÇÃO COMPLETA");
+		//System.out.println("EXPLORAÇÃO COMPLETA");
 		node = exploration.GetNewExplorationNode(time, 0);
 		if(Setor == 5){
 			Setor = sectoring.getSetorPertencente(me().getX(), me()
@@ -450,7 +450,7 @@ else{
 			}
 		setSector();
 	}
-	System.out.println("EXPLORANDO");
+	//System.out.println("EXPLORANDO");
 	pathtoclean = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());
     Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
     Blockade b = getTargetBlockade(r, -1);
@@ -464,7 +464,7 @@ else{
 
 	private void ClearAllRoads(int time) {
 		Area location = (Area) location();
-		System.out.println("Ainda estou ocupado: "+pathtoclean.toString());
+		//System.out.println("Ainda estou ocupado: "+pathtoclean.toString());
 		 // Am I near a blockade?
        Blockade target = getTargetBlockade(time);
        if (target != null) {
@@ -493,7 +493,7 @@ else{
        // Plan a path to a blocked area
        List<EntityID> path = search.breadthFirstSearch(me().getPosition(), getBlockedRoads());
        if (path != null) {
-       	System.out.println("Movendo para bloqueio");
+       	//System.out.println("Movendo para bloqueio");
            Logger.info("Moving to target");
            Road r = (Road)model.getEntity(path.get(path.size() - 1));
            Blockade b = getTargetBlockade(r, -1);
@@ -721,13 +721,13 @@ else{
 				Human h = (Human) se;
 				// Senão for eu
 				if (h.getID().getValue() != me().getID().getValue()) {
-					// //System.out.println("Eu: "+me().getID().toString()+"Existe outro Policial aqui"+" ele: "+h.getID().getValue());
+					// ////System.out.println("Eu: "+me().getID().toString()+"Existe outro Policial aqui"+" ele: "+h.getID().getValue());
 					// ????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 					// A ideia é enviar a tarefa objetivo identicos
 					List<AbstractMessage> m = new ArrayList<AbstractMessage>();
 					if (node != null) {
 						m.add(new AbstractMessage(String.valueOf(MSGType.UNBLOCK_ME.ordinal()), node.getID().toString(), me().getID().toString()));
-						//System.out.println("Informando Objetivo voz");
+						////System.out.println("Informando Objetivo voz");
 						sendMessage(MSGType.UNBLOCK_ME, false, time, m);
 					}
 				}
