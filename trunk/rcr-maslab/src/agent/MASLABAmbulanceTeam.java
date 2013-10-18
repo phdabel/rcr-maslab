@@ -1,5 +1,6 @@
 package agent;
 
+import Exploration.WalkingInSector;
 import agent.interfaces.IAmbulanceTeam;
 
 import java.util.Arrays;
@@ -10,6 +11,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import model.AbstractMessage;
 import model.BurningBuilding;
@@ -28,6 +31,7 @@ import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Refuge;
 import util.Channel;
 import util.DistanceSorter;
+import util.MASLABBFSearch;
 import util.MSGType;
 import util.Setores;
 
@@ -76,6 +80,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	//indicador de 'estou bloqueado por quantos timesteps'?
 	int stuckFor;
 	
+	//Setor do agente (melhora exploracao?)
+	private int Setor = 0;
+	private StandardEntity node; // node objetivo
 
 	/*
 	 * 
@@ -149,7 +156,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
-		
+		search = new MASLABBFSearch(model);
+		PerceberAmbiente(time, me().getPosition(model));
 		current_time = time;
 		
 		if (time == config
@@ -373,8 +381,41 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			}
 		}*/
 		
+		Map<EntityID, Set<EntityID>> mapa;//  = new HashMap<>();
+		if(Setor == 6){
+			mapa = sectoring.MapPrincipal;
+			mapa = search.getGraph();
+			
+		}else if(Setor == 5){ 
+			mapa = sectoring.MapPrincipal;
+			mapa = search.getGraph();
+		}
+		else if(Setor == 4){ 
+			mapa = sectoring.MapSetor4;
+			mapa = search.getGraph();
+		}
+		else if(Setor == 3){ 
+			mapa = sectoring.MapSetor3;
+			mapa = search.getGraph();
+		}
+		else if(Setor == 2){ 
+			mapa = sectoring.MapSetor2;
+			mapa = search.getGraph();
+		}
+		else if(Setor == 1){ 
+			mapa = sectoring.MapSetor1;
+			mapa = search.getGraph();
+		}else{
+			mapa = sectoring.MapPrincipal;
+			mapa = search.getGraph();
+		}
+		
+		WalkingInSector walking = new WalkingInSector(model);
+		node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploration.GetExplorationNodes(), 0);
+		
+		//pathtoclean = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());
 		//nao tenho vitima pra salvar, vou explorar o mapa
-		List<EntityID> path  = routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
+		List<EntityID> path  = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());//routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 		if (path != null) {
 			//if(DEBUG) //System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
