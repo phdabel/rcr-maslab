@@ -19,6 +19,7 @@ import java.util.Set;
 import model.AbstractMessage;
 import model.BurningBuilding;
 import firesimulator.world.Civilian;
+import gis2.scenario.ClearAllFunction;
 import rescuecore.objects.World;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
@@ -64,7 +65,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 	private StandardEntity node; // node objetivo
 	private int Setor = 6;
 	private int objetivoSetor = 5; // Variavel auxiliar que define o objetivo do
-									// agente
+	private int PortaBloqueada = 0;
 	private String MSG_SEPARATOR = "-";
 	private String MSG_FIM = ",";
 	private List<EntityID> ObrigacoesSoterramento = new ArrayList<EntityID>();; // lista
@@ -122,7 +123,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			sendSubscribe(time, Channel.POLICE_FORCE.ordinal());
 		}
 
-		Area location = (Area) location();
+		
 		search = new MASLABBFSearch(model);
 		// Atualiza o ambiente ao redor do agente
 		PerceberAmbiente(time, me().getPosition(model));
@@ -188,9 +189,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 								.parseInt(new EntityID(Integer.parseInt(msg
 										.get(2))).toString())) {
 							try {
-								//MensageActivites.remove(new EntityID(Integer.parseInt(msg.get(1))));
-								ObrigacoesSoterramento.remove(new EntityID(
-										Integer.parseInt(msg.get(1))));
+								MensageActivites.remove(new EntityID(Integer.parseInt(msg.get(1))));
+								ObrigacoesSoterramento.remove(new EntityID(Integer.parseInt(msg.get(1))));
 								ocupado = 0;
 							} catch (Exception e) {
 							}
@@ -219,9 +219,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 							}
 						System.out.println("Terminei minha tarefa");
 							ocupado = 0;
-					}else{
-						System.out.println("TEM BLOQUEIO OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
 					}
+
 				}
 				// se n for uma rua então n tenho nada para fazer aqui- sou "PULISÍA MANO"
 				else{
@@ -235,6 +234,8 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 			} catch (Exception e){
 				ocupado = 0;
 			}
+			
+			ObrigacoesSoterramento.remove(me().getPosition());
 		}
 		}
 		
@@ -243,40 +244,25 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 // INICIO DA REALIZAÇÃO DA TAREFA  -----------------------------------------------------------------------------#
 
 		if(ocupado == 1){
-			System.out.println("Ainda estou ocupado: "+pathtoclean.toString());
-			 // Am I near a blockade?
-	        Blockade target = getTargetBlockade(time);
-	        if (target != null) {
-	        	if (isGoal(target.getPosition(), pathtoclean)|| getTargetBlockade(location, distance) != null) {
-	            Logger.info("Clearing blockade " + target);
-	            List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(target.getApexes()), true);
-	            double best = Double.MAX_VALUE;
-	            Point2D bestPoint = null;
-	            Point2D origin = new Point2D(me().getX(), me().getY());
-	            for (Line2D next : lines) {
-	                Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
-	                double d = GeometryTools2D.getDistance(origin, closest);
-	                if (d < best) {
-	                    best = d;
-	                    bestPoint = closest;
-	                }
-	            }
-	            Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
-	            v = v.normalised().scale(1000000);
-	            sendClear(time, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
-	            return;
-	        	}
-	        }
-	        // TEM PORTAS?????
+			List<EntityID> doors = haveDoors(me().getPosition(),model);
+			
+			ClearAllRoads(time);
+			
+			if(PortaBloqueada == 1){
+				ClearAllRoads(time);
+			}
+			
+			// TEM PORTAS?????
 			if ((haveDoors(me().getPosition(), model) != null)) {
 
-				List<EntityID> doors = haveDoors(me().getPosition(),model);
+				
 				// verifica a lista de portas da rua
 				for (EntityID dor : doors) {
 					// caso esteja bloqueada
 					StandardEntity auxdor = model.getEntity(dor);
 					if (((Road) auxdor).isBlockadesDefined() && !((Road) auxdor).getBlockades().isEmpty()) {
 						System.out.println("Limpando a Porta ....");
+						node = model.getEntity(auxdor.getID());
 						pathtoclean = routing.Explorar(me().getPosition(), Setor, Bloqueios, auxdor.getID());
 					    Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
 					    Blockade b = getTargetBlockade(r, -1);
@@ -288,33 +274,23 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 					    	node = auxdor;
 					    	System.out.println(" MERDAAAA "+ pathtoclean);
 					    	ocupado = 1;
+					    	PortaBloqueada =1;
 					    	sendMove(time, pathtoclean, b.getX(), b.getY());
 					    	return;
 						} catch (Exception e) {
-							ocupado = 1;
+							System.out.println("aqui");
+							ocupado = 0;
 							// TODO: handle exception
 						}
 					    }
-						
+					    System.out.println(" PQPQPQPQPQQPPQ");
 						
 					}
 				}
 			}
-	        // Plan a path to a blocked area
-	        List<EntityID> path = search.breadthFirstSearch(me().getPosition(), getBlockedRoads());
-	        if (path != null) {
-	        	System.out.println("Movendo para bloqueio");
-	            Logger.info("Moving to target");
-	            Road r = (Road)model.getEntity(path.get(path.size() - 1));
-	            Blockade b = getTargetBlockade(r, -1);
-	            sendMove(time, path, b.getX(), b.getY());
-	            Logger.debug("Path: " + path);
-	            Logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
-	            return;
-	        }
-	        Logger.debug("Couldn't plan a path to a blocked road");
-	        Logger.info("Moving randomly");
-	        
+			
+			
+
 	        /*
 	    	pathtoclean = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());
 	        Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
@@ -361,10 +337,10 @@ if(time>1){
 				ocupado = 0;
 			}
 			
-			if(controletempoParado>=3){
-				System.out.println("Pensando muito");
-				ocupado = 0;
-			}
+			//if(controletempoParado>=3){
+			//	System.out.println("Pensando muito");
+			//	ocupado = 0;
+			// }
 }
 		
 //FIM DO DEBUG -----------------------------------------------------------------------------------------#
@@ -395,9 +371,10 @@ if (!ObrigacoesSoterramento.isEmpty()) {
 	Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
     Blockade b = getTargetBlockade(r, -1);
     try {
-    	
+    	System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
     	sendMove(time, pathtoclean, b.getX(), b.getY());
 	} catch (Exception e) {
+		System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
 		sendMove(time, pathtoclean);
 	}
 	return;
@@ -427,6 +404,7 @@ if (exploration.GetBlockRoads() != null) {
 		}
 	}
 } 
+
 //senão obter nova rota para explorar/limpar
 else{
 	ocupado = 1;
@@ -478,12 +456,56 @@ else{
     Blockade b = getTargetBlockade(r, -1);
     sendMove(time, pathtoclean, b.getX(), b.getY());
 	return;
+}
 	
 }
-
 //FIM DA EXPLORAÇÃO ------------------------------------------------------------------------------------#
 
+
+	private void ClearAllRoads(int time) {
+		Area location = (Area) location();
+		System.out.println("Ainda estou ocupado: "+pathtoclean.toString());
+		 // Am I near a blockade?
+       Blockade target = getTargetBlockade(time);
+       if (target != null) {
+       	//if (isGoal(target.getPosition(), pathtoclean)|| getTargetBlockade(location, distance) != null) {
+           Logger.info("Clearing blockade " + target);
+           List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(target.getApexes()), true);
+           double best = Double.MAX_VALUE;
+           Point2D bestPoint = null;
+           Point2D origin = new Point2D(me().getX(), me().getY());
+           for (Line2D next : lines) {
+               Point2D closest = GeometryTools2D.getClosestPointOnSegment(next, origin);
+               double d = GeometryTools2D.getDistance(origin, closest);
+               if (d < best) {
+                   best = d;
+                   bestPoint = closest;
+               }
+           }
+           Vector2D v = bestPoint.minus(new Point2D(me().getX(), me().getY()));
+           v = v.normalised().scale(1000000);
+           sendClear(time, (int)(me().getX() + v.getX()), (int)(me().getY() + v.getY()));
+           return;
+       	//}
+       }
+       
+      
+       // Plan a path to a blocked area
+       List<EntityID> path = search.breadthFirstSearch(me().getPosition(), getBlockedRoads());
+       if (path != null) {
+       	System.out.println("Movendo para bloqueio");
+           Logger.info("Moving to target");
+           Road r = (Road)model.getEntity(path.get(path.size() - 1));
+           Blockade b = getTargetBlockade(r, -1);
+           sendMove(time, path, b.getX(), b.getY());
+           Logger.debug("Path: " + path);
+           Logger.debug("Target coordinates: " + b.getX() + ", " + b.getY());
+           return;
+       }
+       Logger.debug("Couldn't plan a path to a blocked road");
+       Logger.info("Moving randomly");
 	}
+	
 
 	@Override
 	protected EnumSet<StandardEntityURN> getRequestedEntityURNsEnum() {
