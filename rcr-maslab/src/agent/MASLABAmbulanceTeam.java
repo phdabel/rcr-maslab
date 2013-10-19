@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import model.AbstractMessage;
-import model.BurningBuilding;
-import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 import rescuecore2.worldmodel.ChangeSet;
 import rescuecore2.messages.Command;
@@ -27,7 +25,6 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Human;
-import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Refuge;
 import util.Channel;
 import util.DistanceSorter;
@@ -58,6 +55,9 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	public final static String STD_BURIEDNESS_DMG_KEY = "misc.damage.sd";
 	public final static String FIRE_DMG_KEY = "misc.damage.fire";
 	
+	private static final int RANDOM_WALK_LENGTH = 50;
+	private Map<EntityID, Set<EntityID>> neighbours; //para randomwalk
+	
 	//exibir prints?
 	private final static boolean DEBUG = false;
 	
@@ -83,6 +83,8 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 	//Setor do agente (melhora exploracao?)
 	private int Setor = 0;
 	private StandardEntity node; // node objetivo
+	
+	protected SampleSearch sampleSearch;
 
 	/*
 	 * 
@@ -133,30 +135,35 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 			buriedness_dmg_factor = config.getIntValue(MEAN_BURIEDNESS_DMG_KEY) + config.getIntValue(STD_BURIEDNESS_DMG_KEY);
 		}
 		catch (NoSuchConfigOptionException e) {
-			System.out.println(
+			/*System.out.println(
 				"WARNING: key " + MEAN_BURIEDNESS_DMG_KEY + " or " + STD_BURIEDNESS_DMG_KEY +
 				" not found in config files. Using default value of " + buriedness_dmg_factor + 
 				" for buriedness_dmg_factor."
-			);
+			);*/
 		}
 		//dano por fogo e' dado diretamente no config
 		try {
 			fire_damage = config.getIntValue(FIRE_DMG_KEY);
 		}
 		catch (NoSuchConfigOptionException e) {
-			System.out.println(
+			/*System.out.println(
 				"WARNING: key " + FIRE_DMG_KEY + 
 				" not found in config files. Using default value of " + fire_damage + 
 				" for fire_damage."
-			);
+			);*/
 		}
 		//if (DEBUG) //System.out.println("Ambulance post-connected.");
-		
+		sampleSearch = new SampleSearch(model);
+		neighbours = sampleSearch.getGraph();
 	}
 
 	@Override
 	protected void think(int time, ChangeSet changed, Collection<Command> heard) {
 		search = new MASLABBFSearch(model);
+		
+		//System.out.println(me().getID()+":mem:"+buriedness_memory);
+		
+		
 		PerceberAmbiente(time, me().getPosition(model));
 		current_time = time;
 		
@@ -283,17 +290,20 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				sendUnload(time);
 				
 				//tira a vítima da memória 
-				current_target = null;
 				buriedness_memory.remove(current_target);
+				current_target = null;
 				
-				if (DEBUG) //System.out.println(me().getID()+": delivered human to refuge!");
-				
+				/*
+				if (DEBUG) {
+					System.out.println(me().getID()+": delivered human to refuge!");
+				}
+				*/
 				return;
 			} else {
 				// Move to a refuge
-				List<EntityID> path = routing.Resgatar(me().getPosition(), Bloqueios); 
+				List<EntityID> path = sampleSearch.breadthFirstSearch(me().getPosition(), refugeIDs);//routing.Resgatar(me().getPosition(), Bloqueios); 
 				if (path != null) {
-					//if(DEBUG) //System.out.println(me().getID()+": Moving to refuge");
+					//if(DEBUG) System.out.println(me().getID()+": Moving to refuge" + path);
 					
 					//pede ajuda para policial se nao consegue se mover
 					checkStuck(time);
@@ -321,31 +331,34 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				
 				//checa se a vitima foi removida de sua posicao esperada, e a remove da memoria em caso afirmativo
 				if (!h_target.getPosition().equals(buriedness_memory.get(current_target).position)) {
-					current_target = null;
 					buriedness_memory.remove(current_target);
+					current_target = null;
+					//System.out.println(me().getID() + ": nullified curr_tgt ");
 				}
 				else {
 					//se o alvo foi desenterrado, carrega-o para levar p/ refugio
 					if ((h_target instanceof Human) && h_target.getBuriedness() == 0
 							&& !(location() instanceof Refuge)) {
 						// Load
-						//if(DEBUG) //System.out.println(me().getID() + ": Loading " + current_target);
+						//if(DEBUG) System.out.println(me().getID() + ": Loading " + current_target);
 						sendLoad(time, current_target);
 						return;
 					}
 					//se alvo ainda esta enterrado, desenterra-o
 					if (h_target.getBuriedness() > 0) {
 						// Rescue
-						//if(DEBUG) //System.out.println(me().getID() + ": Rescueing " + current_target);
+						//if(DEBUG) System.out.println(me().getID() + ": Rescueing " + current_target);
 						sendRescue(time, current_target);
 						return;
 					}
 				}
 			} else {
 				//se nao estiver na mesma posicao da vitima, planeja caminho ate ela
-				List<EntityID> path = routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
+				//System.out.println(me().getID() + ": currtgt is " + current_target);
+				//System.out.println(me().getID() + ":position="+buriedness_memory.get(current_target).position);
+				List<EntityID> path = sampleSearch.breadthFirstSearch(me().getPosition(), buriedness_memory.get(current_target).position);//routing.Resgatar(me().getPosition(), buriedness_memory.get(current_target).position, Bloqueios); 
 				if (path != null) {
-					//if(DEBUG) //System.out.println(me().getID() + ":Moving to target");
+					//if(DEBUG) System.out.println(me().getID() + ":Moving to target" + path);
 					//pede ajuda para policial se nao consegue se mover
 					checkStuck(time);
 					sendMove(time, path);
@@ -413,16 +426,22 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		WalkingInSector walking = new WalkingInSector(model);
 		node = walking.GetExplorationNode(time, me().getPosition(model).getID(), mapa, exploration.GetExplorationNodes(), 0);
 		
+		//tentativa de evitar andar em circulos
+		if(node == null){
+             node = exploration.GetNewExplorationNode(time, 1);
+		}	
+		
+		
 		//pathtoclean = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());
 		//nao tenho vitima pra salvar, vou explorar o mapa
 		List<EntityID> path  = routing.Explorar(me().getPosition(), Setor,Bloqueios, node.getID());//routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios);
 		if (path != null) {
-			//if(DEBUG) //System.out.println(me().getID() + ":Searching buildings");
+			//if(DEBUG) System.out.println(me().getID() + ":Searching buildings");
 			sendMove(time, path);
 			return;
 		}
-		if (DEBUG) //System.out.println(me().getID() + ":Moving randomly");
-		sendMove(time, routing.Explorar(me().getPosition(), Setores.UNDEFINED_SECTOR, Bloqueios));
+		//if (DEBUG) System.out.println(me().getID() + ":Moving randomly");
+		sendMove(time, routing.Explorar(me().getPosition(), Setor, Bloqueios));
 	}
 
 	/**
@@ -555,7 +574,7 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 				chosen_ets = ets;
 			}
 		}
-		//if(DEBUG) //System.out.println(me().getID() + ": escolhi " + chosen);
+		//if(DEBUG) System.out.println(me().getID() + ": escolhi " + chosen);
 		return chosen;
 	}
 	
@@ -600,6 +619,38 @@ public class MASLABAmbulanceTeam extends MASLABAbstractAgent<AmbulanceTeam>
 		
 		return hp;
 	}
+	
+	/**
+     * Caminhada aleatoria, porque elas ficavam perdidas na exploracao em Kobe :(
+     * @return path to a random destination.
+	 *
+	 protected List<EntityID> randomWalk() {
+	     List<EntityID> result = new ArrayList<EntityID>(RANDOM_WALK_LENGTH);
+	     Set<EntityID> seen = new HashSet<EntityID>();
+	     EntityID current = ((Human)me()).getPosition();
+	     for (int i = 0; i < RANDOM_WALK_LENGTH; ++i) {
+	         result.add(current);
+	         seen.add(current);
+	         List<EntityID> possible = new ArrayList<EntityID>(neighbours.get(current));
+	         Collections.shuffle(possible, random);
+	         boolean found = false;
+	         for (EntityID next : possible) {
+	             if (seen.contains(next)) {
+	                 continue;
+	             }
+	             current = next;
+	             found = true;
+	             break;
+	         }
+	         if (!found) {
+	             // We reached a dead-end.
+	             break;
+	         }
+	     }
+	     return result;
+	 }*/
+	
+	
 	
 	/**
 	 * Item da memoria da ambulancia.

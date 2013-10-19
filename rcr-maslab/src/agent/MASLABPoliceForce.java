@@ -111,7 +111,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		distance = config.getIntValue(DISTANCE_KEY);
 		setSector();
 		// Setores.UNDEFINED_SECTOR;
-		System.out.println("PF on!");
+		//System.out.println("PF on!");
 
 	}
 
@@ -265,27 +265,30 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 						//System.out.println("Limpando a Porta ....");
 						node = model.getEntity(auxdor.getID());
 						pathtoclean = routing.Explorar(me().getPosition(), Setor, Bloqueios, auxdor.getID());
-					    Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
-					    Blockade b = getTargetBlockade(r, -1);
 					    
-					    if(b!= null && b.getID() != me().getPosition()){
-					    	//System.out.println(" Posição errada");
-
-					    try {
-					    	node = auxdor;
-					    	//System.out.println(" MERDAAAA "+ pathtoclean);
-					    	ocupado = 1;
-					    	PortaBloqueada =1;
-					    	sendMove(time, pathtoclean, b.getX(), b.getY());
-					    	return;
-						} catch (Exception e) {
+						try {
+							Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
+						    Blockade b = getTargetBlockade(r, -1);
+						    
+						    if(b!= null && b.getID() != me().getPosition()){
+						    	//System.out.println(" Posição errada");
+	
+							    	node = auxdor;
+							    	//System.out.println(" MERDAAAA "+ pathtoclean);
+							    	ocupado = 1;
+							    	PortaBloqueada =1;
+							    	sendMove(time, pathtoclean, b.getX(), b.getY());
+							    	return;
+								
+						    }
+						    //System.out.println(" PQPQPQPQPQQPPQ");
+						}
+						catch (Exception e) {
 							//System.out.println("aqui");
 							ocupado = 0;
-							// TODO: handle exception
+							sendMove(time, pathtoclean);
+							//System.out.println(me().getID() + ": AVISO: exception capturada por causa do building "+pathtoclean.get(pathtoclean.size() - 1) );
 						}
-					    }
-					    //System.out.println(" PQPQPQPQPQQPPQ");
-						
 					}
 				}
 			}
@@ -372,12 +375,13 @@ if (!ObrigacoesSoterramento.isEmpty()) {
 	//StandardEntity destination = model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
 	
     try {
+    	//exception acontece quando tenta dar cast para Road, mas entidade eh Building
     	Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
         Blockade b = getTargetBlockade(r, -1);
     	//System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
     	sendMove(time, pathtoclean, b.getX(), b.getY());
 	} catch (Exception e) {
-		System.out.println(me().getID()+": AVISO: usando rota 'segura' pois ia dar excecao no destino: "+node.getID());
+		//System.out.println(me().getID()+": AVISO: usando rota 'segura' pois ia dar excecao no destino: "+node.getID());
 		sendMove(time, pathtoclean);
 	}
 	return;
