@@ -111,6 +111,7 @@ public class MASLABPoliceForce extends MASLABAbstractAgent<PoliceForce>
 		distance = config.getIntValue(DISTANCE_KEY);
 		setSector();
 		// Setores.UNDEFINED_SECTOR;
+		System.out.println("PF on!");
 
 	}
 
@@ -368,13 +369,15 @@ if (!ObrigacoesSoterramento.isEmpty()) {
 	ocupado = 1;
 	// gera novo caminho
 	pathtoclean = routing.Explorar(me().getPosition(),Setor, Bloqueios, node.getID());
-	Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
-    Blockade b = getTargetBlockade(r, -1);
+	//StandardEntity destination = model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
+	
     try {
+    	Road r = (Road)model.getEntity(pathtoclean.get(pathtoclean.size() - 1));
+        Blockade b = getTargetBlockade(r, -1);
     	//System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
     	sendMove(time, pathtoclean, b.getX(), b.getY());
 	} catch (Exception e) {
-		//System.out.println("Na na na na na na na na na na na na na na na na... BATMAN! (Visto indo para:"+node.getID());
+		System.out.println(me().getID()+": AVISO: usando rota 'segura' pois ia dar excecao no destino: "+node.getID());
 		sendMove(time, pathtoclean);
 	}
 	return;
