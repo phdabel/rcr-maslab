@@ -183,7 +183,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}else{
 			//Esse procedimento é genérico para todos os agentes, por isso está na classe MASLABAbstractAgent
 		}
-		System.out.println("FB on!");
+		//System.out.println("FB on!");
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		FireBrigade me = me();
 		
-		debug = time==2 || monitored.contains(me.getID());
+		debug = false;//time==2 || monitored.contains(me.getID());
 		/*
 		if (trocarCanal){
 			trocarCanal = false;
@@ -212,7 +212,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		
 		if(debug){
-			System.out.println(me().getID() + " stuckFor= " + stuckFor);
+			//System.out.println(me().getID() + " stuckFor= " + stuckFor);
 		}
 		
 		//testa se esta no mesmo lugar do timestep passado
@@ -311,7 +311,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		
 		alvoAnterior = alvoAtual;
 		alvo = getIncendio(time, Alvos);
-		if(debug) System.out.println(me.getID()+" - alvo: " + alvo);
+		//if(debug) System.out.println(me.getID()+" - alvo: " + alvo);
 		if(alvo != null){
 			//System.out.println(me().getID().getValue() + " Importancia: " + alvo.getImportancia());
 			if(alvo.getImportancia() < 0){
@@ -351,20 +351,20 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		
 		//System.out.println(me().getID() + " TIMESTEP : " + time);
 		
-		if(debug && time == 2){
+		/*if(debug && time == 2){
 			for(EntityID e : refugeIDs){
 				System.out.println(me().getID() + " Refúgios : " + e.getValue());
 			}
-		}
+		}*/
 		
 		//Avaliando estados
 		estadoAnterior = estado;
-		if (debug) System.out.println(me.getID() + ": alvoAtual="+alvoAtual);
+		//if (debug) System.out.println(me.getID() + ": alvoAtual="+alvoAtual);
 		
 		//se alvo atual ja foi apagado, torna-o null (evita entrar no estado Combatendo desnecessariamente)
 		Building target = (Building) model.getEntity(alvoAtual);
 		if (target != null && !target.isOnFire()) {
-			if(debug) System.out.println(me.getID()+": alvo apagado " + alvoAtual);
+			//if(debug) System.out.println(me.getID()+": alvo apagado " + alvoAtual);
 			alvoAtual = null;
 		}
 		
@@ -388,7 +388,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		}
 		
 		if(debug){
-			System.out.println(me().getID() + " Estado: " + estado.toString() + " Qtde Agua: " + me.getWater());
+			//System.out.println(me().getID() + " Estado: " + estado.toString() + " Qtde Agua: " + me.getWater());
 		}
 		
 		//Abastecendo, só espera até concluir
@@ -402,15 +402,15 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			
 			alvoAtual = null;
 			
-			if(debug){
+			/*if(debug){
 				System.out.println(me().getID() + " refugeIDs.contains(destino): " + refugeIDs.contains(destino));
 				if(destino != null)
 					System.out.println(me().getID() + " destino: " + destino.getValue());
-			}
+			}*/
 			
 			if(refugeIDs.contains(destino) && destino != null && path.contains(me().getPosition())){
 				if(debug){
-					System.out.println(me().getID() + " Caminho Atual: " + path.toString());
+					//System.out.println(me().getID() + " Caminho Atual: " + path.toString());
 				}
 				List<EntityID> p = new ArrayList<EntityID>(path);
 				for(EntityID e: p){
@@ -421,14 +421,14 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 					}
 				}
 				if(debug){
-					System.out.println(me().getID() + " Caminho Depois de Processado: " + path.toString());
+					//System.out.println(me().getID() + " Caminho Depois de Processado: " + path.toString());
 				}
 				
 			}else{
 				//Tenta encontrar um caminho até o refúgio
 				path = routing.Abastecer(me.getPosition(), Bloqueios);
 				if(debug){
-					System.out.println(me().getID() + " routing.Abastecer: " + path.toString());
+					//System.out.println(me().getID() + " routing.Abastecer: " + path.toString());
 				}
 				//Armazena o destino para não ficar em loop
 				destino = path.get(path.size()-1);
@@ -439,7 +439,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			if(path != null){
 				checkStuck(time);
 				sendMove(time, path);
-				System.out.println(me().getID() + " indo p/ refugio!" + path);
+				//System.out.println(me().getID() + " indo p/ refugio!" + path);
 				return;
 			/*
 			 * Caso não tenha encontrado o caminho,
@@ -448,7 +448,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			} else {
 				path = routing.Explorar(me().getPosition(), setorAtual, Bloqueios);
 				destino = path.get(path.size()-1);
-				if(debug) System.out.println(me().getID() + " nao achei refugio, explorando:" + path);
+				//if(debug) System.out.println(me().getID() + " nao achei refugio, explorando:" + path);
 				checkStuck(time);
 				sendMove(time, path);
 				return;
@@ -457,12 +457,12 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 		//Combatendo - Não "afrouxemo" nem nos "lançante" pois "semo" loco de dá com um pau
 		} else if (estado.equals(Estados.Combatendo)){
 			
-			if(debug){
+			/*if(debug){
 				if(alvoAtual != null){
 					System.out.println(me().getID() + " Alvo: " + alvoAtual.getValue());
 					System.out.println(me().getID() + " model.getDistance(getID(), alvoAtual): " + model.getDistance(getID(), alvoAtual));
 				}
-			}
+			}*/
 			
 			//Verifica se algum prédio pode ser combatido
 			if (model.getDistance(getID(), alvoAtual) <= maxView) {
@@ -475,15 +475,15 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 //			if(destino != null && debug)
 				//System.out.println("Destino: " + destino.getValue() + " Alvo: " + alvoAtual.getValue());
 
-			if(debug){
+			/*if(debug){
 				if(alvoAtual != null){
 					System.out.println(me().getID() + " Alvo: " + alvoAtual.getValue());
 				}
-			}
+			}*/
 			
 			if(alvoAtual != null && alvoAnterior != null && alvoAtual.getValue() == alvoAnterior.getValue() && estadoAnterior == estado && path.contains(me().getPosition())){
 				if(debug){
-					System.out.println(me().getID() + " Path Atual: " + path.toString());
+					//System.out.println(me().getID() + " Path Atual: " + path.toString());
 				}
 				List<EntityID> p = new ArrayList<EntityID>(path);
 				for(EntityID e: p){
@@ -494,7 +494,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 					}
 				}
 				if(debug){
-					System.out.println(me().getID() + " Path Depois: " + path.toString());
+					//System.out.println(me().getID() + " Path Depois: " + path.toString());
 				}
 
 			//Caso contrário calcula o caminho ate o alvo
@@ -506,7 +506,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 				//Atualiza o destino
 				destino = path.get(path.size()-1);
 				if(debug){
-					System.out.println(me().getID() + " Path Combatendo: " + path.toString() + " P. Atual: " + me().getPosition() + " Alvo Atual: " + alvoAtual.getValue());
+					//System.out.println(me().getID() + " Path Combatendo: " + path.toString() + " P. Atual: " + me().getPosition() + " Alvo Atual: " + alvoAtual.getValue());
 				}
 			}
 
@@ -519,7 +519,6 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 					}
 				}
 			}
-			
 			
 			if (path != null) {
 				checkStuck(time);
@@ -691,7 +690,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 	private BurningBuilding getIncendio(int time, List<BurningBuilding> all){
 		//boolean debug = (me().getID().getValue() == 1827029798 || me().getID().getValue() == 2005616081);
 				
-		if(debug) System.out.println(me().getID()+": getincendio...");
+		//if(debug) System.out.println(me().getID()+": getincendio...");
 		int maiorImportancia = Integer.MIN_VALUE;
 		BurningBuilding bb = null;
 		Collection<StandardEntity> e = model.getObjectsInRange(me().getPosition(), maxDistance);
@@ -712,13 +711,13 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			alterarAlvo = false; //TODO: testar se o bombeiro nao fica doidao
 		}
 		if(debug){
-			System.out.println(me().getID().getValue() + " alterarAlvo? " + alterarAlvo);
+			//System.out.println(me().getID().getValue() + " alterarAlvo? " + alterarAlvo);
 		}
 		
 		//if(alterarAlvo && alvo == null){
 		if (alvo == null) {
 			if(debug){
-				System.out.println(me().getID()+": alvo == null");
+				//System.out.println(me().getID()+": alvo == null");
 				//System.out.println(me().getID().getValue() + " Sem alvo,  Alterar Alvo: " + alterarAlvo);
 			}
 
@@ -729,7 +728,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 					bb = b;
 					alvo = bb;
 					alvoAtual = new EntityID(bb.getID());
-					if (debug) System.out.println(me().getID()+": escolhi alvoAtual="+alvoAtual);
+					//if (debug) System.out.println(me().getID()+": escolhi alvoAtual="+alvoAtual);
 				}
 			}
 			
@@ -740,7 +739,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 
 		}else if(alterarAlvo && alvo != null){
 			if(debug){
-				System.out.println(me().getID() + ": alterarAlvo && alvo != null // " + alterarAlvo + " Alvo: " + alvo.getID());
+				//System.out.println(me().getID() + ": alterarAlvo && alvo != null // " + alterarAlvo + " Alvo: " + alvo.getID());
 			}
 
 			List<Integer> lstBB = alvo.getIDsCorrespondentes();
@@ -769,7 +768,7 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 					}
 				}
 			}
-			if(debug) System.out.println(me().getID()+": saindo de alterarAlvo && alvo != null // alvo=" + alvoAtual + " ");
+			//if(debug) System.out.println(me().getID()+": saindo de alterarAlvo && alvo != null // alvo=" + alvoAtual + " ");
 		}
 		
 		if(!alterarAlvo){
@@ -816,10 +815,10 @@ public class MASLABFireBrigade extends MASLABAbstractAgent<FireBrigade>
 			);
 			sendMessage(MSGType.UNBLOCK_ME, true, time, sos);
 			//trocarCanal = true;
-			if(debug) System.out.println(me().getID()+ ": SOS! " + sos);
+			//if(debug) System.out.println(me().getID()+ ": SOS! " + sos);
 		}
 		else {
-			if(debug) System.out.println(me().getID() + ": not stuck...");
+			//if(debug) System.out.println(me().getID() + ": not stuck...");
 		}
 	}
 	
